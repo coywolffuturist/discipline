@@ -10,7 +10,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
 ran=0
-EXPECTED=5
+EXPECTED=6
 
 run() {
   local name="$1"; shift
@@ -43,6 +43,7 @@ run "gate 01 baits — every check seen to fail" python3 gates/01-ste/baits.py
 run "baits pair — no check ships unbaited" python3 lint/baits_pair.py
 run "baits pair BAIT — the rule cannot exempt itself" python3 lint/bait_baits_pair.py
 run "the surviving test suite" python3 test_gates.py
+run "crumbs — the breadcrumb stream is readable" python3 lint/crumbs.py
 
 if [ "$ran" -ne "$EXPECTED" ]; then
   printf "\033[31mFAIL\033[0m  only %d of %d steps ran. A step that did not execute is not a pass.\n" "$ran" "$EXPECTED"
