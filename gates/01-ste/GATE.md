@@ -55,16 +55,31 @@ repair and reported success. The failure mode STE was invented to prevent —
 a reader acting confidently on a misread instruction — reproduced exactly, in
 a domain the standard has never been applied to.
 
-### What is wholly ours
+### What is ours — corrected 2026-08-22, after a refuter broke every claim here
 
-Two things, and they are inventions rather than adoptions:
+The first version of this section made two novelty claims. **Both were wrong,
+and the correction is kept rather than quietly replaced.**
 
-1. **The enforcement point.** We score the prompt at the moment a subagent is
-   spawned, not the document at the moment it is published. The industry checks
-   finished manuals. We check the instruction while it can still be rewritten.
-2. **Score-in-the-table instead of block.** The gate never refuses text. It
-   emits a number into the completion table, which cannot be left blank. The
-   table is the enforcement; the hook is only the measurement.
+- *"The industry checks finished manuals; we check the instruction while it can
+  still be rewritten."* **False.** Commercial STE tooling runs inside the
+  authoring editor as the writer types. Shift-left checking is the ordinary
+  shape of every linter that exists.
+- *"Score-in-the-table instead of block."* **Not novel.** That is warn-only CI
+  plus a required checklist — coverage gates and quality gates already work
+  this way.
+
+**What we can actually evidence:** we apply a documentation standard to
+**agent-to-agent prompts**, which is not its documented use, and the transfer
+argument holds — an agent cannot cheaply ask what a prompt meant.
+
+**We have NOT verified that this application is novel.** No web access was
+available to check. Treat it as unusual-to-us, not as new-to-the-world. That
+sentence is the honest version, and it is falsifiable by anyone with a search
+engine.
+
+**The local evidence is real regardless of novelty.** Seven long prompts on
+2026-08-22, two agents misreading scope, one reporting success on partial work.
+That happened here and is measurable here.
 
 ### Where we deliberately differ from the standard
 

@@ -16,9 +16,21 @@ FAIL-OPEN. Any error allows the call.
 import json, os, re, sys, time
 
 LOG = os.path.expanduser("~/.coywolf/state/door_use.jsonl")
-CORPUS = re.compile(r"(<corpus>/corpus|/beacons/NOTES-|repos/\w[\w-]*/(?!\.git)\S+\.(py|js|ts|md)\b)")
-READER = re.compile(r"\b(cat|sed\s+-n|head|tail|grep|rg|awk)\b")
-CHEAP = re.compile(r"\b(mind\s+(grep|check|page|rulings|consult|recall)|search_code|trace_path)\b")
+# FINDING 6, closed 2026-08-22. The old classifier tested CHEAP against the
+# WHOLE command before READER, so `grep -rn search_code somefile` — a hand-read —
+# logged as a cheap door. And CORPUS demanded a contiguous repos/<name>/<path>,
+# so the commonest idiom `cd repo && cat file` logged NOTHING. The numerator
+# inflated and the denominator deflated, both toward the flattering number: a
+# true 0% would have reported as a 7x improvement on the baseline.
+#
+# Now: a command counts as a cheap door only when the DOOR IS THE COMMAND BEING
+# RUN, never when its name appears as an argument or inside a string.
+CORPUS = re.compile(r"(<corpus>/corpus|beacons/NOTES-|\.claude/(skills|agents)/"
+                    r"|repos/[\w-]+/|\.(py|js|ts|md|sh)\b)")
+READER = re.compile(r"(?:^|[;&|]\s*)\s*(?:sudo\s+)?(cat|sed|head|tail|grep|rg|awk|less|more)\b")
+# the door must be in COMMAND POSITION: start of line, or after ; && || |
+CHEAP = re.compile(r"(?:^|[;&|]\s*)\s*(?:python3?\s+\S*)?(?:\S*/)?"
+                   r"(mind|codebase-memory)\b\s+(grep|check|page|rulings|consult|recall|search_code|trace_path)")
 
 def log(kind, detail):
     try:
@@ -36,13 +48,22 @@ def main():
         sys.exit(0)
     if (data.get("tool_name") or "") != "Bash":
         sys.exit(0)
+    # Register this file on BOTH events. PreToolUse warns but must NOT log — a
+    # command that is then denied never ran, and counting it corrupts the ratio.
+    # PostToolUse logs, because by then the command has actually executed.
+    event = data.get("hook_event_name") or "PreToolUse"
     cmd = (data.get("tool_input") or {}).get("command") or ""
-    if CHEAP.search(cmd):
-        log("cheap_door", cmd)
-        sys.exit(0)
-    if not (READER.search(cmd) and CORPUS.search(cmd)):
-        sys.exit(0)
-    log("hand_read", cmd)
+    is_read = bool(READER.search(cmd) and CORPUS.search(cmd))
+    is_door = bool(CHEAP.search(cmd))
+    # ORDER MATTERS: a hand-read that merely MENTIONS a door is a hand-read.
+    if event == "PostToolUse":
+        if is_read:
+            log("hand_read", cmd)
+        elif is_door:
+            log("cheap_door", cmd)
+        sys.exit(0)                      # PostToolUse never warns; it only counts
+    if not is_read:
+        sys.exit(0)                      # PreToolUse warns on hand-reads only
     # additionalContext, NOT permissionDecisionReason — see gate 01's hook.
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
