@@ -16,11 +16,21 @@ import os, sys, glob, json, subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STE = os.path.join(HERE, "ste.py")
-MEDIAN_MAX = 24
+# S3 SAYS "a sentence over the word limit is RED". Until 2026-08-22 that was
+# FALSE. The gate red-ed on MEDIAN and on PERCENTAGE, so two short sentences of
+# padding hid a sentence of any length: it measured longest=300 and printed
+# "all within the structural limits". Measured on real canon, 118 of 600 GREEN
+# files held a sentence over 50 words. Every one was told it was within limits.
+#
+# The per-sentence rule is now the PRIMARY rule, because it is the one declared.
+# MEDIAN_MAX is 25, not 24 — the old 24 red-ed a file of exactly-25-word
+# sentences while reporting over_limit=0, an off-by-one against LIMIT itself.
+LIMIT_REF  = 25          # the STE descriptive limit, used in messages
+HARD_LIMIT = 60          # no single sentence may exceed this, ever
+MEDIAN_MAX = 25          # matches LIMIT; was 24, which contradicted it
 OVER_PCT_MAX = 50
 # One ambiguity signal per three sentences is dense. Deliberately loose: these
 # are SIGNALS, not a detector, so the threshold must not manufacture false reds.
-# no ambiguity threshold: the signal is reported, never judged (see below)
 
 def targets(paths):
     out = []
@@ -63,8 +73,15 @@ def main():
         # That is the same anti-correlation that got the passive metric deleted,
         # and this one reached the verdict, which is worse. It stays as a
         # measurement until it is proven; it does not decide anything.
-        s["_amb_rate"] = s.get("ambiguity_signals", 0) / max(1, s["scanned"])
-        if s["median_words"] > MEDIAN_MAX or s["over_limit_pct"] > OVER_PCT_MAX:
+        why = []
+        if s["longest"] > HARD_LIMIT:
+            why.append("a %dw sentence (hard limit %d)" % (s["longest"], HARD_LIMIT))
+        if s["median_words"] > MEDIAN_MAX:
+            why.append("median %dw" % s["median_words"])
+        if s["over_limit_pct"] > OVER_PCT_MAX:
+            why.append("%d%% over %dw" % (s["over_limit_pct"], LIMIT_REF))
+        if why:
+            s["_why"] = "; ".join(why)
             bad.append((name, s))
     # A file ste.py could not open never appears in the JSON at all, so it fell
     # into NEITHER bucket and was counted as SCORED. Measured in the real
@@ -80,9 +97,7 @@ def main():
         for f in unreadable[:5]:
             print("       %s" % f)
     for name, s in bad:
-        print("  RED  %-40s median %dw · %d%% over 25w · longest %dw · ambiguity %.2f/sentence"
-              % (os.path.basename(name), s["median_words"], s["over_limit_pct"],
-                 s["longest"], s.get("_amb_rate", 0)))
+        print("  RED  %-34s %s" % (os.path.basename(name), s["_why"]))
     if unreadable:
         print("VERDICT: RED — %d file(s) unreadable. An unread file is never a pass."
               % len(unreadable))
@@ -90,8 +105,6 @@ def main():
     if bad:
         print("VERDICT: RED — %d file(s) exceed the structural limits." % len(bad))
         print("         Shorten sentences. One idea each. Exact technical terms stay.")
-        print("         Ambiguity signals: sentence-initial pronouns, bare 'do this',")
-        print("         and vague scope ('as needed', 'etc'). Name the object instead.")
         return 1
     # THE FOUNDING RULE, and it was broken here until 2026-08-22. The old code
     # put no-prose files in `empty`, never looked at them again, and printed
@@ -105,11 +118,10 @@ def main():
         for name in empty[:5]:
             print("         no prose: %s" % os.path.basename(name))
         return 1
-    amb = sum(v.get("ambiguity_signals", 0) for v in scores.values())
-    print("VERDICT: GREEN — %d file(s) scored, all within the structural limits." % scored)
-    if amb:
-        print("         NOTE: %d ambiguity signal(s) counted, NOT judged — the signal"
-              " is not verdict-grade yet." % amb)
+    # The GREEN line must state the PROPOSITION IT CHECKED, not a broader one.
+    # "all within the structural limits" was a claim the gate had not tested.
+    print("VERDICT: GREEN — %d file(s) scored; no sentence over %dw, median <= %dw."
+          % (scored, HARD_LIMIT, MEDIAN_MAX))
     if empty:
         print("         NOTE: %d file(s) held no prose and were NOT scored." % len(empty))
     return 0

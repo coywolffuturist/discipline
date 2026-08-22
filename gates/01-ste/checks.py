@@ -10,14 +10,18 @@ invented here. Three attempts at inventing one were refuted.
 
 S1  an unreadable file is RED
 S2  a file with no prose is RED
-S3  a sentence over the limit is RED
+S3  ANY sentence over the hard limit is RED, whatever the median
+S6  the GREEN line states only the proposition it checked
+S7  a blockquoted list or table scores like an unquoted one
 S4  a changeset with no markdown is N/A, never RED
 S5  short clear prose is GREEN
 """
 CHECKS = {
     "S1": "an unreadable file is RED",
     "S2": "a file with no prose is RED",
-    "S3": "a sentence over the word limit is RED",
+    "S3": "ANY sentence over the hard limit is RED, whatever the median",
+    "S6": "the GREEN line states only the proposition it checked",
+    "S7": "a blockquoted list or table scores like an unquoted one",
     "S4": "a changeset with no markdown is N/A, never a blocked commit",
     "S5": "short clear prose is GREEN",
 }
