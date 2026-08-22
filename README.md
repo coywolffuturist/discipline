@@ -1,45 +1,33 @@
 # Discipline — the canonical gate repository
 
-> ## ⚠ REFUTED 2026-08-22 — DO NOT BUILD ON GATES 01 AND 02 YET
+> ## REPAIRED 2026-08-22 — 5 of 9 findings closed, 4 open
 >
-> An independent refuter broke both gates on nine points. the operator ordered this
-> banner before any repair. The structure survived; the instruments did not.
->
-> **Every measurement these gates produce is wrong toward green, and every
-> warning they produce reaches nobody.**
+> An independent refuter broke gates 01 and 02 on nine points. the operator ruled the
+> repair order. **The banner stays until every row reads CLOSED.**
 >
 > | # | failure | status |
 > |---|---|---|
-> | 1 | `lint_ste.py` prints GREEN and exits 0 on files it never scanned — the repo's own founding rule | OPEN |
-> | 2 | Both hooks write their advisory to `permissionDecisionReason`, a permission field with no model reader. Proven live 3x: hook fired, model saw nothing | OPEN |
-> | 3 | The passive metric is anti-correlated: 7/7 false positives ("open", "ten", "broken"), 9/10 false negatives | OPEN |
-> | 4 | A bullet list without trailing periods scores as one 35-word sentence and goes RED. Add periods, same list goes GREEN | OPEN |
-> | 5 | Blind to ambiguity — six unresolvable pronouns score perfect, and ambiguity is the failure the gate exists for | OPEN |
-> | 6 | `door_report.py` inverts its own ratio; a hand-read containing "search_code" logs as a cheap door | OPEN |
-> | 7 | Ladder numbers unreproducible: `corpus grep` measured 1,567 B not 400; corpus 5.4 MB not 4.3 MB | OPEN |
-> | 8 | **The tombstone-graph door does not exist.** `SKILL.md` instructs agents to call a command that is not there | OPEN |
-> | 9 | All five "wholly ours" claims broke, one self-refuting two paragraphs above itself | OPEN |
+> | 1 | `lint_ste.py` printed GREEN and exited 0 on files it never scanned — the repo's own founding rule | **CLOSED** · RED on zero scored, baited both ways |
+> | 2 | Both hooks wrote their advisory to `permissionDecisionReason`, which is discarded on "allow". Proven live 3x: hook fired, model saw nothing | **CLOSED** · moved to `additionalContext`, confirmed and tested |
+> | 3 | The passive metric was anti-correlated: 7/7 false positives, 9/10 false negatives | **CLOSED** · DELETED, not repaired |
+> | 7 | Ladder numbers unreproducible | **CLOSED** · re-measured with query, date and host; ~3,400x survives |
+> | 8 | The tombstone-graph door did not exist, and the skill told agents to call it | **CLOSED** · deleted everywhere, frontmatter included |
+> | 4 | A bullet list without trailing periods scores as one long sentence and goes RED; add periods and it goes GREEN | **OPEN** |
+> | 5 | Blind to ambiguity — six unresolvable pronouns score perfect, and ambiguity is the failure the gate exists for | **OPEN** |
+> | 6 | `door_report.py` inverts its own ratio; a hand-read containing "search_code" logs as a cheap door | **OPEN** |
+> | 9 | All five "wholly ours" claims broke, one self-refuting two paragraphs above itself | **OPEN** |
 >
-> **No tests ship with any script**, and **the completion table these gates name
-> as their enforcement has never been built**. So the chain today is: a
-> measurement nobody reads, feeding a table nobody writes.
+> **Also closed: no tests existed.** `test_gates.py` ships 17. On its first run
+> it caught three crash paths this repair had missed.
 >
-> **The meta-finding, which is the one to keep:** the same reasoning that shipped
-> these gates would certify them clean. This is the scar already on record — *an
-> eval can report health it does not have* — reproduced by the repo written to
-> prevent it.
+> **Still true and still unbuilt:** the completion table these gates name as
+> their enforcement does not exist, and neither hook is registered anywhere. So
+> the chain today is a measurement nobody reads, feeding a table nobody writes.
 >
-> **What survived the attack:** forms-not-tiers, gate atomicity, and the
-> declared-blind-spot discipline. Those could not be broken as ideas.
->
-> Repair order, ruled by the operator: (1) empty-scan, (2) hook channel, (3) delete
-> the passive metric, (4) re-measure the ladder with query and date recorded,
-> (5) one red-path test per script.
-
-
-    status: CANONICAL. Every gate lives here, one directory each.
-    origin: the operator's ruling, 2026-08-22 — "make a new one that becomes
-            canonical, structured on the breakdown you just did."
+> **The meta-finding, which is the one to keep:** the same reasoning that
+> shipped these gates would have certified them clean. That is the scar already
+> on record — *an eval can report health it does not have* — reproduced by the
+> repo written to prevent it.
 
 ## What this repo is
 

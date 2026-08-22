@@ -50,8 +50,9 @@ def main():
             empty.append(name); continue
         if s["median_words"] > MEDIAN_MAX or s["over_limit_pct"] > OVER_PCT_MAX:
             bad.append((name, s))
-    print("STE LINT: scanned %d file(s)%s" %
-          (len(files), (", %d with no prose" % len(empty)) if empty else ""))
+    scored = len(files) - len(empty)
+    print("STE LINT: %d file(s) given, %d SCORED, %d with no prose"
+          % (len(files), scored, len(empty)))
     for name, s in bad:
         print("  RED  %-46s median %dw · %d%% over 25w · longest %dw"
               % (os.path.basename(name), s["median_words"], s["over_limit_pct"], s["longest"]))
@@ -59,7 +60,21 @@ def main():
         print("VERDICT: RED — %d file(s) exceed the structural limits." % len(bad))
         print("         Shorten sentences. One idea each. Exact technical terms stay.")
         return 1
-    print("VERDICT: GREEN — %d file(s) within the structural limits." % (len(files) - len(empty)))
+    # THE FOUNDING RULE, and it was broken here until 2026-08-22. The old code
+    # put no-prose files in `empty`, never looked at them again, and printed
+    # "GREEN — 0 file(s)" with exit 0. A refuter found seven real canon pages
+    # that passed this way, including a mermaid diagram. A pre-commit hook wired
+    # to it returned green on a commit it never inspected.
+    if scored == 0:
+        print("VERDICT: RED — NOTHING WAS SCORED. %d file(s) hold no prose "
+              "(diagram-only, table-only, or fenced-only)." % len(empty))
+        print("         Scanning nothing is not a pass. Name the files or widen the path.")
+        for name in empty[:5]:
+            print("         no prose: %s" % os.path.basename(name))
+        return 1
+    print("VERDICT: GREEN — %d file(s) scored, all within the structural limits." % scored)
+    if empty:
+        print("         NOTE: %d file(s) held no prose and were NOT scored." % len(empty))
     return 0
 
 if __name__ == "__main__":

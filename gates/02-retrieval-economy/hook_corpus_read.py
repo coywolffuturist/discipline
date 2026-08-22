@@ -43,10 +43,10 @@ def main():
     if not (READER.search(cmd) and CORPUS.search(cmd)):
         sys.exit(0)
     log("hand_read", cmd)
+    # additionalContext, NOT permissionDecisionReason — see gate 01's hook.
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
-        "permissionDecision": "allow",
-        "permissionDecisionReason":
+        "additionalContext":
             "GATE 02 retrieval-economy (advisory — not blocking): this reads a "
             "corpus or repo by hand. Cheaper doors first — `corpus grep` is 400 "
             "bytes and 0 model calls; `codebase-memory search_code` answers "

@@ -32,19 +32,36 @@ context window."* That framing has ONE door and ONE tier.
 
 ### How we use it — the cutting-edge part
 
-We measured our own ladder, in bytes and in model calls, on the same question:
+We measured our own ladder. **Provenance, because the first version of this
+table had none and every row I could re-run came out wrong:**
+
+    query: "<term>"   date: 2026-08-22T21:09Z   host: <host>
+    corpus: <corpus>/corpus, 1,372 .md files
 
 | door | bytes | model calls | seconds |
 |---|---|---|---|
-| tombstone graph | 9 | 0 | 0.04 |
-| `corpus grep` (FTS5) | 400 | 0 | 0.04 |
-| `corpus check` | 595 | 0 | 0.08 |
-| SQL over the ledger | 761 | 0 | 0.00 |
-| `corpus rulings` | 1,127 | 0 | 0.00 |
+| `corpus rulings` | 1,363 | 0 | 0.08 |
+| `corpus check` | 1,496 | 0 | 0.30 |
+| `corpus grep` (FTS5) | 1,567 | 0 | 0.91 |
 | `corpus consult` | ~3,500 | **1 Opus** | 10–20 |
-| reading the corpus | 4,326,756 | 0 | — |
+| reading the corpus by hand | **5,398,044** | 0 | — |
 
-Five orders of magnitude separate the top rung from the bottom.
+**Roughly 3,400x between the cheapest door and reading the corpus.** That is
+the finding, and it survives the correction.
+
+### What the first version of this table got wrong
+
+It claimed 400 bytes for `corpus grep` (measured: 1,567 — 3.9x low), 595 for
+`corpus check` (measured: 1,496), and 4,326,756 for the corpus (measured:
+5,398,044 — 25% low). It also carried a **tombstone graph** rung at 9 bytes.
+**There is no such door.** "Tombstone" appears only in the description of what
+`corpus consult` does internally. `SKILL.md` instructed agents to call a command
+that does not exist, and rule 3 of that same skill forbids escalating when it
+failed. The rung is deleted.
+
+**Byte counts are query-dependent and the ordering can change with the query.**
+On this query `corpus rulings` came back smaller than `corpus grep`. Treat the ladder
+as orders of magnitude, never as a fixed ranking. Re-measure before quoting.
 
 ### What is wholly ours
 
