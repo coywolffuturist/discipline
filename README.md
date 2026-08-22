@@ -1,5 +1,42 @@
 # Discipline — the canonical gate repository
 
+> ## ⚠ REFUTED 2026-08-22 — DO NOT BUILD ON GATES 01 AND 02 YET
+>
+> An independent refuter broke both gates on nine points. the operator ordered this
+> banner before any repair. The structure survived; the instruments did not.
+>
+> **Every measurement these gates produce is wrong toward green, and every
+> warning they produce reaches nobody.**
+>
+> | # | failure | status |
+> |---|---|---|
+> | 1 | `lint_ste.py` prints GREEN and exits 0 on files it never scanned — the repo's own founding rule | OPEN |
+> | 2 | Both hooks write their advisory to `permissionDecisionReason`, a permission field with no model reader. Proven live 3x: hook fired, model saw nothing | OPEN |
+> | 3 | The passive metric is anti-correlated: 7/7 false positives ("open", "ten", "broken"), 9/10 false negatives | OPEN |
+> | 4 | A bullet list without trailing periods scores as one 35-word sentence and goes RED. Add periods, same list goes GREEN | OPEN |
+> | 5 | Blind to ambiguity — six unresolvable pronouns score perfect, and ambiguity is the failure the gate exists for | OPEN |
+> | 6 | `door_report.py` inverts its own ratio; a hand-read containing "search_code" logs as a cheap door | OPEN |
+> | 7 | Ladder numbers unreproducible: `corpus grep` measured 1,567 B not 400; corpus 5.4 MB not 4.3 MB | OPEN |
+> | 8 | **The tombstone-graph door does not exist.** `SKILL.md` instructs agents to call a command that is not there | OPEN |
+> | 9 | All five "wholly ours" claims broke, one self-refuting two paragraphs above itself | OPEN |
+>
+> **No tests ship with any script**, and **the completion table these gates name
+> as their enforcement has never been built**. So the chain today is: a
+> measurement nobody reads, feeding a table nobody writes.
+>
+> **The meta-finding, which is the one to keep:** the same reasoning that shipped
+> these gates would certify them clean. This is the scar already on record — *an
+> eval can report health it does not have* — reproduced by the repo written to
+> prevent it.
+>
+> **What survived the attack:** forms-not-tiers, gate atomicity, and the
+> declared-blind-spot discipline. Those could not be broken as ideas.
+>
+> Repair order, ruled by the operator: (1) empty-scan, (2) hook channel, (3) delete
+> the passive metric, (4) re-measure the ladder with query and date recorded,
+> (5) one red-path test per script.
+
+
     status: CANONICAL. Every gate lives here, one directory each.
     origin: the operator's ruling, 2026-08-22 — "make a new one that becomes
             canonical, structured on the breakdown you just did."
