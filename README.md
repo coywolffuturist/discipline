@@ -1,33 +1,48 @@
 # Discipline — the canonical gate repository
 
-> ## REPAIRED 2026-08-22 — 5 of 9 findings closed, 4 open
+> ## THREE REFUTATIONS. SCOPE CUT, NOT REPAIRED AGAIN. 2026-08-22
 >
-> An independent refuter broke gates 01 and 02 on nine points. the operator ruled the
-> repair order. **The banner stays until every row reads CLOSED.**
+> Three independent refuters attacked these two gates. Each one found the
+> previous repair incomplete, AND found the instrument built to verify it false.
 >
-> | # | failure | status |
-> |---|---|---|
-> | 1 | `lint_ste.py` printed GREEN and exited 0 on files it never scanned — the repo's own founding rule | **CLOSED** · RED on zero scored, baited both ways |
-> | 2 | Both hooks wrote their advisory to `permissionDecisionReason`, which is discarded on "allow". Proven live 3x: hook fired, model saw nothing | **CLOSED** · moved to `additionalContext`, confirmed and tested |
-> | 3 | The passive metric was anti-correlated: 7/7 false positives, 9/10 false negatives | **CLOSED** · DELETED, not repaired |
-> | 7 | Ladder numbers unreproducible | **CLOSED** · re-measured with query, date and host; ~3,400x survives |
-> | 8 | The tombstone-graph door did not exist, and the skill told agents to call it | **CLOSED** · deleted everywhere, frontmatter included |
-> | 4 | A bullet list without trailing periods scores as one long sentence and goes RED; add periods and it goes GREEN | **OPEN** |
-> | 5 | Blind to ambiguity — six unresolvable pronouns score perfect, and ambiguity is the failure the gate exists for | **OPEN** |
-> | 6 | `door_report.py` inverts its own ratio; a hand-read containing "search_code" logs as a cheap door | **OPEN** |
-> | 9 | All five "wholly ours" claims broke, one self-refuting two paragraphs above itself | **OPEN** |
+> **What was DELETED rather than fixed:**
 >
-> **Also closed: no tests existed.** `test_gates.py` ships 17. On its first run
-> it caught three crash paths this repair had missed.
+> | thing | why |
+> |---|---|
+> | the passive-voice metric | flagged 7/7 correct sentences, missed 9/10 real passives — anti-correlated |
+> | the ambiguity signal | flagged 10/10 CLEAR sentences, missed 12/12 ambiguous ones — anti-correlated, and it had reached the verdict |
+> | gate 02's hook + report | leaked a credential verbatim to a mode-0644 file; 12 of 25 commands misclassified, systematically; writer wrote `shape` while reader read `detail`, so every report printed "(no detail recorded)" |
+> | `mutate_test.py` | its mutations were derived from its own tests, so "13 of 13 caught" measured nothing. A refuter wrote 24 of its own against the same green suite and **17 escaped** — including the 25-word limit itself |
 >
-> **Still true and still unbuilt:** the completion table these gates name as
-> their enforcement does not exist, and neither hook is registered anywhere. So
-> the chain today is a measurement nobody reads, feeding a table nobody writes.
+> **The pattern, stated plainly.** Each layer certified the one below using the
+> same reasoning that shipped it. A repo written to stop *an eval reporting
+> health it does not have* produced a gate that did exactly that, then a test
+> suite that did it again, then a mutation harness that did it a third time.
+> **Adding a fifth layer would repeat it.** The scope was cut instead.
 >
-> **The meta-finding, which is the one to keep:** the same reasoning that
-> shipped these gates would have certified them clean. That is the scar already
-> on record — *an eval can report health it does not have* — reproduced by the
-> repo written to prevent it.
+> **What survives, and it is small:** gate 01 scores sentence length. The
+> splitter handles list markers, headings, closing marks, abbreviations and
+> frontmatter. Unreadable files are RED. A code-only changeset is N/A, not a
+> blocked commit. The hook advisory reaches `additionalContext`, a channel the
+> model actually reads. 22 tests.
+>
+> **What is still KNOWN BROKEN and NOT fixed:**
+>
+> - Blockquoted lists (`> - item`) still flip verdict on punctuation. Finding 4
+>   is NOT closed; only the plain-list marker was.
+> - `lint_ste.py` reads the WORKTREE while a commit contains the INDEX, so
+>   staging bad prose and then editing the file passes GREEN on bytes that were
+>   never committed. No adversary required.
+> - Extensions `.MD`, `.markdown`, `.mdx` are not matched, and the N/A message
+>   claims "no markdown" when there was some.
+> - An unreadable DIRECTORY reports N/A and exits 0. Our own rule calls that
+>   BLOCKED.
+> - The 25-word limit and both lint thresholds have NO test. They can be set to
+>   100000 and the suite stays green.
+>
+> **Neither hook is registered anywhere. The completion table these gates name
+> as their enforcement does not exist.** Nothing here is load-bearing, and the
+> author does not claim it is.
 
 ## What this repo is
 
