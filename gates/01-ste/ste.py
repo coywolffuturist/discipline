@@ -54,31 +54,20 @@ FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.S)
 SUBORD = re.compile(r"\b(?:which|that|because|although|while|whereas|since|unless|whether)\b", re.I)
 EMDASH = re.compile(r"—")
 
-# FINDING 5, closed 2026-08-22. The gate exists because two agents misread their
-# SCOPE. That is an ambiguity failure, and the gate measured no proxy for it:
-# six unresolvable pronouns scored perfect.
+# THE AMBIGUITY SIGNAL WAS DELETED 2026-08-22, after three refutations.
+# Not repaired. Deleted, exactly like the passive metric before it.
 #
-# THIS IS A SIGNAL, NOT A DETECTOR. Real reference resolution needs a parser.
-# What is counted here is deterministic and checkable:
-#   - a sentence-initial pronoun ALWAYS points outside its own sentence
-#   - a bare demonstrative ("do this", "fix that") names no object
-#   - vague-scope words defer the boundary to the reader, which is the exact
-#     move that let an agent stop early and call it done
-# DETERMINER vs PRONOUN. The first version matched This/That/These/Those
-# regardless of what followed, so "This parser rejects..." — a determiner with
-# no ambiguity at all — scored as an open reference. Clear technical writing hit
-# 0.80 signals per sentence and went RED.
-# It/They/Them ARE pronouns wherever they open a sentence. A demonstrative is a
-# pronoun only when a VERB follows it; before a noun it is a determiner.
-BARE_PRONOUN = re.compile(r"^\s*(?:It|They|Them|Its|Their)\b")
-DEM_VERB = re.compile(r"^\s*(?:This|That|These|Those)\s+(?:is|are|was|were|will|would|"
-                      r"should|can|could|may|might|has|have|had|does|do|did|broke|"
-                      r"failed|means|makes|gives|works|runs|needs|requires|causes|"
-                      r"happens|applies|comes|goes|seems|looks|matters|helps)\b", re.I)
-BARE_DEM = re.compile(r"\b(?:do|fix|check|run|handle|review|update|address)\s+(?:this|that|it|these|those)\b[^\w]", re.I)
-VAGUE = re.compile(r"\b(?:as needed|if necessary|where relevant|as appropriate|"
-                   r"and so on|etc\b|various|several|some other|suitable|accordingly|"
-                   r"the rest|and more|among others)", re.I)
+# It was anti-correlated with the thing it named, measured: it flagged 10 of 10
+# CLEAR sentences ("Run this script before the build") and missed 12 of 12
+# genuinely AMBIGUOUS ones ("The other one failed", "Copy the former into the
+# latter"). The determiner-vs-pronoun bug the repair claimed to fix survived in
+# a second regex, where a character class meant to exclude a following noun
+# matched the SPACE before it instead.
+#
+# The gate exists because two agents misread their SCOPE. That failure is real
+# and this instrument did not measure it. Detecting reference ambiguity needs a
+# parser. Until this gate has one, it measures sentence length and nothing else,
+# and it says so rather than shipping a number that points the wrong way.
 
 def sentences(text):
     # strip fenced code and tables — not prose, must not be scored. An UNCLOSED
@@ -102,16 +91,12 @@ def score(text):
         # scanned nothing must never read as healthy.
         return {"scanned": 0, "status": "EMPTY — nothing scored, this is not a pass"}
     lens = [len(s.split()) for s in sents]
-    stacked, dashes, openref, bare, vague = 0, 0, 0, 0, 0
+    stacked, dashes = 0, 0
     worst = ("", 0)
     for s in sents:
         if len(SUBORD.findall(s)) >= 2:
             stacked += 1
         dashes += len(EMDASH.findall(s))
-        if BARE_PRONOUN.search(s) or DEM_VERB.search(s):
-            openref += 1
-        bare += len(BARE_DEM.findall(s + " "))
-        vague += len(VAGUE.findall(s))
         if len(s.split()) > worst[1]:
             worst = (s, len(s.split()))
     over = [n for n in lens if n > LIMIT]
@@ -123,10 +108,6 @@ def score(text):
         "over_limit_pct": round(100.0 * len(over) / len(sents)),
         "stacked_clauses": stacked,
         "em_dashes": dashes,
-        "open_reference": openref,
-        "bare_demonstrative": bare,
-        "vague_scope": vague,
-        "ambiguity_signals": openref + bare + vague,
         "longest_sentence": worst[0][:120],
     }
 
@@ -155,9 +136,9 @@ def main():
         if s.get("scanned") == 0:
             print("%-40s %s" % (name, s["status"]))
             continue
-        print("%-40s scanned %d · median %dw · longest %dw · over-%d %d%% · stacked %d · ambig %d"
+        print("%-40s scanned %d · median %dw · longest %dw · over-%d %d%% · stacked %d"
               % (name, s["scanned"], s["median_words"], s["longest"], LIMIT,
-                 s["over_limit_pct"], s["stacked_clauses"], s["ambiguity_signals"]))
+                 s["over_limit_pct"], s["stacked_clauses"]))
         if s["longest"] > LIMIT * 2:
             print("    longest: %s..." % s["longest_sentence"])
     return 0
