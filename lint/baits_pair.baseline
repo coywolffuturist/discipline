@@ -1,0 +1,7 @@
+# lint/baits_pair — the historical debt, and the ONLY direction it may move is DOWN.
+#
+# Checks that exist without a bait. The gate fails on any NEW unbaited check.
+# Deleting this file does not reset the ratchet: every check then reads as new.
+#
+# Recorded 2026-08-22, after three refutations of hand-built verification.
+# Nothing is listed yet. Gate 01 shipped with all five checks baited.
