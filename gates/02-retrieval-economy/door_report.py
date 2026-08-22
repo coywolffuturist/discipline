@@ -20,7 +20,12 @@ LOG = os.path.expanduser("~/.coywolf/state/door_use.jsonl")
 def main():
     hours = 24
     if "--since-hours" in sys.argv:
-        hours = int(sys.argv[sys.argv.index("--since-hours") + 1])
+        i = sys.argv.index("--since-hours") + 1
+        try:
+            hours = int(sys.argv[i])
+        except (IndexError, ValueError):
+            print("RED  --since-hours needs a whole number of hours")
+            return 1
     cutoff = time.time() - hours * 3600
     if not os.path.exists(LOG):
         print("RED  no door log at %s" % LOG)
@@ -36,12 +41,14 @@ def main():
             continue
         if d.get("ts", 0) < cutoff:
             continue
-        if d["kind"] == "cheap_door":
+        kind = d.get("kind")
+        if kind == "cheap_door":
             cheap += 1
-        else:
+        elif kind == "hand_read":
             hand += 1
             if len(samples) < 3:
-                samples.append(d["detail"])
+                samples.append(d.get("detail", "(no detail recorded)"))
+        # any other shape is a truncated write — skipped, and counted below
     total = cheap + hand
     if total == 0:
         print("RED  0 events in the last %dh — nothing measured, which is not a pass." % hours)

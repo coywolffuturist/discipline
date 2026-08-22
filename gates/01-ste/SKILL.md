@@ -13,7 +13,9 @@ this file. This is the working standard.
 1. **Short sentences. One idea per sentence.** The limit is 25 words for a
    descriptive sentence, 20 for an instruction. Score, do not guess.
 2. **Active voice. Say who does what.** "The parser dropped 28 claims", not
-   "28 claims were dropped".
+   "28 claims were dropped". **This one is NOT measured.** The passive detector
+   was deleted on 2026-08-22 after it proved anti-correlated with passive voice.
+   Detecting it needs a parser, not a regex. Judge this rule yourself.
 3. **Plain words — EXCEPT where a technical term is required to be precise.**
    Then use the exact term. **Never trade accuracy for simplicity.** This
    exception is the operator's and it is load-bearing.

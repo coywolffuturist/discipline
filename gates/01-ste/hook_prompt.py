@@ -34,6 +34,8 @@ def main():
     if (data.get("tool_name") or "") not in ("Agent", "Task"):
         sys.exit(0)
     prompt = (data.get("tool_input") or {}).get("prompt") or ""
+    if not isinstance(prompt, str):
+        sys.exit(0)                      # fail-open: the contract says never stop work
     if len(prompt.split()) < 40:
         sys.exit(0)                      # short prompts are the goal, not a finding
     try:
@@ -49,14 +51,16 @@ def main():
         notes.append("median %dw/sentence" % s["median_words"])
     if s["over_limit_pct"] >= OVER_PCT_WARN:
         notes.append("%d%% of sentences over 25w" % s["over_limit_pct"])
-    if s["stacked_clauses"] >= 3:
+    if s.get("stacked_clauses", 0) >= 3:
         notes.append("%d stacked-clause sentences" % s["stacked_clauses"])
     if not notes:
         sys.exit(0)
+    # additionalContext, NOT permissionDecisionReason. The reason field is
+    # discarded on "allow" and renders only in the deny/ask UI. Using it here
+    # produced a hook that fired, logged, and reached nobody.
     print(json.dumps({"hookSpecificOutput": {
         "hookEventName": "PreToolUse",
-        "permissionDecision": "allow",
-        "permissionDecisionReason":
+        "additionalContext":
             "STE (gate 01, advisory — not blocking): " + " · ".join(notes) +
             ". An agent cannot cheaply ask what you meant. Shorter sentences, one "
             "instruction each. Record the score in the completion table."
