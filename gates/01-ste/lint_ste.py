@@ -18,6 +18,9 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 STE = os.path.join(HERE, "ste.py")
 MEDIAN_MAX = 24
 OVER_PCT_MAX = 50
+# One ambiguity signal per three sentences is dense. Deliberately loose: these
+# are SIGNALS, not a detector, so the threshold must not manufacture false reds.
+AMBIG_PER_SENT_MAX = 0.34
 
 def targets(paths):
     out = []
@@ -48,17 +51,23 @@ def main():
     for name, s in scores.items():
         if s.get("scanned", 0) == 0:
             empty.append(name); continue
-        if s["median_words"] > MEDIAN_MAX or s["over_limit_pct"] > OVER_PCT_MAX:
+        amb = s.get("ambiguity_signals", 0) / max(1, s["scanned"])
+        if (s["median_words"] > MEDIAN_MAX or s["over_limit_pct"] > OVER_PCT_MAX
+                or amb > AMBIG_PER_SENT_MAX):
+            s["_amb_rate"] = amb
             bad.append((name, s))
     scored = len(files) - len(empty)
     print("STE LINT: %d file(s) given, %d SCORED, %d with no prose"
           % (len(files), scored, len(empty)))
     for name, s in bad:
-        print("  RED  %-46s median %dw · %d%% over 25w · longest %dw"
-              % (os.path.basename(name), s["median_words"], s["over_limit_pct"], s["longest"]))
+        print("  RED  %-40s median %dw · %d%% over 25w · longest %dw · ambiguity %.2f/sentence"
+              % (os.path.basename(name), s["median_words"], s["over_limit_pct"],
+                 s["longest"], s.get("_amb_rate", 0)))
     if bad:
         print("VERDICT: RED — %d file(s) exceed the structural limits." % len(bad))
         print("         Shorten sentences. One idea each. Exact technical terms stay.")
+        print("         Ambiguity signals: sentence-initial pronouns, bare 'do this',")
+        print("         and vague scope ('as needed', 'etc'). Name the object instead.")
         return 1
     # THE FOUNDING RULE, and it was broken here until 2026-08-22. The old code
     # put no-prose files in `empty`, never looked at them again, and printed

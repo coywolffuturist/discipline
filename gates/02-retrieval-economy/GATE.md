@@ -63,19 +63,28 @@ failed. The rung is deleted.
 On this query `corpus rulings` came back smaller than `corpus grep`. Treat the ladder
 as orders of magnitude, never as a fixed ranking. Re-measure before quoting.
 
-### What is wholly ours
+### What is ours — corrected 2026-08-22, after a refuter broke all three claims
 
-Three findings, none of them standard practice:
+The first version claimed three findings as our own. **All three were
+already standard, and one refuted itself two paragraphs above its own heading.**
 
-1. **The smart door is the MOST expensive, not the first.** `corpus consult` runs
-   the full retrieval stack with a rerank, and it spends an Opus call. Reaching
-   for it when a deterministic door would answer IS the waste. Popular RAG
-   framing cannot express this, because it has only one door.
-2. **Zero hits is decision-grade.** A lexical index can say "no page contains
-   this word." A vector index structurally cannot — it always returns its top
-   *k*. We treat an empty lexical result as a real answer and write it down.
-3. **Code is a graph, not a corpus.** `codebase-memory` answers structural
-   questions for roughly 1% of the tokens that reading the files costs.
+- *"The smart door is the most expensive, not the first."* **Self-refuting.**
+  This document already says the idea is borrowed from query planning, where
+  cost-ordered escalation with the expensive path last IS the borrowed thing.
+- *"Zero hits is decision-grade; a vector index cannot say that."* **Already
+  ours in the boring sense, and not a discovery.** It is why hybrid retrieval
+  exists, and our own `<corpus>/organs/lexical.py` carried the comment
+  *"Empty list is a real answer, not a failure"* before this gate was written.
+- *"Code is a graph, not a corpus."* **The founding premise of ctags and LSP.**
+
+**What we can actually evidence:** the LADDER IS MEASURED ON OUR OWN ESTATE,
+with the query, date and host recorded. That is not a novel idea; it is a
+number nobody else can have, and it is the thing that changes behaviour. A
+principle everyone agrees with did not stop this author reading corpora by hand
+for a full session. The measured 3,400x did.
+
+**No novelty is claimed anywhere in this gate.** If a claim of that kind
+reappears here, it needs a citation or it comes out.
 
 ### The evidence that this gate is needed
 

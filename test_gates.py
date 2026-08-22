@@ -109,6 +109,75 @@ r = run([STE, "--stdin", "--json"], stdin="The door is open. There are ten items
 check("ste: the anti-correlated passive metric is GONE",
       "passive" not in r.stdout)
 
+# ---------- FINDING 4: the punctuation flip ----------
+with tempfile.TemporaryDirectory() as d:
+    items = ["Read the file", "Score the prompt", "Put the number in the table",
+             "Stop when the gate is red", "Tell the operator what you found"]
+    open(os.path.join(d, "noperiod.md"), "w").write("\n".join("- " + i for i in items) + "\n")
+    open(os.path.join(d, "period.md"), "w").write("\n".join("- " + i + "." for i in items) + "\n")
+    a = run([LINT, os.path.join(d, "noperiod.md")])
+    b = run([LINT, os.path.join(d, "period.md")])
+    check("F4: a bullet list scores the SAME with and without periods",
+          a.returncode == b.returncode == 0)
+
+r = run([STE, "--stdin", "--json"], stdin="Do it at 3 a.m. and check e.g. the log.\n")
+try:
+    n = json.loads(r.stdout)["<stdin>"]["scanned"]
+except Exception:
+    n = -1
+check("F4: abbreviations do not split a sentence", n == 1, "scanned=%s" % n)
+
+# ---------- FINDING 5: ambiguity is measured and reaches the verdict ----------
+r = run([STE, "--stdin", "--json"],
+        stdin="It broke it. Fix it before it runs again. Handle this as needed.\n")
+try:
+    sig = json.loads(r.stdout)["<stdin>"]["ambiguity_signals"]
+except Exception:
+    sig = 0
+check("F5: unresolvable pronouns raise ambiguity signals", sig >= 3, "signals=%s" % sig)
+
+with tempfile.TemporaryDirectory() as d:
+    open(os.path.join(d, "amb.md"), "w").write(
+        "It broke it. Fix this as needed. Do that if necessary. They know.\n")
+    r = run([LINT, os.path.join(d, "amb.md")])
+    check("F5: dense ambiguity makes the VERDICT red", r.returncode == 1 and "ambiguity" in r.stdout)
+
+with tempfile.TemporaryDirectory() as d:
+    open(os.path.join(d, "clear.md"), "w").write(
+        "The parser dropped 28 claims. The gate scores each prompt. "
+        "The operator reads the table.\n")
+    r = run([LINT, os.path.join(d, "clear.md")])
+    check("F5: clear prose is NOT flagged (no false red)", r.returncode == 0)
+
+# ---------- FINDING 6: the ratio must not invert ----------
+def classify(cmd):
+    env2 = os.environ.copy(); env2["HOME"] = tempfile.mkdtemp()
+    run([HOOK2], stdin=json.dumps({"tool_name": "Bash", "hook_event_name": "PostToolUse",
+                                   "tool_input": {"command": cmd}}), env=env2)
+    log = os.path.join(env2["HOME"], ".coywolf/state/door_use.jsonl")
+    if not os.path.exists(log):
+        return "none"
+    return json.loads(open(log).read().strip().split("\n")[-1])["kind"]
+
+check("F6: a hand-read MENTIONING search_code counts as a hand-read",
+      classify("grep -rn search_code ~/coywolf/repos/<corpus>/organs/x.py") == "hand_read")
+check("F6: `cd repo && cat file` is counted at all",
+      classify("cd ~/repos/<project> && cat model.py") == "hand_read")
+check("F6: a real cheap door counts as a cheap door",
+      classify("corpus grep ruling") == "cheap_door")
+
+env3 = os.environ.copy(); env3["HOME"] = tempfile.mkdtemp()
+r = run([HOOK2], stdin=json.dumps({"tool_name": "Bash", "hook_event_name": "PreToolUse",
+        "tool_input": {"command": "cat ~/coywolf/repos/x/y.md"}}), env=env3)
+logged = os.path.exists(os.path.join(env3["HOME"], ".coywolf/state/door_use.jsonl"))
+check("F6: PreToolUse warns but does NOT log (a denied command never ran)",
+      "additionalContext" in r.stdout and not logged)
+
+# ---------- FINDING 9: no unfalsifiable novelty claims survive ----------
+for g in ("01-ste", "02-retrieval-economy"):
+    txt = open(os.path.join(G, g, "GATE.md"), encoding="utf-8").read()
+    check("F9: %s claims nothing 'wholly ours'" % g, "wholly ours" not in txt.lower())
+
 bad = [n for n, ok, _ in results if not ok]
 print("\n%s  %d/%d" % ("TESTS PASS" if not bad else "TESTS FAIL", len(results) - len(bad), len(results)))
 for n in bad:

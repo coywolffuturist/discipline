@@ -31,17 +31,49 @@ LIMIT = 25
 # the wrong way is worse than no number, because it gets pasted into a table as
 # evidence. Detecting passive voice needs a parser, not a regex; until this gate
 # has one, it measures only what it can measure honestly.
-SENT = re.compile(r"(?<=[.!?])\s+|\n{2,}")
-# a stacked-clause proxy: commas + subordinators inside one sentence
+# FINDING 4, closed 2026-08-22. The old splitter broke only on [.!?] or a blank
+# line, so a markdown bullet list with no trailing periods parsed as ONE long
+# sentence and went RED — while the identical list WITH periods went GREEN. The
+# verdict flipped on punctuation the content does not need. A list item is a
+# sentence whether or not it ends in a full stop, so the marker itself is a
+# boundary. Abbreviations are protected first, or "3 a.m." splits into two.
+ABBREV = re.compile(r"\b(?:e\.g|i\.e|etc|vs|cf|approx|a\.m|p\.m|Dr|Mr|Ms|St|Fig|No)\.", re.I)
+LIST_MARK = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+", re.M)
+HEADING = re.compile(r"^#{1,6}\s+", re.M)
+SENT = re.compile(r"(?<=[.!?])\s+|\n{2,}|\x00")
+# a stacked-clause proxy: subordinators inside one sentence
 SUBORD = re.compile(r"\b(?:which|that|because|although|while|whereas|since|unless|whether)\b", re.I)
 EMDASH = re.compile(r"—")
 
+# FINDING 5, closed 2026-08-22. The gate exists because two agents misread their
+# SCOPE. That is an ambiguity failure, and the gate measured no proxy for it:
+# six unresolvable pronouns scored perfect.
+#
+# THIS IS A SIGNAL, NOT A DETECTOR. Real reference resolution needs a parser.
+# What is counted here is deterministic and checkable:
+#   - a sentence-initial pronoun ALWAYS points outside its own sentence
+#   - a bare demonstrative ("do this", "fix that") names no object
+#   - vague-scope words defer the boundary to the reader, which is the exact
+#     move that let an agent stop early and call it done
+OPEN_PRONOUN = re.compile(r"^\s*(?:It|This|That|These|Those|They|Them|Its|Their)\b")
+BARE_DEM = re.compile(r"\b(?:do|fix|check|run|handle|review|update|address)\s+(?:this|that|it|these|those)\b[^\w]", re.I)
+VAGUE = re.compile(r"\b(?:as needed|if necessary|where relevant|as appropriate|"
+                   r"and so on|etc\b|various|several|some other|suitable|accordingly|"
+                   r"the rest|and more|among others)", re.I)
+
 def sentences(text):
-    # strip code blocks and tables — they are not prose and must not be scored
-    text = re.sub(r"```.*?```", " ", text, flags=re.S)
+    # strip fenced code and tables — not prose, must not be scored. An UNCLOSED
+    # fence used to swallow the rest of the file, so only balanced fences strip.
+    if text.count("```") % 2 == 0:
+        text = re.sub(r"```.*?```", " ", text, flags=re.S)
+    else:
+        text = re.sub(r"```[^\n]*", " ", text)
     text = "\n".join(l for l in text.split("\n") if not l.strip().startswith("|"))
-    parts = [s.strip() for s in SENT.split(text) if s.strip()]
-    return [s for s in parts if len(s.split()) > 2]
+    text = ABBREV.sub(lambda m: m.group(0).replace(".", "\x01"), text)   # protect
+    text = LIST_MARK.sub("\x00", text)                                   # list item = boundary
+    text = HEADING.sub("\x00", text)
+    parts = [p.replace("\x01", ".").strip() for p in SENT.split(text) if p.strip()]
+    return [p for p in parts if len(p.split()) > 2]
 
 def score(text):
     sents = sentences(text)
@@ -50,12 +82,16 @@ def score(text):
         # scanned nothing must never read as healthy.
         return {"scanned": 0, "status": "EMPTY — nothing scored, this is not a pass"}
     lens = [len(s.split()) for s in sents]
-    stacked, dashes = 0, 0
+    stacked, dashes, openref, bare, vague = 0, 0, 0, 0, 0
     worst = ("", 0)
     for s in sents:
         if len(SUBORD.findall(s)) >= 2:
             stacked += 1
         dashes += len(EMDASH.findall(s))
+        if OPEN_PRONOUN.search(s):
+            openref += 1
+        bare += len(BARE_DEM.findall(s + " "))
+        vague += len(VAGUE.findall(s))
         if len(s.split()) > worst[1]:
             worst = (s, len(s.split()))
     over = [n for n in lens if n > LIMIT]
@@ -67,6 +103,10 @@ def score(text):
         "over_limit_pct": round(100.0 * len(over) / len(sents)),
         "stacked_clauses": stacked,
         "em_dashes": dashes,
+        "open_reference": openref,
+        "bare_demonstrative": bare,
+        "vague_scope": vague,
+        "ambiguity_signals": openref + bare + vague,
         "longest_sentence": worst[0][:120],
     }
 
@@ -95,9 +135,9 @@ def main():
         if s.get("scanned") == 0:
             print("%-40s %s" % (name, s["status"]))
             continue
-        print("%-40s scanned %d · median %dw · longest %dw · over-%d %d%% · stacked %d · em-dash %d"
+        print("%-40s scanned %d · median %dw · longest %dw · over-%d %d%% · stacked %d · ambig %d"
               % (name, s["scanned"], s["median_words"], s["longest"], LIMIT,
-                 s["over_limit_pct"], s["stacked_clauses"], s["em_dashes"]))
+                 s["over_limit_pct"], s["stacked_clauses"], s["ambiguity_signals"]))
         if s["longest"] > LIMIT * 2:
             print("    longest: %s..." % s["longest_sentence"])
     return 0
