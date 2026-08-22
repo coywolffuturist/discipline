@@ -77,6 +77,13 @@ def sentences(text):
         text = re.sub(r"```.*?```", " ", text, flags=re.S)
     else:
         text = re.sub(r"```[^\n]*", " ", text)
+    # BLOCKQUOTES ARE UNWRAPPED FIRST. Everything below — the table stripper,
+    # the list-marker boundary, the heading boundary — matched on the start of
+    # the line, so a "> " prefix hid all three. A blockquoted table collapsed
+    # into one 113-word "sentence" and red-ed this repo's own README, and a
+    # blockquoted list flipped verdict on a trailing full stop. Same defect,
+    # three symptoms, one cause.
+    text = "\n".join(re.sub(r"^\s{0,3}>\s?", "", l) for l in text.split("\n"))
     text = "\n".join(l for l in text.split("\n") if not l.strip().startswith("|"))
     text = ABBREV.sub(lambda m: m.group(0).replace(".", "\x01"), text)   # protect
     text = LIST_MARK.sub("\x00", text)                                   # list item = boundary

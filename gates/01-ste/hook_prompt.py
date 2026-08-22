@@ -3,8 +3,12 @@
 # 2026-08-22: "warn + score in completion table".
 """hook_prompt.py — score a subagent prompt BEFORE the subagent spawns.
 
-WHY HERE AND NOT ANYWHERE ELSE. The industry checks finished manuals. This
-checks the instruction while it can still be rewritten. On 2026-08-22 seven
+WHY HERE. The instruction can still be rewritten at this moment.
+(An earlier version of this docstring claimed the industry checks only finished
+manuals, and that checking earlier was novel. GATE.md retracts that as FALSE —
+commercial tooling runs in the editor as the writer types. The retraction and
+the claim shipped in the same commit. The claim is deleted here.)
+On 2026-08-22 seven
 long, nested agent prompts were written; two agents misread their scope and one
 reported success on partial work. That is the exact failure ASD-STE100 was
 invented to prevent, in a domain the standard has never been applied to.

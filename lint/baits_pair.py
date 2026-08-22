@@ -57,7 +57,16 @@ def scan():
             for label in CALL.findall(line):
                 b = BAIT.match(label)
                 if b:
-                    baits.add(b.group(1).upper())
+                    bid = b.group(1).upper()
+                    baits.add(bid)
+                    # A SUB-BAIT COVERS ITS PARENT. "BAIT S3a" and "BAIT S3b"
+                    # bait check S3. The id regex allows a trailing letter for
+                    # exactly this reason: one check often needs several baits,
+                    # and splitting them is what lets a bait name WHICH knob is
+                    # alive. Without this the rule demanded a bait literally
+                    # named S3 and reported a fully baited check as unbaited.
+                    if bid[-1].isalpha() and any(c.isdigit() for c in bid):
+                        baits.add(bid.rstrip("ABCDEFGHIJKLMNOPQRSTUVWXYZ"))
                     continue
                 i = IDENT.match(label)
                 if i:
@@ -92,6 +101,16 @@ def main():
         for u in new:
             print("     %-6s %s" % (u, asserts[u]))
         print("     Write BAIT %s and see it fail before this ships." % new[0])
+        return 1
+    # THE BASELINE MAY ONLY SHRINK. Deleting it was baited; APPENDING to it was
+    # not, and appending one line silences the rule. The count is pinned here in
+    # code, so growing the file fails until a human changes this number too.
+    BASELINE_MAX = 0
+    if len(debt) > BASELINE_MAX:
+        print("RED  the baseline holds %d entr(ies); the pinned maximum is %d."
+              % (len(debt), BASELINE_MAX))
+        print("     A baseline may only SHRINK. Lower BASELINE_MAX in this file")
+        print("     when debt is paid; never raise it to silence a new check.")
         return 1
     gone = sorted(debt - set(unbaited))
     if gone:
