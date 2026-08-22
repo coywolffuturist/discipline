@@ -20,7 +20,7 @@ MEDIAN_MAX = 24
 OVER_PCT_MAX = 50
 # One ambiguity signal per three sentences is dense. Deliberately loose: these
 # are SIGNALS, not a detector, so the threshold must not manufacture false reds.
-AMBIG_PER_SENT_MAX = 0.34
+# no ambiguity threshold: the signal is reported, never judged (see below)
 
 def targets(paths):
     out = []
@@ -38,8 +38,14 @@ def main():
         return 1
     files = targets(paths)
     if not files:
-        print("RED  0 files matched %s — scanning nothing is NOT health" % paths)
-        return 1
+        # N/A, NOT RED — and the distinction is the difference between a usable
+        # gate and one that gets disabled on day one. Wired into pre-commit, the
+        # old code RED-ed every commit that touched no markdown, i.e. almost
+        # every code commit. That is the gate's own trigger not firing, which our
+        # three-state rule calls N/A. It still SAYS so; it never passes silently.
+        print("N/A  no markdown in %d path(s) given — this gate's trigger is a"
+              " prose file, and none was staged." % len(paths))
+        return 0
     r = subprocess.run([sys.executable, STE, "--json"] + files,
                        capture_output=True, text=True, timeout=120)
     try:
@@ -51,18 +57,36 @@ def main():
     for name, s in scores.items():
         if s.get("scanned", 0) == 0:
             empty.append(name); continue
-        amb = s.get("ambiguity_signals", 0) / max(1, s["scanned"])
-        if (s["median_words"] > MEDIAN_MAX or s["over_limit_pct"] > OVER_PCT_MAX
-                or amb > AMBIG_PER_SENT_MAX):
-            s["_amb_rate"] = amb
+        # AMBIGUITY IS REPORTED, NOT JUDGED. A refuter showed the signal both
+        # ways round: it RED-ed clear writing ("This parser rejects...") and
+        # GREEN-ed genuinely unresolvable scope ("the other one", "theirs").
+        # That is the same anti-correlation that got the passive metric deleted,
+        # and this one reached the verdict, which is worse. It stays as a
+        # measurement until it is proven; it does not decide anything.
+        s["_amb_rate"] = s.get("ambiguity_signals", 0) / max(1, s["scanned"])
+        if s["median_words"] > MEDIAN_MAX or s["over_limit_pct"] > OVER_PCT_MAX:
             bad.append((name, s))
-    scored = len(files) - len(empty)
-    print("STE LINT: %d file(s) given, %d SCORED, %d with no prose"
-          % (len(files), scored, len(empty)))
+    # A file ste.py could not open never appears in the JSON at all, so it fell
+    # into NEITHER bucket and was counted as SCORED. Measured in the real
+    # pre-commit shape: a staged-but-deleted file reported "1 SCORED" while zero
+    # sentences were read, and a brand-new markdown file went in on that GREEN.
+    unreadable = [f for f in files if f not in scores]
+    scored = len([f for f in files if f in scores and scores[f].get("scanned", 0) > 0])
+    print("STE LINT: %d given · %d SCORED · %d no-prose · %d UNREADABLE"
+          % (len(files), scored, len(empty), len(unreadable)))
+    if unreadable:
+        print("  RED  %d file(s) could not be read — that is a finding, not a skip:"
+              % len(unreadable))
+        for f in unreadable[:5]:
+            print("       %s" % f)
     for name, s in bad:
         print("  RED  %-40s median %dw · %d%% over 25w · longest %dw · ambiguity %.2f/sentence"
               % (os.path.basename(name), s["median_words"], s["over_limit_pct"],
                  s["longest"], s.get("_amb_rate", 0)))
+    if unreadable:
+        print("VERDICT: RED — %d file(s) unreadable. An unread file is never a pass."
+              % len(unreadable))
+        return 1
     if bad:
         print("VERDICT: RED — %d file(s) exceed the structural limits." % len(bad))
         print("         Shorten sentences. One idea each. Exact technical terms stay.")
@@ -81,7 +105,11 @@ def main():
         for name in empty[:5]:
             print("         no prose: %s" % os.path.basename(name))
         return 1
+    amb = sum(v.get("ambiguity_signals", 0) for v in scores.values())
     print("VERDICT: GREEN — %d file(s) scored, all within the structural limits." % scored)
+    if amb:
+        print("         NOTE: %d ambiguity signal(s) counted, NOT judged — the signal"
+              " is not verdict-grade yet." % amb)
     if empty:
         print("         NOTE: %d file(s) held no prose and were NOT scored." % len(empty))
     return 0

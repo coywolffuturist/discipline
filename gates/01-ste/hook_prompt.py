@@ -31,9 +31,14 @@ def main():
         data = json.loads(sys.stdin.read())
     except Exception:
         sys.exit(0)
+    if not isinstance(data, dict):
+        sys.exit(0)
     if (data.get("tool_name") or "") not in ("Agent", "Task"):
         sys.exit(0)
-    prompt = (data.get("tool_input") or {}).get("prompt") or ""
+    ti = data.get("tool_input")
+    if not isinstance(ti, dict):
+        sys.exit(0)
+    prompt = ti.get("prompt") or ""
     if not isinstance(prompt, str):
         sys.exit(0)                      # fail-open: the contract says never stop work
     if len(prompt.split()) < 40:

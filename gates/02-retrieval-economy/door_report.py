@@ -56,13 +56,17 @@ def main():
     ratio = (cheap / total) * 100
     print("DOOR REPORT (last %dh): %d cheap-door · %d hand-read · %.0f%% cheap"
           % (hours, cheap, hand, ratio))
-    print("  BLIND SPOT: Bash only. MCP door calls are invisible here, so the")
-    print("              cheap count is a FLOOR, not a total.")
+    print("  BLIND SPOTS, both directions — this ratio is INDICATIVE, not exact:")
+    print("    · MCP door calls are invisible, so cheap-door use is UNDERCOUNTED.")
+    print("    · A read inside a script or a heredoc is invisible too.")
+    print("    The earlier version claimed the cheap count was a FLOOR. That was")
+    print("    wrong: Read/Grep hand-reads were invisible as well, so the ratio")
+    print("    could overstate in either direction. Read/Grep are counted now.")
     if samples:
         print("  sample hand-reads:")
         for s in samples:
             print("    %s" % s[:100])
-    print("  baseline 2026-08-22: ~4 cheap vs ~40 hand (~9%%). Compare against it.")
+    print("  baseline 2026-08-22: ~4 cheap vs ~40 hand (~9%). Compare against it.")
     return 0
 
 if __name__ == "__main__":

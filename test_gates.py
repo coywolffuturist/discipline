@@ -41,7 +41,12 @@ with tempfile.TemporaryDirectory() as d:
 
 with tempfile.TemporaryDirectory() as d:
     r = run([LINT, d])
-    check("lint: an empty directory is RED", r.returncode == 1)
+    # CHANGED 2026-08-22, deliberately. A directory with no markdown is the
+    # gate's own trigger not firing, which our three-state rule calls N/A.
+    # RED here blocked every code-only commit within an hour of registration.
+    # N/A is NOT a silent pass: it prints why, and it never prints GREEN.
+    check("lint: a directory with no markdown is N/A and SAYS so",
+          r.returncode == 0 and "N/A" in r.stdout and "GREEN" not in r.stdout)
 
 r = run([LINT])
 check("lint: no argument is RED", r.returncode == 1)
@@ -140,7 +145,12 @@ with tempfile.TemporaryDirectory() as d:
     open(os.path.join(d, "amb.md"), "w").write(
         "It broke it. Fix this as needed. Do that if necessary. They know.\n")
     r = run([LINT, os.path.join(d, "amb.md")])
-    check("F5: dense ambiguity makes the VERDICT red", r.returncode == 1 and "ambiguity" in r.stdout)
+    # CHANGED 2026-08-22, deliberately. A refuter showed the signal RED-ed clear
+    # writing and GREEN-ed genuinely ambiguous writing — anti-correlated, the
+    # same class that got the passive metric deleted. It is counted and shown;
+    # it does not judge until it is proven.
+    check("F5: ambiguity is COUNTED but does not decide the verdict",
+          r.returncode == 0 and "NOT judged" in r.stdout)
 
 with tempfile.TemporaryDirectory() as d:
     open(os.path.join(d, "clear.md"), "w").write(
@@ -177,6 +187,116 @@ check("F6: PreToolUse warns but does NOT log (a denied command never ran)",
 for g in ("01-ste", "02-retrieval-economy"):
     txt = open(os.path.join(G, g, "GATE.md"), encoding="utf-8").read()
     check("F9: %s claims nothing 'wholly ours'" % g, "wholly ours" not in txt.lower())
+
+# ---------- round 2: every behaviour a refuter deleted without the suite noticing ----------
+
+# secrets must never reach disk
+env4 = os.environ.copy(); env4["HOME"] = tempfile.mkdtemp()
+# The fixture is ASSEMBLED AT RUNTIME so no secret-shaped literal is ever
+# committed. The estate's own pre-commit scanner caught the literal version of
+# this line — correctly, since it cannot know a fixture from a live key.
+FAKE_KEY = "sk-" + "ant-" + "api03-" + "SYNTHETICFIXTURE" + "9" * 8
+run([HOOK2], stdin=json.dumps({"tool_name": "Bash", "hook_event_name": "PostToolUse",
+    "tool_input": {"command": "grep -rn %s ~/coywolf/repos/x/config.py" % FAKE_KEY}}),
+    env=env4)
+logtxt = ""
+lp = os.path.join(env4["HOME"], ".coywolf/state/door_use.jsonl")
+if os.path.exists(lp):
+    logtxt = open(lp).read()
+check("SEC: a credential in a command NEVER reaches the log",
+      "SYNTHETICFIXTURE" not in logtxt and "hand_read" in logtxt)
+
+# hooks fail OPEN on every hostile JSON shape
+for shape in ("[]", "null", "123", '"str"', '{"tool_name":"Bash","tool_input":"cat x"}',
+              '{"tool_name":"Bash","tool_input":{"command":["cat","/x/repos/a/b.md"]}}'):
+    a = run([HOOK1], stdin=shape); b = run([HOOK2], stdin=shape)
+    check("OPEN: both hooks survive %s" % shape[:28], a.returncode == 0 and b.returncode == 0)
+
+# an unreadable file is RED, never counted as scored
+with tempfile.TemporaryDirectory() as d:
+    open(os.path.join(d, "real.md"), "w").write("The gate runs. It scores text.\n")
+    os.symlink("/nowhere/gone.md", os.path.join(d, "broken.md"))
+    r = run([LINT, d])
+    check("SCAN: a broken symlink is RED, not silently 'scored'",
+          r.returncode == 1 and "UNREADABLE" in r.stdout)
+
+# determiner vs pronoun
+r = run([STE, "--stdin", "--json"],
+        stdin="This parser rejects big files. That limit is in config. These limits apply.\n")
+try: sig = json.loads(r.stdout)["<stdin>"]["ambiguity_signals"]
+except Exception: sig = 99
+check("AMB: determiners are NOT flagged as open references", sig == 0, "signals=%s" % sig)
+r = run([STE, "--stdin", "--json"], stdin="It broke it. They know. This is wrong.\n")
+try: sig = json.loads(r.stdout)["<stdin>"]["ambiguity_signals"]
+except Exception: sig = 0
+check("AMB: real pronouns ARE still flagged", sig >= 2, "signals=%s" % sig)
+
+# ambiguity must NOT decide the verdict
+with tempfile.TemporaryDirectory() as d:
+    open(os.path.join(d, "a.md"), "w").write("It broke it. They know. It failed. It ran.\n")
+    r = run([LINT, os.path.join(d, "a.md")])
+    check("AMB: the signal is reported, NOT judged", r.returncode == 0 and "NOT judged" in r.stdout)
+
+# closing marks
+with tempfile.TemporaryDirectory() as d:
+    body = "The gate runs. It scores the text. The score goes in the table. The operator reads it. Nothing else happens."
+    open(os.path.join(d, "plain.md"), "w").write(body + "\n")
+    open(os.path.join(d, "bold.md"), "w").write(
+        " ".join("**%s.**" % x for x in body.split(". ")).replace("..", ".") + "\n")
+    a = run([LINT, os.path.join(d, "plain.md")]); b = run([LINT, os.path.join(d, "bold.md")])
+    check("SPLIT: bold sentences score the same as plain", a.returncode == b.returncode == 0)
+
+# frontmatter is metadata, not prose
+r = run([STE, "--stdin", "--json"],
+        stdin="---\nname: x\ndescription: " + ("word " * 60) + "\n---\n\nThe gate runs. It works.\n")
+try: n = json.loads(r.stdout)["<stdin>"]["longest"]
+except Exception: n = 99
+check("SPLIT: YAML frontmatter is not scored as prose", n < 10, "longest=%s" % n)
+
+# classifier, both directions
+check("DOOR: a door piped into head is still a door",
+      classify("corpus page decision_x | head -40") == "cheap_door")
+check("DOOR: `time corpus grep` counts", classify("time corpus grep ruling") == "cheap_door")
+check("DOOR: xargs cat counts as a hand-read",
+      classify("xargs cat < ~/repos/<project>/list.txt") == "hand_read")
+
+def classify_tool(tool, ti):
+    env5 = os.environ.copy(); env5["HOME"] = tempfile.mkdtemp()
+    run([HOOK2], stdin=json.dumps({"tool_name": tool, "hook_event_name": "PostToolUse",
+                                   "tool_input": ti}), env=env5)
+    lp = os.path.join(env5["HOME"], ".coywolf/state/door_use.jsonl")
+    if not os.path.exists(lp):
+        return "none"
+    return json.loads(open(lp).read().strip().split("\n")[-1])["kind"]
+
+check("DOOR: the Read tool — the dominant channel — is counted",
+      classify_tool("Read", {"file_path": "/x/repos/<project>/model.py"}) == "hand_read")
+
+# the load-bearing case
+r = run([LINT, "app.py"])
+check("LOAD: a code-only changeset is N/A, not a blocked commit",
+      r.returncode == 0 and "N/A" in r.stdout)
+
+# ---------- holes found by mutate_test.py, 2026-08-22 ----------
+
+# The log EXISTS but holds no events in the window. This is the state the day
+# after registration, and it was the one branch of gate 02's empty-scan rule
+# with no test — so the rule could be deleted and the suite stayed green.
+env6 = os.environ.copy(); env6["HOME"] = tempfile.mkdtemp()
+lp6 = os.path.join(env6["HOME"], ".coywolf/state")
+os.makedirs(lp6, exist_ok=True)
+open(os.path.join(lp6, "door_use.jsonl"), "w").write(
+    json.dumps({"ts": 1, "kind": "hand_read", "shape": "cat old.md"}) + "\n")
+r = run([REPORT, "--since-hours", "1"], env=env6)
+check("SCAN: a log with ZERO events in the window is RED",
+      r.returncode == 1 and "not a pass" in r.stdout)
+
+# the vague-scope detector had no test at all
+r = run([STE, "--stdin", "--json"],
+        stdin="Handle the queue as needed. Update the files where relevant, etc.\n")
+try: v = json.loads(r.stdout)["<stdin>"]["vague_scope"]
+except Exception: v = 0
+check("AMB: vague scope ('as needed', 'etc') is counted", v >= 2, "vague=%s" % v)
 
 bad = [n for n, ok, _ in results if not ok]
 print("\n%s  %d/%d" % ("TESTS PASS" if not bad else "TESTS FAIL", len(results) - len(bad), len(results)))
