@@ -74,7 +74,36 @@ here must report **what it scanned**, and scanning nothing must be RED.
 | # | gate | forms | state |
 |---|---|---|---|
 | 01 | ste | skill · tool · hook · code | **built** |
-| 02–15 | the rest | — | not yet broken down |
+| 02 | retrieval-economy | tool · skill · hook · code | **built** |
+| 03 | price-the-loop | — | approved, not broken down |
+| 04 | collapse-round-trips | — | approved, not broken down |
+| 05 | no-collision | — | approved, not broken down |
+| 06 | substrate-search | — | not yet |
+| 07 | compile-it | — | not yet |
+| 08 | think-3x | — | not yet |
+| 09 | disprove-first | — | not yet |
+| 10 | the-95-percent-rule | — | not yet |
+| 11 | root-cause | — | not yet |
+| 12 | karsholto | — | not yet |
+| 13 | completer | — | not yet |
+| 14 | nomess | — | not yet |
+| 15 | cold-read | — | not yet |
+| 16 | vizcheck | — | not yet |
+| 17 | chunk-it + write-back | — | not yet |
+| 18 | adversarial-pass | — | not yet |
+
+### The split that produced 02–05
+
+The old `ask-dont-pour` skill held SIX levers under one name. the operator's
+atomicity ruling forbids that, and the bundle had already hidden work: a
+completion-table row reading "ask-dont-pour FAILED" carried evidence for lever
+1 only, while four other levers went unreported inside the same row.
+
+Levers 1 and 5 merged into gate 02 — lever 5 is lever 1 refined. Levers 2, 3
+and 6 became gates 03, 04 and 05. **Lever 4 was DELETED**: it duplicated gate
+17, chunk-it, under a second name.
+
+Approved 2026-08-22.
 
 Gates are broken down ONE AT A TIME, presented to the operator, and committed only
 after he approves. That pace is deliberate: the previous architecture was
