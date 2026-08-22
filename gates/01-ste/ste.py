@@ -40,7 +40,16 @@ LIMIT = 25
 ABBREV = re.compile(r"\b(?:e\.g|i\.e|etc|vs|cf|approx|a\.m|p\.m|Dr|Mr|Ms|St|Fig|No)\.", re.I)
 LIST_MARK = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+", re.M)
 HEADING = re.compile(r"^#{1,6}\s+", re.M)
-SENT = re.compile(r"(?<=[.!?])\s+|\n{2,}|\x00")
+# A sentence may end in a closing mark AFTER its full stop: **bold.**, "quoted."
+# or (parenthetical.) Requiring [.!?] immediately before whitespace meant five
+# bolded sentences collapsed into one 38-word sentence and went RED, while the
+# byte-identical unbolded text went GREEN. Same defect as the trailing-period
+# bug, different mark.
+SENT = re.compile(r"(?<=[.!?])[\*_\"\'\)\]]*\s+|\n{2,}|\x00")
+# YAML frontmatter is metadata, not prose. Scored as prose it caused 54 of 237
+# reds on real canon — 23% of them — because a frontmatter block reads as one
+# enormous sentence. Fenced code and tables are stripped for the same reason.
+FRONTMATTER = re.compile(r"\A---\n.*?\n---\n", re.S)
 # a stacked-clause proxy: subordinators inside one sentence
 SUBORD = re.compile(r"\b(?:which|that|because|although|while|whereas|since|unless|whether)\b", re.I)
 EMDASH = re.compile(r"—")
@@ -55,7 +64,17 @@ EMDASH = re.compile(r"—")
 #   - a bare demonstrative ("do this", "fix that") names no object
 #   - vague-scope words defer the boundary to the reader, which is the exact
 #     move that let an agent stop early and call it done
-OPEN_PRONOUN = re.compile(r"^\s*(?:It|This|That|These|Those|They|Them|Its|Their)\b")
+# DETERMINER vs PRONOUN. The first version matched This/That/These/Those
+# regardless of what followed, so "This parser rejects..." — a determiner with
+# no ambiguity at all — scored as an open reference. Clear technical writing hit
+# 0.80 signals per sentence and went RED.
+# It/They/Them ARE pronouns wherever they open a sentence. A demonstrative is a
+# pronoun only when a VERB follows it; before a noun it is a determiner.
+BARE_PRONOUN = re.compile(r"^\s*(?:It|They|Them|Its|Their)\b")
+DEM_VERB = re.compile(r"^\s*(?:This|That|These|Those)\s+(?:is|are|was|were|will|would|"
+                      r"should|can|could|may|might|has|have|had|does|do|did|broke|"
+                      r"failed|means|makes|gives|works|runs|needs|requires|causes|"
+                      r"happens|applies|comes|goes|seems|looks|matters|helps)\b", re.I)
 BARE_DEM = re.compile(r"\b(?:do|fix|check|run|handle|review|update|address)\s+(?:this|that|it|these|those)\b[^\w]", re.I)
 VAGUE = re.compile(r"\b(?:as needed|if necessary|where relevant|as appropriate|"
                    r"and so on|etc\b|various|several|some other|suitable|accordingly|"
@@ -64,6 +83,7 @@ VAGUE = re.compile(r"\b(?:as needed|if necessary|where relevant|as appropriate|"
 def sentences(text):
     # strip fenced code and tables — not prose, must not be scored. An UNCLOSED
     # fence used to swallow the rest of the file, so only balanced fences strip.
+    text = FRONTMATTER.sub("", text)
     if text.count("```") % 2 == 0:
         text = re.sub(r"```.*?```", " ", text, flags=re.S)
     else:
@@ -88,7 +108,7 @@ def score(text):
         if len(SUBORD.findall(s)) >= 2:
             stacked += 1
         dashes += len(EMDASH.findall(s))
-        if OPEN_PRONOUN.search(s):
+        if BARE_PRONOUN.search(s) or DEM_VERB.search(s):
             openref += 1
         bare += len(BARE_DEM.findall(s + " "))
         vague += len(VAGUE.findall(s))
