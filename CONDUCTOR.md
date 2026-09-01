@@ -38,26 +38,33 @@ DESIGN gates fire before building. VERIFY gates fire before claiming done.
 A gate that is "not yet broken down" STILL FIRES as a read — the missing
 artifact is its automation, not its authority.
 
-| # | gate | phase | state |
-|---|---|---|---|
-| 01 | ste | DESIGN, and the position is load-bearing | built |
-| 02 | retrieval-economy | DESIGN | built |
-| 03 | price-the-loop | DESIGN | approved, not broken down |
-| 04 | collapse-round-trips | DESIGN | approved, not broken down |
-| 05 | no-collision | DESIGN | approved, not broken down |
-| 06 | substrate-search | DESIGN | not yet |
-| 07 | compile-it | DESIGN | not yet |
-| 08 | think-3x | DESIGN | not yet |
-| 09 | disprove-first | DESIGN | not yet |
-| 10 | **the-95-percent-rule** | VERIFY | not yet |
-| 11 | root-cause | VERIFY | not yet |
-| 12 | karsholto | VERIFY | not yet |
-| 13 | completer | VERIFY | not yet |
-| 14 | nomess | VERIFY | not yet |
-| 15 | cold-read | VERIFY | not yet |
-| 16 | vizcheck | VERIFY | not yet |
-| 17 | chunk-it + write-back | VERIFY | not yet — STILL A BUNDLE, see below |
-| 18 | adversarial-pass | VERIFY | not yet |
+| # | gate | phase | fires when | state |
+|---|---|---|---|---|
+| 01 | ste | DESIGN | you write a prompt, canon page, plan or note | built |
+| 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" | built |
+| 03 | price-the-loop | DESIGN | you are about to fire a model in a LOOP — price it in CALLS first | approved |
+| 04 | collapse-round-trips | DESIGN | several independent calls or reads could be one | approved |
+| 05 | no-collision | DESIGN | you are about to touch substrate a peer may hold | approved |
+| 06 | substrate-search | DESIGN | you are proposing NEW substrate — table, module, endpoint, daemon, layer | not yet |
+| 07 | compile-it | DESIGN | an LLM step repeats, is mechanical, stable and checkable — write code instead | not yet |
+| 08 | think-3x | DESIGN | you are building anything non-trivial | not yet |
+| 09 | disprove-first | DESIGN | before code: name the observation that would REFUTE the design | not yet |
+| 10 | **the-95-percent-rule** | VERIFY | **ANY claim of done · ready · verified · sure · it works** | not yet |
+| 11 | root-cause | VERIFY | you are about to fix a symptom — ask how many distinct faults exist | not yet |
+| 12 | karsholto | VERIFY | the change adds substrate or layers — smallest brick that proves the wall | not yet |
+| 13 | completer | VERIFY | you are about to write "follow-up / next session / deferred", or claim done-with-residue | not yet |
+| 14 | nomess | VERIFY | orphans, dead links, stale gates, doc-vs-runtime drift, missing smoke test | not yet |
+| 15 | cold-read | VERIFY | you are shipping or retiring something another agent will read cold | not yet |
+| 16 | vizcheck | VERIFY | a UI, CSS or layout change | not yet |
+| 17 | chunk-it + write-back | VERIFY | a named move was produced, or a reusable fact derived | not yet — STILL A BUNDLE |
+| 18 | adversarial-pass | VERIFY | before accepting any non-trivial claim, fix, or "done" | not yet |
+
+**Efficiency comes from TRIGGERS, not from running fewer gates.** Tiers were
+tried and refuted: `cold-read` exists as a skill, an agent AND a hook at once,
+and one scalar field cannot say that. A gate whose trigger did not fire is a
+one-line **N/A citing that trigger** — cheap to write, and checkable against
+this table by anyone. That is why the trigger column lives HERE: filling a
+complete table must not require loading eighteen skills.
 
 Gates 02-05 replace the old six-lever `ask-dont-pour`. Lever 4 was DELETED as a
 duplicate of gate 17. Do not reinstate the bundle under any name.
