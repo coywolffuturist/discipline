@@ -142,7 +142,7 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | 05 | substrate-search | deployed `skills/substrate-search` |
 | 06 | compile-it | deployed `skills/compile-it` |
 | 07 | think-3x | deployed `skills/think-3x` |
-| 08 | set-the-prior | deployed `skills/95-percent-rule` — the prior half. NO GATE.md yet |
+| 08 | set-the-prior | `gates/08-set-the-prior/GATE.md` · deployed `skills/set-the-prior` · hook `hooks/hook_prior.py` |
 | 09 | disprove-first | `gates/09-disprove-first/GATE.md` · **NO DEPLOYED READ — GAP.** Nearest kin: `skills/adversarial-pass`, its verify-time twin |
 | 10 | root-cause | deployed `skills/root-cause` |
 | 11 | karsholto | deployed `skills/karsholto` |

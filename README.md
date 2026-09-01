@@ -161,7 +161,7 @@ Two of the three froze on the same day in June and neither errored.
 | 05 | substrate-search | — | ruled 2026-09-01, GATE.md owed |
 | 06 | compile-it | — | ruled 2026-09-01, GATE.md owed |
 | 07 | think-3x | — | ruled 2026-09-01, GATE.md owed |
-| 08 | set-the-prior | — | ruled 2026-09-01, GATE.md owed |
+| 08 | set-the-prior | skill · hook | **built** |
 | 09 | disprove-first | — | GATE.md written, no form yet |
 | 10 | root-cause | — | ruled 2026-09-01, GATE.md owed |
 | 11 | karsholto | — | ruled 2026-09-01, GATE.md owed |
