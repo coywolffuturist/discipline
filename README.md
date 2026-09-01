@@ -105,9 +105,34 @@ here must report **what it scanned**, and scanning nothing must be RED.
 
 ## Layout
 
-    gates/NN-<name>/
-        GATE.md      the read · the intent · the forms   (required)
-        <form files> one per form the gate actually has
+```
+CONDUCTOR.md     the 20-gate conductor — which gate fires at which phase
+CONTRACT.md      what is canonical here and what is derived from it
+gates/NN-<name>/
+    GATE.md      the read · the intent · the forms   (required)
+    <form files> one per form the gate actually has
+skills/          GENERATED deployed forms + the reviewer agents  (derived)
+hooks/           the two hooks that make the table fire unprompted
+lint/            the gates' own checks — `lint/all.sh`
+scripts/         standalone guards, usable without the rest
+```
+
+`gates/` is canonical and hand-reviewed. `skills/` is generated from the private
+masters by `skill_share.sh` and is overwritten on every run — see
+`skills/README.md`. Most gates in the table below are marked "not yet": they have
+a deployed form in `skills/` but no reviewed `GATE.md` source. That gap is the
+honest state of this repo, not an omission from this list.
+
+### If you only want the skills
+
+Copy `skills/` into your agent's skills directory and `skills/agents/` into its
+agents directory. They cross-reference each other, so take the whole bundle. The
+conductor (`skills/discipline/`) is the entry point; everything else is a gate it
+fires. Nothing here calls home, and nothing needs the rest of this repo.
+
+This repository supersedes an earlier bundle that was published separately. That
+one is archived: two surfaces holding the same content is exactly the drift this
+repo's CONTRACT exists to prevent, and it froze for three months to prove it.
 
 ## Status
 
