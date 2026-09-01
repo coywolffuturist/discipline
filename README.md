@@ -121,18 +121,46 @@ here must report **what it scanned**, and scanning nothing must be RED.
 | 06 | substrate-search | — | not yet |
 | 07 | compile-it | — | not yet |
 | 08 | think-3x | — | not yet |
-| 09 | disprove-first | — | not yet |
-| 10 | the-95-percent-rule | — | not yet |
+| 09 | set-the-prior | — | approved 2026-08-31, not broken down |
+| 10 | disprove-first | — | not yet |
 | 11 | root-cause | — | not yet |
 | 12 | karsholto | — | not yet |
 | 13 | completer | — | not yet |
 | 14 | nomess | — | not yet |
 | 15 | cold-read | — | not yet |
 | 16 | vizcheck | — | not yet |
-| 17 | chunk-it + write-back | — | not yet |
-| 18 | adversarial-pass | — | not yet |
+| 17 | chunk-it | — | approved 2026-08-31, not broken down |
+| 18 | write-back | — | approved 2026-08-31, not broken down |
+| 19 | adversarial-pass | — | not yet |
+| 20 | state-the-posterior | — | approved 2026-08-31, not broken down |
 
-### The split that produced 02–05
+The CONDUCTOR (`CONDUCTOR.md`) holds this table with each gate's TRIGGER, the
+three legal states and the completion rule. It is installed to
+`~/.claude/skills/discipline/SKILL.md`.
+
+### The split that produced 09 and 20
+
+`.95` was ONE gate, first in VERIFY. That let the number be quoted before the
+gates producing its evidence had run. Measured on 2026-08-31: the signer's
+enforcement was called 0.97, and the refuter at gate 19 then found seven
+defects. The repaired version was called sound. A second refuter broke six of
+the seven fixes. Both numbers were stated before gate 19 ran.
+
+Two acts at two moments, so it was split. **Gate 09 set-the-prior** states the
+outcome and the prior BEFORE building; you cannot update a posterior you never
+set. **Gate 20 state-the-posterior** is DEAD LAST, after the refuter.
+
+Approved 2026-08-31.
+
+### The split that produced 17 and 18
+
+`chunk-it + write-back` was the last surviving bundle. They are two acts with
+two artifacts: the ledger entry and the memory page. On 2026-08-31 write-back
+ran six times and chunk-it ran zero, while a single row would have read FIRED.
+
+Approved 2026-08-31.
+
+### The split that produced 02-05
 
 The old `ask-dont-pour` skill held SIX levers under one name. the operator's
 atomicity ruling forbids that, and the bundle had already hidden work: a
