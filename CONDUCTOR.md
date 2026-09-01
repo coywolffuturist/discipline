@@ -4,7 +4,7 @@
             Edit here, install outward, never the reverse (see CONTRACT.md).
     holds:  the gate table, the three legal states, the completion rule.
     holds NO gate reads. A gate's read lives in gates/NN-<name>/GATE.md.
-    ruled:  the operator, 2026-08-31 — the 20-gate order below is approved.
+    ruled:  the operator, 2026-08-31 — the 19-gate order below is approved. All 20 cards of the 2026-09-01 deck cast FULL; gate 03 price-the-loop retired into gate 02 as a lever, and the table renumbered.
             It splits .95 into gates 09 and 20. It splits gate 17 into 17 and 18.
 
 ---
@@ -42,26 +42,25 @@ artifact is its automation, not its authority.
 
 | # | gate | phase | fires when | state |
 |---|---|---|---|---|
-| 01 | ste | DESIGN | you write a prompt, canon page, plan or note | built |
-| 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" | built |
-| 03 | price-the-loop | DESIGN | you are about to fire a model in a LOOP — price it in CALLS first | approved |
-| 04 | collapse-round-trips | DESIGN | several independent calls or reads could be one | approved |
-| 05 | no-collision | DESIGN | you are about to touch substrate a peer may hold | approved |
-| 06 | substrate-search | DESIGN | you are proposing NEW substrate — table, module, endpoint, daemon, layer | not yet |
-| 07 | compile-it | DESIGN | an LLM step repeats, is mechanical, stable and checkable — write code instead | not yet |
-| 08 | think-3x | DESIGN | you are building anything non-trivial | not yet |
-| 09 | **set-the-prior** | DESIGN | before building: state the user-outcome ONCE and your prior on it | not yet |
-| 10 | disprove-first | DESIGN | before code: name the observation that would REFUTE the design | GATE.md, no form |
-| 11 | root-cause | VERIFY | you are about to fix a symptom — ask how many distinct faults exist | not yet |
-| 12 | karsholto | VERIFY | the change adds substrate or layers — smallest brick that proves the wall | not yet |
-| 13 | completer | VERIFY | you are about to write "follow-up / next session / deferred", or claim done-with-residue | not yet |
-| 14 | nomess | VERIFY | orphans, dead links, stale gates, doc-vs-runtime drift, missing smoke test | not yet |
-| 15 | cold-read | VERIFY | you are shipping or retiring something another agent will read cold | not yet |
-| 16 | vizcheck | VERIFY | a UI, CSS or layout change | not yet |
-| 17 | chunk-it | VERIFY | a named move was produced — append it to the ledger NOW, not in a handoff | not yet |
-| 18 | write-back | VERIFY | a reusable fact was derived — a number, endpoint, path, trap, ruling | not yet |
-| 19 | adversarial-pass | VERIFY | before accepting any non-trivial claim, fix, or "done" | not yet |
-| 20 | **state-the-posterior** | VERIFY | **LAST. Any claim of done · ready · verified · sure · it works** | not yet |
+| 01 | ste | DESIGN | you write a prompt, canon page, plan, note or agent message. NOT conversation with the operator — unless he asks for a concept, and then explain it fully | built |
+| 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" — and, as its own lever, before firing a model in a LOOP, price it in CALLS | built |
+| 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one with foreknowledge you could have had. A foreseeable sequence is a MISS, not a pass | approved |
+| 04 | no-collision | DESIGN | you are about to touch SHARED substrate a peer may hold. Scratchpad and single-machine private work is N/A | approved |
+| 05 | substrate-search | DESIGN | you are proposing anything that SURVIVES THE SESSION — table, module, endpoint, daemon, layer, script | not yet |
+| 06 | compile-it | DESIGN | you are deriving something for the SECOND time. Count derivations, not difficulty | not yet |
+| 07 | think-3x | DESIGN | there is a real fork with a second option worth naming. No second option, no gate | not yet |
+| 08 | **set-the-prior** | DESIGN | before building: state the user-outcome ONCE and a NUMERIC prior on it. No number, no FIRED | not yet |
+| 09 | disprove-first | DESIGN | before code: name the observation that would REFUTE the design, and RUN it. Registered-but-unrun is BLOCKED | GATE.md, no form |
+| 10 | root-cause | VERIFY | something FAILED — ask how many distinct faults exist. Nothing failed is N/A | not yet |
+| 11 | karsholto | VERIFY | the change adds substrate — count what a READER MUST HOLD, not what is on disk | not yet |
+| 12 | completer | VERIFY | you are about to write "follow-up / deferred". Residue is legitimate ONLY when the blocker is outside your reach | not yet |
+| 13 | nomess | VERIFY | orphans, dead links, stale gates, doc-vs-runtime drift — INCLUDING remote state: locks held, windows open, processes started | not yet |
+| 14 | cold-read | VERIFY | you are shipping or retiring something another agent reads cold. Without a CONTEXT-FREE READER the row is BLOCKED, not FIRED | not yet |
+| 15 | vizcheck | VERIFY | an interface YOU AUTHORED. Driving or reading someone else's surface is N/A | not yet |
+| 16 | chunk-it | VERIFY | a named move was produced, OR something went wrong. A wrong conclusion is a chunk by definition | not yet |
+| 17 | write-back | VERIFY | a fact was derived that would cost MORE THAN ONE CHEAP CALL to re-derive | not yet |
+| 18 | adversarial-pass | VERIFY | **money, irreversibility, or anything outward-facing — a refuter runs or the work does not ship.** Everything else may block honestly | not yet |
+| 19 | **state-the-posterior** | VERIFY | **LAST. Any claim of done · ready · verified · sure. One number PER CRITERION plus the gated floor** | not yet |
 
 **Efficiency comes from TRIGGERS, not from running fewer gates.** Tiers were
 tried and refuted: `cold-read` exists as a skill, an agent AND a hook at once,
@@ -137,25 +136,24 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | # | gate | read lives in |
 |---|---|---|
 | 01 | ste | `gates/01-ste/GATE.md` · deployed `skills/ste` |
-| 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy` |
-| 03 | price-the-loop | **READ NOT SHIPPED.** Lever 2 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
-| 04 | collapse-round-trips | **READ NOT SHIPPED.** Lever 3 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
-| 05 | no-collision | **READ NOT SHIPPED.** Lever 6 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
-| 06 | substrate-search | deployed `skills/substrate-search` |
-| 07 | compile-it | deployed `skills/compile-it` |
-| 08 | think-3x | deployed `skills/think-3x` |
-| 09 | set-the-prior | deployed `skills/95-percent-rule` — the prior half. NO GATE.md yet |
-| 10 | disprove-first | **NO DEPLOYED READ — GAP.** Nearest kin: `skills/adversarial-pass`, its verify-time twin |
-| 11 | root-cause | deployed `skills/root-cause` |
-| 12 | karsholto | deployed `skills/karsholto` |
-| 13 | completer | deployed `skills/completer` |
-| 14 | nomess | deployed `skills/nomess` |
-| 15 | cold-read | deployed `skills/cold-read` |
-| 16 | vizcheck | deployed `skills/vizcheck` |
-| 17 | chunk-it | **NO DEPLOYED SKILL.** Doctrine: `chunking-is-the-rsi-mechanism`; ledger `reference_coywolf_chunk_ledger.md` |
-| 18 | write-back | **NO DEPLOYED SKILL.** Doctrine: `gifts-are-written-at-discovery` |
-| 19 | adversarial-pass | deployed `skills/adversarial-pass` |
-| 20 | state-the-posterior | deployed `skills/95-percent-rule` — the posterior half. NO GATE.md yet |
+| 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy`. Also carries the price-the-loop lever, folded in 2026-09-01 |
+| 03 | collapse-round-trips | **READ NOT SHIPPED.** Lever 3 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
+| 04 | no-collision | **READ NOT SHIPPED.** Lever 6 of the same retired bundle. Owed: its own GATE.md. |
+| 05 | substrate-search | deployed `skills/substrate-search` |
+| 06 | compile-it | deployed `skills/compile-it` |
+| 07 | think-3x | deployed `skills/think-3x` |
+| 08 | set-the-prior | deployed `skills/95-percent-rule` — the prior half. NO GATE.md yet |
+| 09 | disprove-first | `gates/09-disprove-first/GATE.md` · **NO DEPLOYED READ — GAP.** Nearest kin: `skills/adversarial-pass`, its verify-time twin |
+| 10 | root-cause | deployed `skills/root-cause` |
+| 11 | karsholto | deployed `skills/karsholto` |
+| 12 | completer | deployed `skills/completer` |
+| 13 | nomess | deployed `skills/nomess` |
+| 14 | cold-read | deployed `skills/cold-read` |
+| 15 | vizcheck | deployed `skills/vizcheck` |
+| 16 | chunk-it | **NO DEPLOYED SKILL, BY RULING.** It folds into the completion rule: an obligation on every table, not a judgement. Ruled 2026-09-01. |
+| 17 | write-back | **NO DEPLOYED SKILL, BY RULING.** Same — an obligation, not a judgement. Ruled 2026-09-01. |
+| 18 | adversarial-pass | deployed `skills/adversarial-pass` |
+| 19 | state-the-posterior | deployed `skills/95-percent-rule` — the posterior half. NO GATE.md yet |
 
 The `ask-dont-pour` bundle remains deployed on the primary workstation as the
 read-source for gates 03-05 ONLY. It is deliberately NOT published in this repo:

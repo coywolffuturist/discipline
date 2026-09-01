@@ -33,9 +33,9 @@ except Exception:
 msg = (
     "DISCIPLINE: completion table owed. %s change(s) since the last check; the "
     "credit can land one turn late, so if THIS turn changed nothing the table "
-    "was owed by the previous one. Render all 20 gates per "
+    "was owed by the previous one. Render all 19 gates per "
     "~/.claude/skills/discipline/SKILL.md, which holds the three legal states, "
-    "the forbidden words, and gate 20. If already rendered, say so in one line "
+    "the forbidden words, and gate 19. If already rendered, say so in one line "
     "and stop."
 ) % n
 

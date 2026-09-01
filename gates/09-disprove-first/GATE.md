@@ -1,10 +1,12 @@
-# Gate 10 — disprove-first
+# Gate 09 — disprove-first
 
-    order:  10. LAST in DESIGN, immediately before code, and immediately after
-            gate 09 sets the prior. You cannot pre-register the refutation of a
+    order:  09. LAST in DESIGN, immediately before code, and immediately after
+            gate 08 sets the prior. You cannot pre-register the refutation of a
             claim you have not stated.
     forms:  skill · code   (no hook: the artifact is a red test, not a warning)
-    ruled:  DRAFT 2026-08-31. Not yet approved.
+    ruled:  the operator, 2026-09-01 — full moon on the 19-gate deck. The move he
+            approved: registering the refutation is not firing it. If the test has
+            not been RUN and seen to go red, the row is BLOCKED.
 
 ---
 

@@ -117,7 +117,7 @@ here must report **what it scanned**, and scanning nothing must be RED.
 ## Layout
 
 ```
-CONDUCTOR.md     the 20-gate conductor — which gate fires at which phase
+CONDUCTOR.md     the 19-gate conductor — which gate fires at which phase
 CONTRACT.md      what is canonical here and what is derived from it
 gates/NN-<name>/
     GATE.md      the read · the intent · the forms   (required)
@@ -141,6 +141,8 @@ agents directory. They cross-reference each other, so take the whole bundle. The
 conductor (`skills/discipline/`) is the entry point; everything else is a gate it
 fires. Nothing here calls home, and nothing needs the rest of this repo.
 
+All 19 gates were ruled on 2026-09-01 by moon cast: 20 cards, 20 full moons, gate 03 price-the-loop retired into gate 02 as a lever and the table renumbered. Two gates have built forms; the rest carry a ruled trigger and owe a GATE.md.
+
 This repository supersedes two earlier bundles that held the same suite — one
 framed for coding, one renamed for knowledge work. Both are archived and remain
 private, so there is nothing else to go and read; everything they held is here,
@@ -154,24 +156,23 @@ Two of the three froze on the same day in June and neither errored.
 |---|---|---|---|
 | 01 | ste | skill · tool · hook · code | **built** |
 | 02 | retrieval-economy | tool · skill · hook · code | **built** |
-| 03 | price-the-loop | — | approved, not broken down |
-| 04 | collapse-round-trips | — | approved, not broken down |
-| 05 | no-collision | — | approved, not broken down |
-| 06 | substrate-search | — | not yet |
-| 07 | compile-it | — | not yet |
-| 08 | think-3x | — | not yet |
-| 09 | set-the-prior | — | approved 2026-08-31, not broken down |
-| 10 | disprove-first | — | GATE.md written, no form yet |
-| 11 | root-cause | — | not yet |
-| 12 | karsholto | — | not yet |
-| 13 | completer | — | not yet |
-| 14 | nomess | — | not yet |
-| 15 | cold-read | — | not yet |
-| 16 | vizcheck | — | not yet |
-| 17 | chunk-it | — | approved 2026-08-31, not broken down |
-| 18 | write-back | — | approved 2026-08-31, not broken down |
-| 19 | adversarial-pass | — | not yet |
-| 20 | state-the-posterior | — | approved 2026-08-31, not broken down |
+| 03 | collapse-round-trips | — | ruled 2026-09-01, GATE.md owed |
+| 04 | no-collision | — | ruled 2026-09-01, GATE.md owed |
+| 05 | substrate-search | — | ruled 2026-09-01, GATE.md owed |
+| 06 | compile-it | — | ruled 2026-09-01, GATE.md owed |
+| 07 | think-3x | — | ruled 2026-09-01, GATE.md owed |
+| 08 | set-the-prior | — | ruled 2026-09-01, GATE.md owed |
+| 09 | disprove-first | — | GATE.md written, no form yet |
+| 10 | root-cause | — | ruled 2026-09-01, GATE.md owed |
+| 11 | karsholto | — | ruled 2026-09-01, GATE.md owed |
+| 12 | completer | — | ruled 2026-09-01, GATE.md owed |
+| 13 | nomess | — | ruled 2026-09-01, GATE.md owed |
+| 14 | cold-read | — | ruled 2026-09-01, GATE.md owed |
+| 15 | vizcheck | — | ruled 2026-09-01, GATE.md owed |
+| 16 | chunk-it | — | ruled 2026-09-01 · folds into the completion rule |
+| 17 | write-back | — | ruled 2026-09-01 · folds into the completion rule |
+| 18 | adversarial-pass | — | ruled 2026-09-01, GATE.md owed |
+| 19 | state-the-posterior | — | ruled 2026-09-01, GATE.md owed |
 
 The CONDUCTOR (`CONDUCTOR.md`) holds this table with each gate's TRIGGER, the
 three legal states and the completion rule. It is installed to
