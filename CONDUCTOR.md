@@ -51,7 +51,7 @@ artifact is its automation, not its authority.
 | 07 | compile-it | DESIGN | an LLM step repeats, is mechanical, stable and checkable — write code instead | not yet |
 | 08 | think-3x | DESIGN | you are building anything non-trivial | not yet |
 | 09 | **set-the-prior** | DESIGN | before building: state the user-outcome ONCE and your prior on it | not yet |
-| 10 | disprove-first | DESIGN | before code: name the observation that would REFUTE the design | not yet |
+| 10 | disprove-first | DESIGN | before code: name the observation that would REFUTE the design | GATE.md, no form |
 | 11 | root-cause | VERIFY | you are about to fix a symptom — ask how many distinct faults exist | not yet |
 | 12 | karsholto | VERIFY | the change adds substrate or layers — smallest brick that proves the wall | not yet |
 | 13 | completer | VERIFY | you are about to write "follow-up / next session / deferred", or claim done-with-residue | not yet |
