@@ -167,7 +167,7 @@ broken down. It still describes them as one act; the split is the ruling above.
 - Gates 09, 10, 17, 18 and 20 have no dedicated deployed skill. 10 has no read
   anywhere and is the highest-priority gap.
 - `~/.claude/skills/` is still not a checkout of this repo, so installs are
-  manual and drift can recur. The second machine holds few deployed skills.
+  manual and drift can recur. The Den holds few deployed skills.
 - Two seams were interrogated on 2026-08-31 and kept, but named for review:
   **06 substrate-search / 12 karsholto** are the same principle at two phases,
   the weakest distinction in the suite; **16 vizcheck** has the narrowest

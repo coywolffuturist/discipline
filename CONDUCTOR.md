@@ -138,19 +138,30 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 |---|---|---|
 | 01 | ste | `gates/01-ste/GATE.md` · deployed `skills/ste` |
 | 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy` |
-| 03 | price-the-loop | inside deployed `skills/ask-dont-pour` (lever 2) |
-| 04 | collapse-round-trips | inside deployed `skills/ask-dont-pour` (lever 3) |
-| 05 | no-collision | inside deployed `skills/ask-dont-pour` (lever 6) |
-| 06-08 | substrate-search · compile-it · think-3x | deployed skills of the same name |
+| 03 | price-the-loop | **READ NOT SHIPPED.** Lever 2 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
+| 04 | collapse-round-trips | **READ NOT SHIPPED.** Lever 3 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
+| 05 | no-collision | **READ NOT SHIPPED.** Lever 6 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
+| 06 | substrate-search | deployed `skills/substrate-search` |
+| 07 | compile-it | deployed `skills/compile-it` |
+| 08 | think-3x | deployed `skills/think-3x` |
 | 09 | set-the-prior | deployed `skills/95-percent-rule` — the prior half. NO GATE.md yet |
 | 10 | disprove-first | **NO DEPLOYED READ — GAP.** Nearest kin: `skills/adversarial-pass`, its verify-time twin |
-| 11-16 | root-cause · karsholto · completer · nomess · cold-read · vizcheck | deployed skills of the same name |
+| 11 | root-cause | deployed `skills/root-cause` |
+| 12 | karsholto | deployed `skills/karsholto` |
+| 13 | completer | deployed `skills/completer` |
+| 14 | nomess | deployed `skills/nomess` |
+| 15 | cold-read | deployed `skills/cold-read` |
+| 16 | vizcheck | deployed `skills/vizcheck` |
 | 17 | chunk-it | **NO DEPLOYED SKILL.** Doctrine: `chunking-is-the-rsi-mechanism`; ledger `reference_coywolf_chunk_ledger.md` |
 | 18 | write-back | **NO DEPLOYED SKILL.** Doctrine: `gifts-are-written-at-discovery` |
 | 19 | adversarial-pass | deployed `skills/adversarial-pass` |
 | 20 | state-the-posterior | deployed `skills/95-percent-rule` — the posterior half. NO GATE.md yet |
 
-`skills/ask-dont-pour` remains deployed as the read-source for gates 03-05 ONLY.
+The `ask-dont-pour` bundle remains deployed on the primary workstation as the
+read-source for gates 03-05 ONLY. It is deliberately NOT published in this repo:
+it is the six-lever bundle those gates replaced, and no gate may bundle. Shipping
+it would hand a reader the exact anti-pattern this suite forbids. The debt is a
+GATE.md for 03, 04 and 05 — not a copy of the bundle.
 It is the retired bundle. Do not run it as one gate.
 `skills/95-percent-rule` is the read-source for BOTH 09 and 20 until each is
 broken down. It still describes them as one act; the split is the ruling above.
