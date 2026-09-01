@@ -32,10 +32,14 @@ msg = (
     "ARTIFACT, never a checkmark), N/A (legal only by citing that gate's own "
     "written trigger, listed in the conductor table), BLOCKED (state what is now "
     "UNVERIFIED). Silently omitting a row is not a state.\n\n"
-    "GATE 10 is a TRIGGER, not a row: any claim of done, ready, verified or sure "
+    "GATE 20 state-the-posterior is a TRIGGER, not only a row: any claim of done, "
+    "ready, verified or sure "
     "owes a posterior AND its evidence, gated by the WORST failure mode rather "
     "than the best subsystem.\n\n"
-    "If you already rendered the table this turn, say so in one line and stop."
+    "If you already rendered the table this turn, say so in one line and stop.\n"
+    "If this reminder names a gate count or number that disagrees with the "
+    "conductor, the HOOK is stale: fix it, because it teaches the wrong canon "
+    "every turn."
 ) % n
 print(json.dumps({"hookSpecificOutput": {"hookEventName": "Stop",
                                          "additionalContext": msg}}))
