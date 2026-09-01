@@ -38,7 +38,7 @@ def main():
         return
     cmd = (d.get("tool_input") or {}).get("command", "") or ""
     # SCRATCH REDIRECTS ARE NOT CHANGES. Caught on this hook's second real turn:
-    # a read-only a monitoring pass flagged as a build because `>/dev/null` and a
+    # a read-only monitoring pass flagged as a build because `>/dev/null` and a
     # `>/tmp/nv.txt` exit-code buffer both matched the redirect shape. Those
     # appear in nearly every probe, so the reminder would have fired on every
     # monitoring turn and been trained into noise - the precise failure this

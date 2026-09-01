@@ -9,7 +9,7 @@ The full read (origins, industry use, what is ours) lives in `GATE.md`.
 
 ## Climb from the top
 
-Costs below are from one measured query ("<term>", 2026-08-22, <host>).
+Costs below are from one measured query ("<term>", 2026-08-22, on the second machine).
 They are ORDERS OF MAGNITUDE, not a fixed ranking — re-measure before quoting.
 
 | question | door | cost |

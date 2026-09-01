@@ -102,7 +102,7 @@ Two audiences, both of them unable to ask a follow-up question at low cost:
 - **Myself, later.** Canon pages, plans, working notes.
 - **Other agents.** Subagent prompts, agent-to-agent messages.
 
-the operator is explicitly NOT the primary audience of this gate. His ruling,
+The operator is explicitly NOT the primary audience of this gate. His ruling,
 2026-08-22: STE is how I write to myself and to other agents. Reports to him
 inherit the clarity, but the gate is aimed at the machine-facing surface,
 because that is where a misreading goes uncorrected.
