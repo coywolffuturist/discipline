@@ -73,7 +73,7 @@ does not. A form that enforces nothing says so.
 
 ## Why gates are atomic
 
-**No gate may bundle.** the operator's ruling, 2026-08-22, after `the triad` was
+**No gate may bundle.** The operator's ruling, 2026-08-22, after `the triad` was
 found to hold three separate checks under one name. A single table row then
 reported the whole bundle as fired when only one of the three had produced any
 evidence. The two silent checks were invisible **inside their own row**.
@@ -162,7 +162,7 @@ Approved 2026-08-31.
 
 ### The split that produced 02-05
 
-The old `ask-dont-pour` skill held SIX levers under one name. the operator's
+The old `ask-dont-pour` skill held SIX levers under one name. The operator's
 atomicity ruling forbids that, and the bundle had already hidden work: a
 completion-table row reading "ask-dont-pour FAILED" carried evidence for lever
 1 only, while four other levers went unreported inside the same row.

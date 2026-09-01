@@ -36,7 +36,7 @@ We measured our own ladder. **Provenance, because the first version of this
 table had none and every row I could re-run came out wrong:**
 
     query: "<term>"   date: 2026-08-22T21:09Z   host: <host>
-    corpus: <corpus>/corpus, 1,372 .md files
+    corpus: the private corpus, 1,372 .md files
 
 | door | bytes | model calls | seconds |
 |---|---|---|---|
@@ -73,7 +73,7 @@ already standard, and one refuted itself two paragraphs above its own heading.**
   cost-ordered escalation with the expensive path last IS the borrowed thing.
 - *"Zero hits is decision-grade; a vector index cannot say that."* **Already
   ours in the boring sense, and not a discovery.** It is why hybrid retrieval
-  exists, and our own `<corpus>/organs/lexical.py` carried the comment
+  exists, and our own `lexical.py` carried the comment
   *"Empty list is a real answer, not a failure"* before this gate was written.
 - *"Code is a graph, not a corpus."* **The founding premise of ctags and LSP.**
 

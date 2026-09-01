@@ -4,7 +4,7 @@
             Edit here, install outward, never the reverse (see CONTRACT.md).
     holds:  the gate table, the three legal states, the completion rule.
     holds NO gate reads. A gate's read lives in gates/NN-<name>/GATE.md.
-    ruled:  the operator, 2026-08-31. He approved the 20-gate order below.
+    ruled:  the operator, 2026-08-31 — the 20-gate order below is approved.
             It splits .95 into gates 09 and 20. It splits gate 17 into 17 and 18.
 
 ---

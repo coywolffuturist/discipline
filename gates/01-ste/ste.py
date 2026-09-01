@@ -7,7 +7,7 @@ judgement cases (is this technical term necessary?) belong to the skill form.
 
 WE TAKE THE STRUCTURAL RULES AND REJECT THE LEXICAL ONES. Aerospace can impose
 a 900-word approved vocabulary because its domain is fixed; ours is not, and
-the operator's exception governs — use the exact technical term where precision
+The operator's exception governs — use the exact technical term where precision
 needs it. So this never checks word CHOICE.
 
 Usage:
