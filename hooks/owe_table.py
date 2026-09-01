@@ -24,30 +24,21 @@ try:
 except Exception:
     pass
 
+# SHORT, and it POINTS at the conductor instead of restating it. Two reasons.
+# The operator asked on 2026-08-31 why he was shown this wall of text every
+# build turn: hook feedback renders in HIS terminal, and a gate that clutters a
+# reader it does not address gets switched off. And a restatement is a second
+# copy of canon; second copies drift, as this one did three times in three turns
+# (stale gate count, missing forbidden words, false turn attribution).
 msg = (
-    "DISCIPLINE - COMPLETION TABLE OWED.\n"
-    "%s change(s) have happened SINCE THE LAST CHECK, so a build is outstanding.\n"
-    "Not necessarily in this turn: the final tool call of a turn can write its\n"
-    "flag after that turn's Stop hook already ran, so the credit lands one turn\n"
-    "late. If THIS turn made no changes, the table was owed by the previous one --\n"
-    "say so in one line and stop.\n\n"
-    "Render the completion table from ~/.claude/skills/discipline/SKILL.md. "
-    "All 20 gates get a row. Three legal states and no fourth: FIRED (name the "
-    "ARTIFACT, never a checkmark), N/A (legal only by citing that gate's own "
-    "written trigger, listed in the conductor table), BLOCKED (state what is now "
-    "UNVERIFIED). Silently omitting a row is not a state.\n"
-    "DO NOT WRITE: PARTIAL, FAILED, NOT FIRED, SKIPPED. None is a state. "
-    "PARTIAL and FAILED are FIRED with an artifact that names what was and was "
-    "not produced. NOT FIRED and SKIPPED, when the trigger DID fire, are "
-    "BLOCKED plus what is now UNVERIFIED.\n\n"
-    "GATE 20 state-the-posterior is a TRIGGER, not only a row: any claim of done, "
-    "ready, verified or sure "
-    "owes a posterior AND its evidence, gated by the WORST failure mode rather "
-    "than the best subsystem.\n\n"
-    "If you already rendered the table this turn, say so in one line and stop.\n"
-    "If this reminder names a gate count or number that disagrees with the "
-    "conductor, the HOOK is stale: fix it, because it teaches the wrong canon "
-    "every turn."
+    "DISCIPLINE: completion table owed. %s change(s) since the last check; the "
+    "credit can land one turn late, so if THIS turn changed nothing the table "
+    "was owed by the previous one. Render all 20 gates per "
+    "~/.claude/skills/discipline/SKILL.md, which holds the three legal states, "
+    "the forbidden words, and gate 20. If already rendered, say so in one line "
+    "and stop."
 ) % n
-print(json.dumps({"hookSpecificOutput": {"hookEventName": "Stop",
+
+print(json.dumps({"suppressOutput": True,
+                  "hookSpecificOutput": {"hookEventName": "Stop",
                                          "additionalContext": msg}}))
