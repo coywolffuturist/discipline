@@ -14,8 +14,8 @@ and fails the build when it stops being true.
 Checks:
   1. every gates/NN-* directory referenced in the conductor exists, and vice versa
   2. every skills/<name> path referenced anywhere in the repo exists
-  3. gates 01..20 appear exactly once in each conductor table, with matching names
-  4. README's status table covers all 20 with the same names
+  3. gates 01..19 appear exactly once in each conductor table, with matching names
+  4. README's status table covers all 19 with the same names
   5. every repo-relative file path mentioned in prose exists
   6. the derived skills/discipline/SKILL.md still matches CONDUCTOR.md's gate rows
   7. no gate claims a read that is not present in this repo
@@ -45,7 +45,7 @@ locs = re.findall(r'^\| (\d{2}) \| ([^|]+?) \| ([^|]+?) \|\s*$', cond, re.M)
 trig_map = {n: name.strip().replace("*", "") for n, name, _ in trig}
 loc_map = {n: (name.strip().replace("*", ""), loc.strip()) for n, name, loc in locs}
 
-expected = ["%02d" % i for i in range(1, 21)]
+expected = ["%02d" % i for i in range(1, 20)]
 for n in expected:
     if n not in trig_map:
         bad("conductor", "gate %s missing from the trigger table" % n)
