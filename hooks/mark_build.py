@@ -37,7 +37,15 @@ def main():
     if tool != "Bash":
         return
     cmd = (d.get("tool_input") or {}).get("command", "") or ""
-    if MUT.search(cmd):
+    # SCRATCH REDIRECTS ARE NOT CHANGES. Caught on this hook's second real turn:
+    # a read-only a monitoring pass flagged as a build because `>/dev/null` and a
+    # `>/tmp/nv.txt` exit-code buffer both matched the redirect shape. Those
+    # appear in nearly every probe, so the reminder would have fired on every
+    # monitoring turn and been trained into noise - the precise failure this
+    # hook exists to prevent. Strip null sinks and temp buffers before matching.
+    scrubbed = re.sub(r">>?\s*(/dev/null|/dev/stderr|&\d)", " ", cmd)
+    scrubbed = re.sub(r">>?\s*(/tmp|/private/tmp|\$TMPDIR)[^\s;&|]*", " ", scrubbed)
+    if MUT.search(scrubbed):
         mark("Bash")
 
 def mark(what):
