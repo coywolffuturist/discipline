@@ -130,9 +130,12 @@ agents directory. They cross-reference each other, so take the whole bundle. The
 conductor (`skills/discipline/`) is the entry point; everything else is a gate it
 fires. Nothing here calls home, and nothing needs the rest of this repo.
 
-This repository supersedes an earlier bundle that was published separately. That
-one is archived: two surfaces holding the same content is exactly the drift this
-repo's CONTRACT exists to prevent, and it froze for three months to prove it.
+This repository supersedes two earlier bundles that held the same suite — one
+framed for coding, one renamed for knowledge work. Both are archived and remain
+private, so there is nothing else to go and read; everything they held is here,
+regenerated from current sources. Three surfaces holding one suite, with a manual
+step between them, is exactly the drift this repo's CONTRACT exists to prevent.
+Two of the three froze on the same day in June and neither errored.
 
 ## Status
 
