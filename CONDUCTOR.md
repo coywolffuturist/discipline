@@ -103,8 +103,24 @@ recalled at the right moment fails; a rule compiled into a gate fires.
   gate is a live risk, not a closed row.
 
 **"Skipped because it seemed unnecessary" is not a state, and neither is
-omitting the row.** Silent omission is the failure this table exists to stop:
-every gate appears in every table, or the table is incomplete.
+omitting the row.** Silent omission is the failure this table exists to
+stop: every gate appears in every table, or the table is incomplete.
+
+### The illegal words, and what they should have been
+
+Operator ruling, 2026-08-31: **fix the usage, not the canon.** On that day the
+agent wrote PARTIAL, FAILED, NOT FIRED and SKIPPED into completion tables. None
+is a state. Each is a softer vocabulary for the exact case the rule prevents —
+a row that neither commits to evidence nor admits a gap.
+
+| word used | what it must be instead |
+|---|---|
+| **PARTIAL** | **FIRED**, and the artifact names precisely what was and was not produced. The remainder belongs to gate 13 completer, never to a new state. |
+| **FAILED** | **FIRED**, artifact: the failure. A gate that ran and caught you is the gate working. |
+| **NOT FIRED** / **SKIPPED**, when the trigger DID fire | Not a state. Either run the gate, or write **BLOCKED** and say what is now UNVERIFIED. `19 adversarial-pass — NOT FIRED` should read `BLOCKED: no independent refuter ran; the claim is unverified by anyone but its author.` |
+
+PARTIAL is the most dangerous of the four, because it is where a BLOCKED gate
+goes to hide. A blocked gate is a live risk. "Partial" sounds like progress.
 
 ## Completion
 
