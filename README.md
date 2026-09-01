@@ -40,9 +40,20 @@
 > - The 25-word limit and both lint thresholds have NO test. They can be set to
 >   100000 and the suite stays green.
 >
-> **Neither hook is registered anywhere. The completion table these gates name
-> as their enforcement does not exist.** Nothing here is load-bearing, and the
-> author does not claim it is.
+> **CORRECTED 2026-09-01.** This banner used to read "Neither hook is registered
+> anywhere. The completion table these gates name as their enforcement does not
+> exist." That was true when written and is now false, and it stayed false long
+> enough for a reader to conclude this repo buys reads rather than enforcement.
+>
+> Both hooks in `hooks/` ARE registered on the primary workstation —
+> `mark_build.py` on `PostToolUse`, `owe_table.py` on `Stop` — and the completion
+> table fires unprompted, dozens of times a day. They are NOT registered on the
+> second machine, which holds one deployed skill and no hooks. This suite spans
+> two machines and its claims resolve differently on each; check which one you are
+> reading from.
+>
+> What remains honestly weak is below this banner, and it is about gates 01-02
+> specifically, not about the conductor.
 
 ## What this repo is
 
@@ -150,7 +161,7 @@ Two of the three froze on the same day in June and neither errored.
 | 07 | compile-it | — | not yet |
 | 08 | think-3x | — | not yet |
 | 09 | set-the-prior | — | approved 2026-08-31, not broken down |
-| 10 | disprove-first | — | not yet |
+| 10 | disprove-first | — | GATE.md written, no form yet |
 | 11 | root-cause | — | not yet |
 | 12 | karsholto | — | not yet |
 | 13 | completer | — | not yet |
