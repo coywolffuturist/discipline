@@ -10,7 +10,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
 ran=0
-EXPECTED=6
+EXPECTED=7
 
 run() {
   local name="$1"; shift
@@ -44,6 +44,12 @@ run "baits pair — no check ships unbaited" python3 lint/baits_pair.py
 run "baits pair BAIT — the rule cannot exempt itself" python3 lint/bait_baits_pair.py
 run "the surviving test suite" python3 test_gates.py
 run "crumbs — the breadcrumb stream is readable" python3 lint/crumbs.py
+# Added 2026-09-01. Two readers in one hour caught claims in this repo that had
+# gone false — a banner saying the hooks were registered nowhere, and three gate
+# rows citing a skill this repo does not ship. Both were true when written. A repo
+# whose subject is "an eval must not report health it does not have" cannot leave
+# its own claims to the author's memory.
+run "consistency — this repo does not contradict itself" python3 lint/consistency.py
 
 if [ "$ran" -ne "$EXPECTED" ]; then
   printf "\033[31mFAIL\033[0m  only %d of %d steps ran. A step that did not execute is not a pass.\n" "$ran" "$EXPECTED"
