@@ -26,7 +26,11 @@ except Exception:
 
 msg = (
     "DISCIPLINE - COMPLETION TABLE OWED.\n"
-    "This turn changed %s thing(s), so it is a build, not a conversation.\n\n"
+    "%s change(s) have happened SINCE THE LAST CHECK, so a build is outstanding.\n"
+    "Not necessarily in this turn: the final tool call of a turn can write its\n"
+    "flag after that turn's Stop hook already ran, so the credit lands one turn\n"
+    "late. If THIS turn made no changes, the table was owed by the previous one --\n"
+    "say so in one line and stop.\n\n"
     "Render the completion table from ~/.claude/skills/discipline/SKILL.md. "
     "All 20 gates get a row. Three legal states and no fourth: FIRED (name the "
     "ARTIFACT, never a checkmark), N/A (legal only by citing that gate's own "
