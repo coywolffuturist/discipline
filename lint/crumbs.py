@@ -20,9 +20,15 @@ LOG = os.path.expanduser("~/.coywolf/state/git-hooks/log.jsonl")
 
 def main():
     if not os.path.exists(LOG):
-        print("RED  no breadcrumb log at %s" % LOG)
-        print("     The hooks are not deployed, so nothing was recorded.")
-        return 1
+        # SKIPPED, not RED. The breadcrumb stream is written by the estate's
+        # deployed hooks. A stranger cloning this repo has none, and failing
+        # their build for that is a false denial — which is how a build that is
+        # red out of the box gets deleted instead of debugged. Saying nothing
+        # would be worse: a green that means "not checked".
+        print("SKIP  no breadcrumb log at %s" % LOG)
+        print("      The hooks are not deployed on this machine, so nothing was")
+        print("      recorded. The stream is UNVERIFIED here, not clean.")
+        return 2
     trees = collections.defaultdict(dict)
     n = 0
     for line in open(LOG, encoding="utf-8", errors="ignore"):

@@ -90,4 +90,46 @@ bait("BAIT Q6 a verbatim quote and a true count PASS",
      "> and it's a snapshot that won't track tomorrow's changes", 0, "PASS")
 
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", 6 - len(bad), 6))
+
+# ---- The four defects a reviewer found in this checker on 2026-09-02. -------
+# It compared word SETS, so order and deletion were invisible; it never read
+# inline quotations; and it credited every count to the file it appeared in.
+
+REV_ROW = ("2026-09-01T03:00:00\t04\tno-collision\tFIRED\t"
+           "Anchored while her cycle ran; split custody meant no shared write path\n")
+
+bad_before = len(bad)
+
+bait("BAIT Q7 a REVERSED quote is refused (word-set identical)",
+     "> Anchored while her cycle ran; no split custody meant shared write path",
+     1, "negation is attached to a different word", corpus=REV_ROW)
+
+bait("BAIT Q8 the SAME quote, unreversed, passes",
+     "> Anchored while her cycle ran; split custody meant no shared write path",
+     0, "PASS", corpus=REV_ROW)
+
+DROP_ROW = ("2026-09-01T04:00:00\t12\tcompleter\tBLOCKED\t"
+            "Unverified: whether the popup actually stopped. Only you can confirm. "
+            "Nine adhoc-python jobs remain, and gmail sync is off\n")
+
+bait("BAIT Q9 a quote that DELETES a clause is refused",
+     "> Unverified: whether the popup actually stopped. Nine adhoc-python jobs remain",
+     1, "", corpus=DROP_ROW)   # any refusal; the message differs by which rule catches it
+
+TWO = ("2026-09-01T05:00:00\t19\tstate-the-posterior\tFIRED\tbelow\n"
+       "2026-09-01T05:01:00\t09\tdisprove-first\tFIRED\tsomething\n"
+       "2026-09-01T05:02:00\t09\tdisprove-first\tFIRED\tsomething else\n")
+
+bait("BAIT Q10 a TRUE count about ANOTHER gate passes",
+     "For contrast, disprove-first ran 2 FIRED across the same day.",
+     0, "PASS", corpus=TWO)
+
+bait("BAIT Q11 a FALSE count about another gate is refused",
+     "For contrast, disprove-first ran 7 FIRED across the same day.",
+     1, "says disprove-first", corpus=TWO)
+
+print("\n%s  %d/%d on the reviewer's reproductions"
+      % ("REVIEWER BAITS: PASS" if len(bad) == bad_before else "REVIEWER BAITS: FAIL",
+         5 - (len(bad) - bad_before), 5))
 sys.exit(1 if bad else 0)
+

@@ -23,10 +23,16 @@ merely "did the change land". *Rendered* — in the state the viewer will see:
 deployed, built, refreshed, never a local pre-build proxy.
 
 **The narrowest trigger in the suite, and that is a feature.** Across one day:
-**12 N/A, 1 FIRED, 2 BLOCKED.** Ten of the twelve N/A rows cite the trigger as
-*"UI/CSS/layout change"*; three name authorship explicitly, and one is bare
-("No UI"). The authorship wording is the sharper test and one N/A states it
-exactly:
+**12 N/A, 1 FIRED, 2 BLOCKED.**
+
+Ten of the twelve cite the trigger, in two phrasings — *"UI/CSS/layout change"*
+and *"a UI, CSS or layout change"*. **Two cite neither** and are bare: *"No UI"*
+and *"No interface authored"*. Separately, **three of the twelve name authorship
+explicitly, and two of those three are inside the ten** — the groups overlap, so
+they do not sum to twelve. An earlier version of this paragraph listed 10, 3 and
+1 as though they partitioned the set, which no reader could reconcile.
+
+Authorship is the sharper test, and one N/A states it exactly:
 *driving a browser is not authoring an interface.* Reading someone else's page
 is not this gate. The suite reviewed merging it away on 2026-08-31 and kept it:
 one firing moment is one gate.

@@ -57,10 +57,12 @@ remove the judgement calls that were being made by eye and got wrong.
 repeat. Gate 03 reads **back-to-back** and batches; this reads **three in the session
 log** and compiles. One mechanism, two readings.
 
-**The log is not turn-scoped.** Nothing rotates it, so it accumulates across the
-whole session. An earlier version of this file said "in the turn", which was
-false — and it mattered, because a shape that reached three across six hours is
-weaker evidence for compiling than three in one turn.
+**The log is not turn-scoped, and not session-scoped either.** It carries no
+timestamp, session id or pid, and `$TMPDIR` is per-user-per-boot and shared by
+every concurrent process — a reviewer measured 533 lines across two live
+sessions. It is a BOOT-scoped, CROSS-PROCESS reading. A shape reaching three
+across six hours and two agents is weak evidence for compiling; three in one
+turn by one agent is strong. The counter cannot tell you which you have.
 
 **The count is evidence, not a verdict.** A shape can legitimately recur —
 running the build after each of three edits is not a script waiting to be

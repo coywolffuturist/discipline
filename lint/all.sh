@@ -10,14 +10,31 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
 ran=0
-EXPECTED=10
+EXPECTED=11
 
+# THREE STATES, NOT TWO. rc=2 means SKIPPED — the check needs estate state that
+# is not present, so it neither passed nor failed.
+#
+# A reviewer ran this build under a fresh HOME and got three RED checks. The
+# README said "nothing here calls home", which was false: `quotes` reads the
+# firing corpus, `crumbs` reads a session stream, and `nomess --repo` asserts
+# that this operator's install exists. For a stranger those are FALSE DENIALS —
+# the build refuses them for having a different machine, and a build that is red
+# out of the box gets deleted, not debugged.
+#
+# Passing them silently would be worse: a green that means "not checked". So
+# they SKIP, loudly, and the summary refuses to call the run complete.
+skipped=0
 run() {
   local name="$1"; shift
   local out rc
   out=$("$@" 2>&1); rc=$?
   ran=$((ran + 1))
   if [ $rc -eq 0 ]; then printf "\033[32mPASS\033[0m  %s\n" "$name"
+  elif [ $rc -eq 2 ]; then
+    printf "\033[33mSKIP\033[0m  %s\n" "$name"
+    echo "$out" | sed 's/^/      /'
+    skipped=$((skipped + 1))
   else printf "\033[31mFAIL\033[0m  %s\n" "$name"; echo "$out" | sed 's/^/      /'; fail=1; fi
 }
 
@@ -46,6 +63,7 @@ run "the surviving test suite" python3 test_gates.py
 run "crumbs — the breadcrumb stream is readable" python3 lint/crumbs.py
 run "quotes — every quoted artifact traces to the record" python3 lint/quotes.py
 run "quotes BAIT — every quote check seen to fail" python3 lint/bait_quotes.py
+run "gate 04 BAIT — the shared-path hook, both directions" python3 lint/bait_warn_shared_path.py
 # Added 2026-09-01. Two readers in one hour caught claims in this repo that had
 # gone false — a banner saying the hooks were registered nowhere, and three gate
 # rows citing a skill this repo does not ship. Both were true when written. A repo
@@ -62,5 +80,12 @@ if [ "$ran" -ne "$EXPECTED" ]; then
   printf "\033[31mFAIL\033[0m  only %d of %d steps ran. A step that did not execute is not a pass.\n" "$ran" "$EXPECTED"
   fail=1
 fi
-[ $fail -eq 0 ] && printf "\n\033[32mALL GATES PASS\033[0m\n" || printf "\n\033[31mGATES RED\033[0m\n"
+if [ $fail -ne 0 ]; then
+  printf "\n\033[31mGATES RED\033[0m\n"
+elif [ "${skipped:-0}" -gt 0 ]; then
+  printf "\n\033[33m%d CHECK(S) SKIPPED\033[0m — they need estate state this machine does not have.\n" "$skipped"
+  printf "The rest passed. That is reduced coverage, NOT a full pass.\n"
+else
+  printf "\n\033[32mALL GATES PASS\033[0m\n"
+fi
 exit $fail

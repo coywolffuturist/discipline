@@ -117,7 +117,7 @@ precision wins and the exact term stays.
 | form | artifact | what it enforces |
 |---|---|---|
 | **skill** | `SKILL.md` | Nothing. It is the standard and the judgment cases — *is this term necessary?* is reasoning, and reasoning belongs in context. |
-| **tool** | `ste.py` | Nothing. It MEASURES: words per sentence, passive constructions, longest sentence, clause depth. Zero model calls. Callable by me and by any agent. |
+| **tool** | `ste.py` | Nothing. It MEASURES: words per sentence, longest sentence, clause depth. **Not passive voice** — that metric was DELETED 2026-08-22, not repaired, and `test_gates.py` asserts it stays gone. Zero model calls. Callable by me and by any agent. |
 | **hook** | `hook_prompt.py` | Warns at PreToolUse on the Agent tool, before a subagent spawns. **Never blocks** — the operator's ruling. A blocker that refuses a 26-word sentence is the ritual the suite forbids. |
 | **code** | `lint_ste.py` | Exits non-zero on canon pages and agent definitions at commit time. Canon outlives the session; a page written badly is read wrong for months. |
 

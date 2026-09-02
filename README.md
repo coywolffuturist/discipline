@@ -130,25 +130,34 @@ gates/NN-<name>/
     GATE.md      the read · the intent · the forms   (required)
     <form files> one per form the gate actually has
 skills/          GENERATED deployed forms + the reviewer agents  (derived)
-hooks/           the two hooks that make the table fire unprompted
+hooks/           the hooks that make the table fire unprompted. Symlinks into
+                 the gate directories, so a copy cannot drift.
 lint/            the gates' own checks — `lint/all.sh`
 scripts/         standalone guards, usable without the rest
 ```
 
 `gates/` is canonical and hand-reviewed. `skills/` is generated from the private
 masters by `skill_share.sh` and is overwritten on every run — see
-`skills/README.md`. Most gates in the table below are marked "not yet": they have
-a deployed form in `skills/` but no reviewed `GATE.md` source. That gap is the
-honest state of this repo, not an omission from this list.
+`skills/README.md`. Every gate in the table below is built: each has a reviewed
+`GATE.md` source and its ruled forms. An earlier version of this paragraph said
+most were "not yet" — it was written before the gates were built and never
+updated, one screen above a table that said the opposite.
 
 ### If you only want the skills
 
 Copy `skills/` into your agent's skills directory and `skills/agents/` into its
 agents directory. They cross-reference each other, so take the whole bundle. The
 conductor (`skills/discipline/`) is the entry point; everything else is a gate it
-fires. Nothing here calls home, and nothing needs the rest of this repo.
+fires.
 
-All 19 gates were ruled on 2026-09-01 by moon cast: 20 cards, 20 full moons, gate 03 price-the-loop retired into gate 02 as a lever and the table renumbered. Two gates have built forms; the rest carry a ruled trigger and owe a GATE.md.
+**What a clone can and cannot check.** `bash lint/all.sh` runs on any machine,
+but two steps need private estate state — the firing corpus and the deployed
+hooks' breadcrumb stream. Without them those steps print **SKIP**, loudly, and
+the summary refuses to call the run a full pass. An earlier version of this line
+said "nothing here calls home", which was false: a reviewer ran the build under
+a fresh HOME and got three red checks for owning a different machine.
+
+All 19 gates were ruled on 2026-09-01 by moon cast: 20 cards, 20 full moons, gate 03 price-the-loop retired into gate 02 as a lever and the table renumbered. All 19 have a GATE.md and their ruled forms.
 
 This repository supersedes two earlier bundles that held the same suite — one
 framed for coding, one renamed for knowledge work. Both are archived and remain
@@ -199,7 +208,7 @@ set. **Gate 19 state-the-posterior** is DEAD LAST, after the refuter.
 
 Approved 2026-08-31.
 
-### The split that produced 17 and 18
+### The split that produced 16 and 17
 
 `chunk-it + write-back` was the last surviving bundle. They are two acts with
 two artifacts: the ledger entry and the memory page. On 2026-08-31 write-back

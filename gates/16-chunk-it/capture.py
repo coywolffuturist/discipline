@@ -17,9 +17,39 @@ That judgement is the gate; this is only the hands.
 """
 import argparse, io, os, re, sys
 
-LEDGER = os.path.expanduser(
-    "~/.claude/projects/-Users-brendanjoyce/memory/reference_coywolf_chunk_ledger.md")
-MEMDIR = os.path.expanduser("~/.claude/projects/-Users-brendanjoyce/memory")
+LEDGER_NAME = "reference_coywolf_chunk_ledger.md"
+
+# THE STORE IS DISCOVERED, NEVER HARDCODED.
+#
+# This file previously hardcoded an absolute path under ~/.claude/projects/
+# containing the operator's ACCOUNT NAME, in a public repository. A reviewer
+# found it before the commit was pushed. The estate's leak gate exists for
+# exactly this, and it was not run against this repo.
+#
+# Order: an explicit override, then the single memory directory under
+# ~/.claude/projects/. If there is more than one, REFUSE rather than guess —
+# writing a memory to the wrong store is silent and permanent.
+def _memdir():
+    env = os.environ.get("COYWOLF_MEMORY_DIR")
+    if env:
+        return os.path.expanduser(env)
+    import glob
+    cand = sorted(glob.glob(os.path.expanduser("~/.claude/projects/*/memory")))
+    # Disambiguate on EVIDENCE, not on order: the real store is the one already
+    # holding the ledger this tool appends to. Seven directories match the glob
+    # on the primary workstation, so picking the first would have been a guess
+    # that writes to the wrong store silently.
+    real = [d for d in cand if os.path.exists(os.path.join(d, LEDGER_NAME))]
+    if len(real) == 1:
+        return real[0]
+    if not cand:
+        sys.exit("capture: no memory store found. Set COYWOLF_MEMORY_DIR.")
+    sys.exit("capture: cannot identify the store (%d candidates, %d hold %s). "
+             "Set COYWOLF_MEMORY_DIR." % (len(cand), len(real), LEDGER_NAME))
+
+
+MEMDIR = _memdir()
+LEDGER = os.path.join(MEMDIR, LEDGER_NAME)
 INDEX = os.path.join(MEMDIR, "MEMORY.md")
 PENDING = "\n---\n\n## Pending — named but NOT yet chunked"
 
@@ -53,20 +83,41 @@ def writeback(name, description, kind, body, index_line):
     path = os.path.join(MEMDIR, "%s_%s.md" % (kind, slug.replace("-", "_")))
     if os.path.exists(path):
         sys.exit("capture: %s already exists — update it rather than creating a duplicate" % path)
-    io.open(path, "w", encoding="utf-8").write(
-        "---\nname: %s\ndescription: %s\nmetadata:\n  type: %s\n---\n\n%s\n"
-        % (slug, description, kind, body.strip()))
-    idx = io.open(INDEX, encoding="utf-8").read()
-    line = "> %s\n" % index_line.strip()
-    if line not in idx:
-        anchor = "\n# Memory Index\n"
-        if anchor in idx:
-            idx = idx.replace(anchor, anchor + "\n" + line, 1)
-        else:
-            idx = line + idx
-        io.open(INDEX, "w", encoding="utf-8").write(idx)
-    if not os.path.exists(path) or line not in io.open(INDEX, encoding="utf-8").read():
-        sys.exit("capture: file or index entry did NOT land")
+    # BOTH HALVES OR NEITHER, AND THIS IS THE MECHANISM, NOT THE INTENT.
+    #
+    # The first version wrote the memory file, then the index. A reviewer made
+    # the index unwritable: the file was created, the index write threw an
+    # uncaught traceback, and the verification block below never ran because it
+    # sits AFTER the throwing line. The result was an orphaned memory file — the
+    # exact "structure without a reader" state gate 17 says is impossible — and
+    # the tool's own duplicate guard then blocked every retry. Permanent, by the
+    # guard meant to protect it.
+    #
+    # So: write the file, and if ANYTHING after that fails, REMOVE it. A rollback
+    # is the only thing that makes "or neither" true.
+    body_txt = ("---\nname: %s\ndescription: %s\nmetadata:\n  type: %s\n---\n\n%s\n"
+                % (slug, description, kind, body.strip()))
+    io.open(path, "w", encoding="utf-8").write(body_txt)
+    try:
+        idx = io.open(INDEX, encoding="utf-8").read()
+        line = "> %s\n" % index_line.strip()
+        if line not in idx:
+            anchor = "\n# Memory Index\n"
+            if anchor in idx:
+                idx = idx.replace(anchor, anchor + "\n" + line, 1)
+            else:
+                idx = line + idx
+            io.open(INDEX, "w", encoding="utf-8").write(idx)
+        if not os.path.exists(path) or line not in io.open(INDEX, encoding="utf-8").read():
+            raise IOError("file or index entry did NOT land")
+    except Exception as e:
+        try:
+            os.remove(path)
+            undone = "the memory file was removed"
+        except OSError:
+            undone = "AND THE MEMORY FILE COULD NOT BE REMOVED: %s" % path
+        sys.exit("capture: the index could not be written (%s). Nothing was kept — %s."
+                 % (e, undone))
     print("wrote: %s\nindexed: %s" % (os.path.basename(path), index_line[:70]))
 
 

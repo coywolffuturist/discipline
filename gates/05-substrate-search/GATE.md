@@ -43,7 +43,7 @@ every mechanism in the estate can answer why it exists.
 
 **ADOPTED, NOT BUILT — and this gate is the guard's proper owner.** The ruled
 form was "a hook on file creation demands the written justification". That hook
-already existed, and its prompt is this gate's question verbatim: *what existing
+already existed, and its prompt is this gate's question verbatim: *What existing
 piece already does this, and why is it insufficient for this case?*
 
 The guard is shared with gate 11, which reads the **count** of new substrate from

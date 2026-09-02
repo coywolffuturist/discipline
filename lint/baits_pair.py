@@ -46,7 +46,14 @@ DECL = re.compile(r'^\s*"([A-Z]{1,4}[0-9]{1,3}[a-z]?)":', re.M)
 
 def scan():
     asserts, baits, allowed = {}, set(), 0
-    files = sorted(glob.glob(ROOT + "/gates/*/*.py") + glob.glob(ROOT + "/lint/*.py"))
+    # hooks/ WAS MISSING, and that is the same defect gate 18 recorded: a rule
+    # scoped to a location is walked around by choosing another location. A
+    # reviewer put a numbered check in hooks/ and the registry reported GREEN.
+    files = sorted(set(os.path.realpath(f) for f in
+                       glob.glob(ROOT + "/gates/*/*.py")
+                       + glob.glob(ROOT + "/lint/*.py")
+                       + glob.glob(ROOT + "/hooks/*.py")
+                       + glob.glob(ROOT + "/scripts/*.py")))
     for f in files:
         if os.path.basename(f).startswith("baits_pair"):
             continue

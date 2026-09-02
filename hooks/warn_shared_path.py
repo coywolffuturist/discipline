@@ -54,8 +54,14 @@ if not has_redirect and re.match(r"^\s*(cat|ls|grep|rg|head|tail|wc|find|stat|fi
 
 # `ssh host 'cat ...'` is a READ on the second machine. The old version warned on
 # every ssh, which is noise, and noise is how a warning gets ignored.
+#
+# `python3 -c` IS NOT A READ, and listing it here was the defect. A reviewer
+# showed `ssh den "python3 -c 'open(...,\"w\").write(1)'"` passing SILENTLY while
+# `ssh den "echo hi >> ~/pack/board.txt"` warned. A `-c` payload is arbitrary
+# code; nothing about the invocation says whether it writes. This estate runs
+# roughly ten python heredocs a day, so the shape is common, not exotic.
 if re.match(r"^\s*ssh\b", cmd) and not has_redirect and \
-        re.search(r"""['"]\s*(cat|ls|grep|head|tail|wc|find|stat|pgrep|echo|date|python3?\s+-c)\b""", cmd) and \
+        re.search(r"""['"]\s*(cat|ls|grep|head|tail|wc|find|stat|pgrep|echo|date)\b""", cmd) and \
         not VERB.search(re.sub(r"^\s*ssh\s+\S+\s*", "", cmd)):
     raise SystemExit(0)
 

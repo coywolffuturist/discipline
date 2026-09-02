@@ -27,6 +27,9 @@ DEN = "coywolfden"
 findings = []
 
 
+SKIP_DEPLOY = False
+
+
 def bad(scope, msg):
     findings.append((scope, msg))
 
@@ -71,9 +74,32 @@ def repo_sweep():
     for src, dst in pairs:
         d = os.path.expanduser(dst)
         if not os.path.exists(d):
+            # NOT a failure on a machine that has no install. This check
+            # asserts THIS estate's deployed state; for anyone else it is
+            # unknowable, and refusing their build for it is a false denial.
+            if not os.path.isdir(os.path.expanduser("~/.claude/hooks")):
+                global SKIP_DEPLOY
+                SKIP_DEPLOY = True
+                continue
             bad("repo", "NOT DEPLOYED: %s has no copy at %s" % (src, dst))
         elif open(src, "rb").read() != open(d, "rb").read():
             bad("repo", "DRIFT: %s differs from its deployed copy %s — install outward" % (src, dst))
+
+    # A repo-internal DUPLICATE is a drift source the deployed-copy check above
+    # cannot see: that one compares repo to INSTALLED, never repo to repo. Four
+    # hook files existed twice — once under hooks/, once beside their GATE.md —
+    # and two had already diverged, with the REGISTERED copy carrying a sentence
+    # its own gate file declares false. They are symlinks now; this refuses a
+    # plain copy so the class cannot come back.
+    import glob
+    for h in sorted(glob.glob(os.path.join(REPO, "hooks", "*.py"))):
+        b = os.path.basename(h)
+        twins = glob.glob(os.path.join(REPO, "gates", "*", b))
+        if twins and not os.path.islink(h) and not all(os.path.islink(t) for t in twins):
+            bad("repo", "DUPLICATE: hooks/%s and %s are both real files; one must "
+                        "be a symlink or they will drift"
+                        % (b, os.path.relpath(twins[0], REPO)))
+
 
 def done_sweep():
     """Single-copy work. NOT a build check — see below.

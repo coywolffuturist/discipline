@@ -25,8 +25,12 @@ one day this gate was BLOCKED 9 times out of 36 — always at the end of a turn,
 scanning what had just happened, which is the moment I am least able to see it.
 
 **A ledger entry is not a fix.** One lesson recorded that morning — *a hardcoded
-list needs a checker, not a more careful author* — was hit twice more the same
-day, because the chunk named a mechanism and the mechanism was never built.
+list needs a checker, not a more careful author* — was hit twice more
+afterwards, because the chunk named a mechanism and the mechanism was never
+built. Those later instances are attested by the CODE, not by the firing corpus:
+that lesson is the corpus's final row, so nothing in it follows. An earlier
+version of this file said "the same day" and cited the record. Gate 10 retracted
+exactly that claim and this file kept shipping it.
 Capturing is necessary and is not sufficient.
 
 ## The intent

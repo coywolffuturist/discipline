@@ -14,8 +14,8 @@ confidence in it.** Not a feeling, not "high" — a number you are willing to be
 wrong about in public.
 
 The failure that produced this gate is measurable. Across one day this gate
-recorded 37 encounters and **never once went N/A**, which is the signature of a
-standard too easy to meet. In those 37, an actual number appeared **three
+recorded 35 firings and **never once went N/A**, which is the signature of a
+standard too easy to meet. In those 35, an actual number appeared **four
 times**. The posterior gate that closes every completion table was therefore
 computing an update against a value that mostly did not exist.
 
