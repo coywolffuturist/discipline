@@ -158,9 +158,14 @@ def writeback(name, description, kind, body, index_line):
                 "MEMORY.md carries what must fire UNPROMPTED, INDEX.md carries "
                 "what answers a question you already have." % (projected, BUDGET))
         if line not in idx:
-            anchor = "\n# Memory Index\n"
-            if anchor in idx:
-                idx = idx.replace(anchor, anchor + "\n" + line, 1)
+            # The header is `# Memory Index — the ROUTER`, not `# Memory Index`.
+            # The first anchor was the bare string with a newline on each side,
+            # which the real file has never contained, so every entry landed
+            # ABOVE the header. A bait built on the real header caught it on
+            # 2026-09-02. Match the header LINE, then insert under it.
+            m = re.search(r"^# Memory Index[^\n]*\n\n?", idx, re.M)
+            if m:
+                idx = idx[:m.end()] + line + idx[m.end():]
             else:
                 idx = line + idx
             _atomic_write(INDEX, idx)

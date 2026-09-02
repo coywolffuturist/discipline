@@ -1,0 +1,14 @@
+# run_baits.baseline — forms with NO bait file. DEBT. This file may only SHRINK:
+# BASELINE_MAX in lint/run_baits.py is pinned to its length, so appending a line
+# fails the build until a human lowers the number. Pay a line by writing the bait.
+# checks.py DECLARES gate 01's ids; nothing executes or imports it. Its ids are
+# baited through the registry (lint/baits_pair.py) and gates/01-ste/baits.py.
+gates/01-ste/checks.py
+hooks/owe_table.py
+lint/consistency.py
+lint/crumbs.py
+scripts/guard_modals.sh
+scripts/guard_secrets.sh
+scripts/install.sh
+scripts/nomess.sh
+scripts/retire-identifier.py

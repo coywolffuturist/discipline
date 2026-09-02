@@ -10,7 +10,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
 ran=0
-EXPECTED=11
+EXPECTED=8
 
 # THREE STATES, NOT TWO. rc=2 means SKIPPED — the check needs estate state that
 # is not present, so it neither passed nor failed.
@@ -56,14 +56,16 @@ if [ "${#STAGED[@]}" -gt 0 ]; then
 else
   run "gate 01 lints this repo's own prose" python3 gates/01-ste/lint_ste.py README.md CONTRACT.md gates
 fi
-run "gate 01 baits — every check seen to fail" python3 gates/01-ste/baits.py
 run "baits pair — no check ships unbaited" python3 lint/baits_pair.py
-run "baits pair BAIT — the rule cannot exempt itself" python3 lint/bait_baits_pair.py
-run "the surviving test suite" python3 test_gates.py
+# Added 2026-09-02, gate 09's REVISIT. The registry above pairs labels and
+# executes nothing. This RUNS every bait file git tracks, reads its PASS n/m
+# line, and refuses any code form no bait file names. The five bait steps that
+# used to be listed here one by one now run inside it — a list of steps is an
+# enumeration, and a new bait in a new directory was invisible to it.
+run "run baits — every form baited, every bait seen red" python3 lint/run_baits.py
+run "run baits BAIT — the runner cannot exempt itself" python3 lint/bait_run_baits.py
 run "crumbs — the breadcrumb stream is readable" python3 lint/crumbs.py
 run "quotes — every quoted artifact traces to the record" python3 lint/quotes.py
-run "quotes BAIT — every quote check seen to fail" python3 lint/bait_quotes.py
-run "gate 04 BAIT — the shared-path hook, both directions" python3 lint/bait_warn_shared_path.py
 # Added 2026-09-01. Two readers in one hour caught claims in this repo that had
 # gone false — a banner saying the hooks were registered nowhere, and three gate
 # rows citing a skill this repo does not ship. Both were true when written. A repo
