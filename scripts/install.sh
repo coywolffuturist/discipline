@@ -20,6 +20,9 @@ bash ~/.claude/scripts/skill_share.sh >/dev/null 2>&1
 rm -rf skills && mkdir skills
 cp -R ~/.claude/skills-shareable/. skills/
 rm -f skills/CONTRACT.md
+# The plugin layout wants agents at the ROOT (2026-09-02). Same four files as
+# skills/agents/, regenerated here so the two cannot drift by hand.
+rm -rf agents && mkdir agents && cp skills/agents/*.md agents/
 cat > skills/README.md <<'HDR'
 # skills/ — GENERATED. Do not hand-edit.
 

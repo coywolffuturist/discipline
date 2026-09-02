@@ -1,3 +1,8 @@
+---
+name: discipline
+description: "CONDUCTOR — the phase-aware gate runner. Fires the nineteen discipline gates by phase (DESIGN, BUILD, VERIFY) inside the ka123n outer loop, renders the completion table with three legal states, and runs a declared suite to completion. Trigger: any non-trivial build, fix, review, or a claim of done / ready / clean; shorthand 'discipline'."
+---
+
 # CONDUCTOR — the phase-aware gate runner
 
     role:   CANONICAL. The deployed copy is ~/.claude/skills/discipline/SKILL.md.
@@ -126,6 +131,33 @@ goes to hide. A blocked gate is a live risk. "Partial" sounds like progress.
 A discipline run is not finished until every row is filled. The value is not
 the record. It is the moment of filling it, when a gap that felt like nothing
 becomes a blank you cannot leave.
+
+## Your suite — declared once, then run to completion
+
+Another setup need not adopt all nineteen. It adopts the gates it chooses and
+declares them, one per line, in `~/.claude/discipline-suite` (or the file the
+`DISCIPLINE_SUITE` variable names):
+
+    01 ste
+    07 think-3x
+    09 disprove-first
+    18 adversarial-pass
+
+Three rules make a declared suite run to completion rather than fade:
+
+- **The table renders the declared gates and only those.** A gate outside the
+  suite is absent, not N/A. N/A remains what it was: a gate IN the suite whose
+  written trigger did not fire this turn, cited.
+- **12 completer and 19 state-the-posterior are always in.** A suite without
+  its two closers has no definition of "complete"; the table hook adds them
+  and says so.
+- **The suite is edited, never skipped.** A gate that keeps going N/A is a
+  gate to remove from the file, in a commit, with the reason. Leaving it in
+  and not rendering it is the fourth state, and there is no fourth state.
+
+With no file, the suite is all nineteen. `ka123n` and `grill-me` are not
+gates; they are the outer loop and the design interview, and travel with the
+bundle whichever gates are chosen.
 
 ## Where each gate's read currently lives
 

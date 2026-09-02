@@ -56,7 +56,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 BASELINE = os.path.join(ROOT, "lint", "run_baits.baseline")
 
 # THE BASELINE MAY ONLY SHRINK. Lower this when debt is paid; never raise it.
-BASELINE_MAX = 9
+BASELINE_MAX = 8
 
 FORM_EXT = (".py", ".sh", ".bash")
 BAIT_NAME = re.compile(r"^(bait_.*\.py|baits\.py|test_gates\.py)$")

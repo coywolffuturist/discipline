@@ -1,0 +1,11 @@
+{
+  "name": "discipline",
+  "displayName": "Discipline",
+  "description": "Nineteen phase-aware gates, the conductor that runs them, the ka123n outer loop, the grill-me design interview, four adversarial reviewer agents, and the nine hooks that make a declared suite run to completion.",
+  "version": "1.0.0",
+  "author": { "name": "coywolf" },
+  "homepage": "https://github.com/coywolffuturist/discipline",
+  "repository": "https://github.com/coywolffuturist/discipline",
+  "license": "MIT",
+  "keywords": ["discipline", "gates", "verification", "adversarial-review", "ka123n"]
+}
