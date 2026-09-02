@@ -96,6 +96,37 @@ for surface, text in (("CONDUCTOR.md", cond), ("README.md", readme), ("CONTRACT.
         if not os.path.exists(os.path.join(root, p)):
             bad("dangling-path", "%s references `%s`, which does not exist" % (surface, p))
 
+# --- 6b. the derived copy must match its source ROW FOR ROW ------------------
+# A cold reader found on 2026-09-01 that this checker printed "every claim checks
+# out" while the DEPLOYED conductor still said gate 08 had no GATE.md. Check 6
+# compared only gate numbers and names — never the read-location rows, which were
+# exactly the stale ones. A checker that verifies the cheap half of a file and
+# reports on the whole file is the failure this repo exists to name.
+_d = read("skills/discipline/SKILL.md")
+if _d is not None:
+    src_locs = dict((n, loc.strip()) for n, _nm, loc in
+                    re.findall(r'^\| (\d{2}) \| ([^|]+?) \| ([^|]+?) \|\s*$', cond, re.M))
+    der_locs = dict((n, loc.strip()) for n, _nm, loc in
+                    re.findall(r'^\| (\d{2}) \| ([^|]+?) \| ([^|]+?) \|\s*$', _d, re.M))
+    for n in sorted(src_locs):
+        if n not in der_locs:
+            bad("derived-stale", "gate %s read-location missing from skills/discipline/SKILL.md" % n)
+        elif der_locs[n] != src_locs[n]:
+            bad("derived-stale",
+                "gate %s read-location DIFFERS between CONDUCTOR.md and its derived copy — regenerate"
+                % n)
+
+# --- 6c. no pre-renumber gate names may survive in prose ---------------------
+# Two numbering schemes were live at once: the tables said 08/18/19 while prose
+# still said "Gate 09 set-the-prior" and "Gate 20 state-the-posterior". A
+# completion table written from the prose lines up with nothing.
+_names = dict((n, nm.strip().replace("*", "")) for n, nm, _p in trig)
+for surface, text in (("CONDUCTOR.md", cond), ("README.md", readme), ("CONTRACT.md", contract)):
+    for n, nm in re.findall(r'\bGate (\d{2}) ([a-z][a-z0-9-]+)', text):
+        if n in _names and _names[n] != nm:
+            bad("stale-numbering",
+                "%s says 'Gate %s %s' but gate %s is %s" % (surface, n, nm, n, _names[n]))
+
 # --- 6. the derived copy must still match its source -------------------------
 derived = read("skills/discipline/SKILL.md")
 if derived is None:

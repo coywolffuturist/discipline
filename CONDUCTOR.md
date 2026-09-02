@@ -82,10 +82,10 @@ fixes. Both numbers were stated before gate 19 ran.
 
 It was a bundle of two acts at two moments, so it was split:
 
-- **Gate 09 set-the-prior.** State the user-outcome ONCE and your prior BEFORE
+- **Gate 08 set-the-prior.** State the user-outcome ONCE and your prior BEFORE
   building. You cannot update a posterior you never set. A posterior with no
   prior is a first impression wearing a decimal.
-- **Gate 20 state-the-posterior.** DEAD LAST, after the refuter. Give the number
+- **Gate 19 state-the-posterior.** DEAD LAST, after the refuter. Give the number
   AND its evidence, gated by the WORST failure mode, never the best subsystem.
 
 Gate 20 is a **standing trigger**, not only a table row. It fires on any claim of
@@ -116,7 +116,7 @@ a row that neither commits to evidence nor admits a gap.
 |---|---|
 | **PARTIAL** | **FIRED**, and the artifact names precisely what was and was not produced. The remainder belongs to gate 13 completer, never to a new state. |
 | **FAILED** | **FIRED**, artifact: the failure. A gate that ran and caught you is the gate working. |
-| **NOT FIRED** / **SKIPPED**, when the trigger DID fire | Not a state. Either run the gate, or write **BLOCKED** and say what is now UNVERIFIED. `19 adversarial-pass — NOT FIRED` should read `BLOCKED: no independent refuter ran; the claim is unverified by anyone but its author.` |
+| **NOT FIRED** / **SKIPPED**, when the trigger DID fire | Not a state. Either run the gate, or write **BLOCKED** and say what is now UNVERIFIED. `18 adversarial-pass — NOT FIRED` should read `BLOCKED: no independent refuter ran; the claim is unverified by anyone but its author.` |
 
 PARTIAL is the most dangerous of the four, because it is where a BLOCKED gate
 goes to hide. A blocked gate is a live risk. "Partial" sounds like progress.
@@ -148,11 +148,11 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | 11 | karsholto | deployed `skills/karsholto` |
 | 12 | completer | deployed `skills/completer` |
 | 13 | nomess | deployed `skills/nomess` |
-| 14 | cold-read | deployed `skills/cold-read` |
+| 14 | cold-read | `gates/14-cold-read/GATE.md` · deployed `skills/cold-read` · agent `skills/agents/cold-reader.md` |
 | 15 | vizcheck | deployed `skills/vizcheck` |
 | 16 | chunk-it | **NO DEPLOYED SKILL, BY RULING.** It folds into the completion rule: an obligation on every table, not a judgement. Ruled 2026-09-01. |
 | 17 | write-back | **NO DEPLOYED SKILL, BY RULING.** Same — an obligation, not a judgement. Ruled 2026-09-01. |
-| 18 | adversarial-pass | deployed `skills/adversarial-pass` |
+| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agent `refuter` · hooks `hooks/hook_ship_guard.py` + `hooks/mark_refuter.py` |
 | 19 | state-the-posterior | deployed `skills/95-percent-rule` — the posterior half. NO GATE.md yet |
 
 The `ask-dont-pour` bundle remains deployed on the primary workstation as the

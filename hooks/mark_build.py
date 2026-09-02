@@ -14,6 +14,7 @@ Read-only shells must stay quiet, or the reminder becomes noise and gets ignored
 import json, os, re, sys
 
 FLAG = os.path.join(os.environ.get("TMPDIR", "/tmp"), "coywolf-build-turn.flag")
+PRIOR_FLAG = os.path.join(os.environ.get("TMPDIR", "/tmp"), "coywolf-prior-owed.flag")
 # The verb may sit INSIDE a quoted remote command: `ssh den "rm -f /tmp/x"`.
 # Anchoring to a command boundary missed that, which is the dominant shape of
 # this estate's work. So the boundary includes quotes and plain whitespace, and
@@ -49,10 +50,15 @@ def main():
         mark("Bash")
 
 def mark(what):
-    try:
-        with open(FLAG, "a") as f:
-            f.write(what + "\n")
-    except Exception:
-        pass
+    # TWO flags, one per consumer. A cold reader proved on 2026-09-01 that
+    # owe_table.py CONSUMES the build flag, so whichever Stop hook draws
+    # second sees nothing. Gate 08 had been firing on luck. Each consumer
+    # now owns its own flag and cannot silence the other.
+    for p in (FLAG, PRIOR_FLAG):
+        try:
+            with open(p, "a") as f:
+                f.write(what + "\n")
+        except Exception:
+            pass
 
 main()
