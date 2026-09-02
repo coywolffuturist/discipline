@@ -1,0 +1,1 @@
+REFUTED refuter 2026-09-02 fresh-HOME build RED (run_baits scores bait_gate18 rc=2 as FAIL+orphan); refs/notes/reviews and --mirror pushes are refused by the gate itself; reachable-non-tip commits are gated (G16 label false)
