@@ -11,7 +11,7 @@ so quotes.py slipped past it silently — the same defect this suite had just
 recorded against gate 09. The bait exists because the rule says so, not because
 a checker asked.
 """
-import io, os, subprocess, sys, tempfile
+import io, os, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CORPUS_ROW = ("2026-09-01T02:06:04\t19\tstate-the-posterior\tFIRED\t"
@@ -44,11 +44,14 @@ def run(gate_body, corpus=CORPUS_ROW, subdir="19-state-the-posterior"):
     cdir = os.path.join(d, "corpus"); os.makedirs(cdir)
     if corpus is not None:
         io.open(os.path.join(cdir, "firings-2026-09-01.tsv"), "w", encoding="utf-8").write(HEADER + corpus)
-    src = io.open(os.path.join(ROOT, "lint", "quotes.py"), encoding="utf-8").read()
-    src = src.replace('CORPUS = os.path.expanduser("~/.coywolf/gate-corpus")',
-                      'CORPUS = %r' % cdir)
-    p = os.path.join(d, "quotes.py"); io.open(p, "w", encoding="utf-8").write(src)
-    r = subprocess.run([sys.executable, p], cwd=d, capture_output=True, text=True)
+    # The REAL checker, pointed at the throwaway corpus by QUOTES_CORPUS. An
+    # earlier version rewrote the CORPUS line in a copy, so the file seen red
+    # was a variant of the one that ships, and the bait runner could not
+    # credit it.
+    p = os.path.join(ROOT, "lint", "quotes.py")
+    r = subprocess.run([sys.executable, p], cwd=d, capture_output=True, text=True,
+                       env=dict(os.environ, QUOTES_CORPUS=cdir))
+    shutil.rmtree(d, ignore_errors=True)   # 17 tmp dirs per run were left behind
     return r.returncode, r.stdout + r.stderr
 
 

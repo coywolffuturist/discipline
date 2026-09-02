@@ -439,6 +439,67 @@ The only boundary outside this user's privilege is **server-side** — branch
 protection, required reviews, push protection — which is the operator's to set
 and is **not in place today.**
 
+## Round four, 2026-09-02 — the first review that could reach the hook
+
+Three earlier reviews could not read `pre-push`, because it is not in this
+repo. A fourth was given the file, the engine, the corpus and a second
+machine. It found a fourth LAYER, below prose, mechanism and publication:
+**where the fixed code runs.** Open, not fixed, as of this writing.
+
+- **Every fix narrated above is an uncommitted working copy.** The hook is 533
+  lines of diff against its own repo's HEAD of 2026-07-13; the engine's
+  `LC_ALL=C`, `diff_added.awk` and `commit-msg` are uncommitted or untracked
+  with it. The second machine runs the 75-line July hook and the engine with
+  no `LC_ALL=C`. "The fix went into the ENGINE so all five callers" (above) is
+  true on one machine's working tree.
+- **The licence is minted at LAUNCH.** `PostToolUse[Agent]` fires when the
+  Agent tool returns, which for a background reviewer is seconds after spawn.
+  The corpus row this page calls the interesting BLOCKED case — *"Refuter
+  spawned, verdict not returned"* — is exactly what the code form licenses.
+  Observed on three spawns in one session. One flag also licenses ANY repo
+  from ANY directory, and two pushes that read it before either consumes it
+  (3/3 concurrent). Fourteen accumulated reviews were consumed by one push.
+- **"The gate now also reads the state the REMOTE already has" is false.**
+  The marker check reads local refs only. Delete the marker in one commit
+  and push: no review, no output, and every later push from that clone is
+  ungated. The remote's advertised tips are already in hand and are never
+  asked for the marker.
+- **The engine passes realistic secret lines.** Five shapes, each landed on
+  a remote at exit 0. A wallet-key line is dropped whole when it also holds
+  an exclusion word such as `transaction`, `manifest`, `checksum` or
+  `fingerprint`. A base58 key alone on a line never matches. An AWS secret
+  access key, base64 with a `/`, matches no tier. A hardcoded fallback
+  beside an env read, `os.environ.get("K", "…")`, is dropped by the env-read
+  filter. The seed-phrase tier fails OPEN, silently, when `python3` fails.
+- **"No property of the work can hide from [the watchdog]" is false.** The
+  watchdog starts AFTER the per-ref loop that scans trees and tags. A
+  lightweight tag at a tree of 2000 blobs ran 14.8s, and a 16MB tree 18s,
+  with no output at all.
+- **A push -f after a peer pushed rescans the whole history.** One unknown
+  sha in the negative set discards the remote's advertisement with it. 600
+  commits already on the remote: 66.7s against 0.11s without the hook.
+- **`outbound_commits()` has no callers.** The fail-closed helper the FOURTH
+  refuter's section describes is dead code; its comment says "every caller
+  now uses `if ! VAR=$(…)`". `REMOTE_NAME` is assigned and never read. The
+  comment claiming a `-s` test names a test that does not exist.
+- **Numbers.** Measured on the same machine: ~113ms per content commit, not
+  ~50ms; ~82ms per empty commit, not 14ms; 40 tags against a 602-ref remote
+  5.9s, not 3.1s. "Fifty-four hook defects" cannot be reconstructed from
+  this page (47–51 by enumeration); "8 different phrasings" is 9 by first
+  sentence. "30 legitimate push shapes" and "479 files" have no source
+  outside this page. No bait harness for the hook exists anywhere; every
+  "verified n/n" above rests on its author's word.
+- **A caught seed phrase is printed unredacted.** The redaction masks tokens
+  of 12+ characters; seed words are short.
+
+What held under the same review: the corpus counts (34 / 19 / 15, and every
+characterisation the page corrected twice); the eight bypasses; the ten
+rounds; every gate-18 refusal shape (no flag, empty, symlink, stale, future
+mtime, undeletable, second push); every secret-scan closure listed above,
+re-driven one by one; the replace-ref lens; trivial-push overhead 0.20s.
+
+The full report with every command: `~/.coywolf/handoff/05-review-four-findings.md`.
+
 ## What is still unguarded, named rather than implied
 
 The push path is covered. These are not, and each needs a check at ITS action

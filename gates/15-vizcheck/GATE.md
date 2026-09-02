@@ -92,6 +92,12 @@ a capture, and the capture tool is known to lie about width and about time. The
 gate cannot currently distinguish "the layout is correct" from "the tool cropped
 the evidence" without a control render. That is the real limit today.
 
+Verified on the second machine 2026-09-02, with the control render this
+paragraph asks for: the tool exists and runs; asked for 430x260 it returned a
+430x260 image of a page that reported its own width as 500x288, with the
+right border of a full-width box cropped away. The width defect is LIVE. The
+time defect was not re-tested that day.
+
 **REVISIT** when the capture tool's two defects are fixed or replaced, or when
 the tool exists on the machine that holds this repo — today it does not, so a
 FIRED row here depends on a second machine being reachable.

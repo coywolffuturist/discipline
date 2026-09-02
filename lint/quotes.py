@@ -23,7 +23,10 @@ the report prints the true ranking so the claim can be written from evidence.
 """
 import difflib, io, os, re, sys, collections
 
-CORPUS = os.path.expanduser("~/.coywolf/gate-corpus")
+# QUOTES_CORPUS lets the bait point the REAL file at a throwaway corpus. The
+# bait used to rewrite this line in a copy, which meant the file that was
+# seen red was never the file that ships.
+CORPUS = os.environ.get("QUOTES_CORPUS") or os.path.expanduser("~/.coywolf/gate-corpus")
 GATES = "gates"
 # Files a GATE.md may legitimately quote that are not the firing corpus.
 OTHER_SOURCES = [os.path.expanduser("~/.git-hooks/pre-push"),

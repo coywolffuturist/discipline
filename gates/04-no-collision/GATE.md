@@ -52,7 +52,7 @@ Never be the second writer to a thing that has no contract.
 | form | what it is | when |
 |---|---|---|
 | **skill** | the read: check for peers, prefer split custody, back up before rewriting anything shared | before touching shared substrate |
-| **tool** | ADOPTED — `gui-browser-lock who` on the second machine, the only lock in the estate today | the shared browser |
+| **tool** | ADOPTED — `gui-browser-lock who` on the second machine, the only lock in the estate today. Verified over ssh 2026-09-02: it exists under `~/.coywolf/scripts/`, `who` answered `free` at rc 0 — and it is NOT on the PATH of a non-interactive ssh shell there, so a caller must use the full path, as `nomess.py --remote` does | the shared browser |
 | **hook** | `hooks/warn_shared_path.py`, `PreToolUse[Bash]` — names the shared path a WRITE is about to touch | every write |
 
 **THE HOOK WARNS. IT DOES NOT DENY, AND THAT IS DELIBERATE.** Three versions of

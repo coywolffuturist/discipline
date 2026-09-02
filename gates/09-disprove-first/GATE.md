@@ -93,6 +93,7 @@ completion table, that turned green when the fault was removed.
 |---|---|---|
 | skill | the read above, and the sentence written before code | nothing mechanical; it is a habit prompt |
 | code | ADOPTED — `lint/baits_pair.py`: a REGISTRY pairing every numbered check with a bait LABEL, ratcheted against `baits_pair.baseline` so a NEW unbaited check fails the build | **it never RUNS anything.** It is a static scan for two string literals, so it cannot tell a bait seen red from one that has never executed |
+| code | `lint/run_baits.py` (2026-09-02): the RUNNING half. Discovers every tracked `.py`/`.sh`/executable/shebang form via `git ls-files`, runs every bait file under an EXECUTION trace, credits a form only to a bait that ran or imported it (by path or content hash), reads each bait's `PASS n/m` line, refuses any form no bait executed — ratcheted against `run_baits.baseline`, shrink-only, and its GREEN names the debt | whether a bait is any GOOD: a form run with `--help` counts, a lying `PASS` line passes. It certifies the WORKTREE, not the index. It does not trace `#!/bin/sh`. Its own bait covers the silent, crashing, 0/0, FAIL, mention-only and discovery shapes, not the lying one. A reviewer's mutation pass is the measure of bait quality: the first pass left 33 of 49 mutations green and those baits were strengthened the same day |
 
 **ADOPTED FOR HALF THE RULING. THE OTHER HALF IS A NAMED GAP.** The ruled form asked for a registry of registered tests AND a check that each
 was seen red. (Described, not quoted — the ruling text is in the cast record on
@@ -105,15 +106,33 @@ interpreter — its bait has never run in any process, and the registry reported
 GREEN. An earlier version of this row claimed the registry was "exactly" the
 ruled form. It is half of it, and the missing half is the half with a verb in it.
 
-The RUNNING half exists for one gate only. `gates/01-ste/baits.py` builds a real
-input, runs the real gate and asserts the verdict — *"it tests the gate by using
-it"*. It is a separate step in `lint/all.sh` and covers gate 01's checks alone.
-**No harness runs the baits of the other eighteen gates.** Stated rather than
-papered over, because it is the shape this suite keeps catching: a form credited
-with the gate's whole point while it only registers a label.
+The RUNNING half existed for one gate only until 2026-09-02. `gates/01-ste/baits.py`
+builds a real input, runs the real gate and asserts the verdict — *"it tests the
+gate by using it"* — and four harnesses like it covered gates 01, 04 and 09
+while every other code form was hand-tested and never baited.
 
-**REVISIT** when a harness runs every gate's baits and asserts RED. Until then
-this code form proves a bait was WRITTEN, and nothing more.
+**The running half is now `lint/run_baits.py`, and it DISCOVERS rather than
+lists.** A list of harnesses in `lint/all.sh` was an enumeration, and this repo
+has been beaten by enumerations five times. The runner takes every tracked
+`.py` and `.sh` file as a form, takes every `bait_*.py` / `baits.py` /
+`test_gates.py` as a bait, and pairs them by whether the bait's source names
+the form's basename. It runs each bait file and refuses unless it exits 0 AND
+prints `PASS n/m` with n == m >= 1 — the case the registry could not see, a
+bait that never ran, now reads as RED. Coverage is by EXECUTION: every bait
+runs under a trace that records the hash of each python entry point, imported
+module and shell script it touches, so a bait that merely names a form in a
+docstring covers nothing. Measured on adoption: 30 forms, 12 bait files, 138
+baits seen red, 9 forms in `run_baits.baseline` as pinned, shrink-only debt
+(`checks.py`, which nothing executes; `owe_table`, `consistency`, `crumbs`,
+`retire-identifier`; and the four shell scripts). Seven baits were written for it the same day —
+`capture` (the memory store), `nomess`, `repeats`, `hook_completer`,
+`hook_prior` + `hook_posterior`, `mark_build`, `mark_refuter` — and each was
+seen red twice: on its own bait, and again after the form was mutated in a
+scratch copy.
+
+**REVISIT** when the baseline reaches zero, or when a bait is found to have
+passed a form that was broken — that is the lying-summary shape the runner
+cannot see.
 
 **The rule cannot exempt itself:** `lint/bait_baits_pair.py` baits the baiter —
 a new unbaited check must fail, deleting the baseline must NOT reset the ratchet,
