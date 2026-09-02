@@ -26,13 +26,18 @@ CLOSERS = ("12", "19")
 def suite():
     """Gate numbers declared, two digits each, or None for the whole suite."""
     try:
-        lines = [l.strip() for l in open(SUITE, encoding="utf-8") if l.strip() and not l.startswith("#")]
-    except OSError:
+        # utf-8-sig, so a byte-order mark cannot hide the first gate. A reviewer
+        # showed a BOM'd "19" reading as "no suite" and a BOM'd "05" vanishing.
+        # An unreadable path (a directory, a permission) is "no file": all 19.
+        text = open(SUITE, encoding="utf-8-sig").read()
+    except (OSError, ValueError):
         return None
+    lines = [l.strip() for l in text.splitlines() if l.strip() and not l.strip().startswith("#")]
     nums = []
     for l in lines:
         m = re.match(r"(\d{1,2})\b", l)
-        if m:
+        # 01-19 only. "0", "20" and "99" were accepted and rendered as gates.
+        if m and 1 <= int(m.group(1)) <= 19:
             nums.append("%02d" % int(m.group(1)))
     if not nums:
         return None
