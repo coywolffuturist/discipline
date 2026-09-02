@@ -137,6 +137,26 @@ def writeback(name, description, kind, body, index_line):
     try:
         idx = io.open(INDEX, encoding="utf-8").read()
         line = "> %s\n" % index_line.strip()
+
+        # THE INDEX HAS A BUDGET AND THIS IS WHERE IT IS ENFORCED.
+        #
+        # MEMORY.md is loaded at session start and TRUNCATED past ~24400 bytes.
+        # It sat 6,491 bytes over for weeks: 53 entries were silently never
+        # loaded, costing bytes and delivering nothing. The session-start hook
+        # warned every single session and the warning was ignored every single
+        # session — a guard that only warns is a guard that gets ignored.
+        #
+        # So the refusal lives at the WRITE point, where the person adding an
+        # entry is the person who can prune one. It refuses; it never truncates.
+        BUDGET = 24000
+        projected = len(idx.encode("utf-8")) + len(line.encode("utf-8"))
+        if projected > BUDGET:
+            raise IOError(
+                "MEMORY.md would reach %d bytes, past the %d-byte session loader "
+                "budget. Entries past the limit are silently NOT LOADED. Move a "
+                "lookup-type entry to INDEX.md before adding a router-type one — "
+                "MEMORY.md carries what must fire UNPROMPTED, INDEX.md carries "
+                "what answers a question you already have." % (projected, BUDGET))
         if line not in idx:
             anchor = "\n# Memory Index\n"
             if anchor in idx:
