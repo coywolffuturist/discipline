@@ -464,13 +464,16 @@ machine. It found a fourth LAYER, below prose, mechanism and publication:
   and push: no review, no output, and every later push from that clone is
   ungated. The remote's advertised tips are already in hand and are never
   asked for the marker.
-- **The engine passes realistic secret lines.** Five shapes, each landed on
-  a remote at exit 0. A wallet-key line is dropped whole when it also holds
-  an exclusion word such as `transaction`, `manifest`, `checksum` or
-  `fingerprint`. A base58 key alone on a line never matches. An AWS secret
-  access key, base64 with a `/`, matches no tier. A hardcoded fallback
-  beside an env read, `os.environ.get("K", "…")`, is dropped by the env-read
-  filter. The seed-phrase tier fails OPEN, silently, when `python3` fails.
+- **The engine passed realistic secret lines. FIXED the same day, both
+  machines.** Five shapes had each landed on a remote at exit 0: a wallet-key
+  line dropped whole for holding a word like `transaction`; a base58 key
+  alone on a line; an AWS secret access key; a hardcoded fallback beside an
+  env read; and the seed-phrase tier failing open when `python3` failed. Each
+  is now a golden case, seen to fail before the fix. Two reviewer passes
+  found the fix itself failing open without `awk` and printing 43 bytes of a
+  keypair; both closed. Still open, named: a key split by string
+  concatenation, a fallback literal wrapped onto the next line, and
+  `${VAR:-default}`.
 - **"No property of the work can hide from [the watchdog]" is false.** The
   watchdog starts AFTER the per-ref loop that scans trees and tags. A
   lightweight tag at a tree of 2000 blobs ran 14.8s, and a 16MB tree 18s,
