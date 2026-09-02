@@ -227,6 +227,12 @@ def run_bait(rel, env, trace_file):
     m = None
     for m in SUMMARY.finditer(out):
         pass
+    if r.returncode == 2:
+        # SKIPPED, the build's third state: the bait needs estate state this
+        # machine does not have. A reviewer ran the build under a fresh HOME and
+        # got RED because this read rc=2 as a failure and then called the bait an
+        # orphan. Ignorance is never health, but it is not failure either.
+        return None, out.strip().splitlines()[0][:120] if out.strip() else "skipped, no reason printed", 0, 0
     if r.returncode != 0:
         return False, "rc=%d\n%s" % (r.returncode, out.strip()[-600:]), 0, 0
     if not m:
@@ -250,6 +256,7 @@ def main():
     red = False
     ran = 0
     seen = 0
+    skipped = []
     traces = {}
     tmpdir = tempfile.mkdtemp(prefix="run-baits-")
     try:
@@ -261,6 +268,10 @@ def main():
             paths = set()
             if os.path.exists(trace_file):
                 paths = {l.strip() for l in open(trace_file) if l.strip()}
+            if ok is None:
+                skipped.append(b)
+                print("  --  %-44s SKIP: %s" % (b, why))
+                continue
             traces[b] = paths
             print("  %s %-44s %s" % ("ok " if ok else "XX ", b,
                                      ("%d/%d red, %d file(s) executed" % (n, total, len(paths))) if ok else ""))
@@ -278,7 +289,14 @@ def main():
           % (len(forms), ran, seen, len(uncovered), len(uncovered) - len(new)))
     for o in orphans:
         print("   orphan bait: %s executed no form. A bait for nothing baits nothing." % o)
-    if new:
+    if new and skipped:
+        # A bait skipped on this machine may be the one that covers these. That
+        # is UNVERIFIED, not RED — and not GREEN. The estate machine, where
+        # nothing skips, still refuses them.
+        print("UNVERIFIED  %d form(s) no bait executed here, while %d bait file(s) skipped:" % (len(new), len(skipped)))
+        for f in new:
+            print("     %s" % f)
+    elif new:
         red = True
         print("RED  %d form(s) that NO bait file executed:" % len(new))
         for f in new:
@@ -295,6 +313,10 @@ def main():
         print("   DEBT PAID: %s now baited. Remove from the baseline." % ", ".join(paid))
     if red:
         return 1
+    if skipped:
+        print("SKIP  %d bait file(s) could not run here (%s). Reduced coverage, not a pass."
+              % (len(skipped), ", ".join(skipped)))
+        return 2
     if uncovered:
         print("GREEN  every form outside the baseline was executed by a bait that passed;"
               " %d form(s) in the baseline are DEBT, not baited." % len(uncovered))

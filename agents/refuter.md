@@ -42,10 +42,12 @@ reviewed lives in a git repository, run from that repository:
 
 where `<VERDICT>` is your verdict word (REFUTED or SURVIVED) and `<sha>` is the
 commit whose tree you read (`git rev-parse HEAD` there, unless the brief named
-another). One line only; the report stays in your reply. The push gate reads
-this note: no note means the review never finished, and a commit amended after
-your note needs a fresh one. Do this even when REFUTED — the refusal is the
-record too.
+another; for a RANGE, the range's END commit). If the tree you read has
+uncommitted changes, do NOT write a note — the tree belongs to no commit — and
+say so in your reply. One line only; the report stays in your reply. The push
+gate reads this note: no note means the review never finished, and a commit
+amended after your note needs a fresh one. Do this even when REFUTED — the
+refusal is the record too.
 
 > Model defaults to `inherit` (fresh context = independence from the
 > builder's reasoning). For high-stakes reviews, override to a tier

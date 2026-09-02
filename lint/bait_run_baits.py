@@ -92,6 +92,8 @@ bait("BAIT R6d a shell form executed by a bait is covered",
                    "p = os.path.join(os.path.dirname(os.path.abspath(__file__)), 's.sh')\n"
                    "print('BAIT: PASS  1/1' if subprocess.run(['bash', p]).returncode == 3 else 'BAIT: FAIL  0/1')\n"}),
      0, "GREEN")
+bait("BAIT R14 a bait that exits 2 is SKIPPED and the runner returns 2, not red",
+     dict(base, **{"gates/09-x/bait_thing.py": "print('SKIP  needs the estate'); raise SystemExit(2)\n"}), 2, "Reduced coverage")
 bait("BAIT R7 a checkout with no form at all is RED, not empty-green",
      {"README.md": "x\n"}, 1, "no code form")
 bait("BAIT R8 an uncovered form in the baseline is debt, not red",
