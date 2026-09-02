@@ -34,10 +34,16 @@ so the suite stays learnable as it grows.
 | **skill** | the read: smallest brick, no layer ahead of its evidence, count reader-load | every build |
 | **code** | ADOPTED — the estate's `commit-msg` YAGNI guard. New files in load-bearing dirs, or a new table, require a `Justified-against:` line in the commit body | every commit |
 
-**ADOPTED, NOT BUILT.** The ruled forms said "code counts new substrate in a
-changeset". A guard doing exactly that already existed estate-wide and had
-already stopped a commit of mine that day. Building a second one would have been
-this gate failing on itself, so it adopts the existing hook.
+**ADOPTED, NOT BUILT, AND SHARED.** The ruled form said "code counts new
+substrate in a changeset". That guard already existed estate-wide and had
+already stopped a commit of mine that day; building a second would have been
+this gate failing on itself.
+
+It is shared with **gate 05 substrate-search**, which is its proper owner: the
+guard's prompt asks gate 05's question verbatim — what existing piece already
+does this, and why is it insufficient. This gate reads only the COUNT of new
+substrate from it. Two gates, one mechanism, different readings. Not a bundle:
+each reports its own row and neither can hide inside the other's.
 
 **What adoption required.** The guard's load-bearing directory list named
 `scripts/lucid/`, `neumann/router/`, `brain/skills/` and others — and **none of

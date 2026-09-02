@@ -92,7 +92,32 @@ completion table, that turned green when the fault was removed.
 | form | what it enforces | what it does not |
 |---|---|---|
 | skill | the read above, and the sentence written before code | nothing mechanical; it is a habit prompt |
-| code | the break-test itself: produce the damage, assert RED, restore, assert GREEN | it cannot know whether the damage you chose is the damage that matters |
+| code | ADOPTED — `lint/baits_pair.py`: a REGISTRY pairing every numbered check with a bait LABEL, ratcheted against `baits_pair.baseline` so a NEW unbaited check fails the build | **it never RUNS anything.** It is a static scan for two string literals, so it cannot tell a bait seen red from one that has never executed |
+
+**ADOPTED FOR HALF THE RULING. THE OTHER HALF IS A NAMED GAP.** The ruled form
+was *"a registry of registered tests, AND a check that each was seen red."*
+
+`baits_pair.py` is the registry. It is a static regex scan for a `check("Xn …")`
+literal and a matching `bait("BAIT Xn …")` literal. **It executes nothing.** A
+refuter proved that on 2026-09-01 with a file whose first statement kills the
+interpreter — its bait has never run in any process, and the registry reported
+GREEN. An earlier version of this row claimed the registry was "exactly" the
+ruled form. It is half of it, and the missing half is the half with a verb in it.
+
+The RUNNING half exists for one gate only. `gates/01-ste/baits.py` builds a real
+input, runs the real gate and asserts the verdict — *"it tests the gate by using
+it"*. It is a separate step in `lint/all.sh` and covers gate 01's checks alone.
+**No harness runs the baits of the other eighteen gates.** Stated rather than
+papered over, because it is the shape this suite keeps catching: a form credited
+with the gate's whole point while it only registers a label.
+
+**REVISIT** when a harness runs every gate's baits and asserts RED. Until then
+this code form proves a bait was WRITTEN, and nothing more.
+
+**The rule cannot exempt itself:** `lint/bait_baits_pair.py` baits the baiter —
+a new unbaited check must fail, deleting the baseline must NOT reset the ratchet,
+and a file with no numbered check at all must fail rather than pass. All three
+are in `lint/all.sh`.
 
 No hook form. A warning cannot substitute for a red test, and a hook that merely
 reminds would be the fifth layer this repo already refused to add.
