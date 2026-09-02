@@ -1,0 +1,12 @@
+{
+  "name": "coywolffuturist-discipline",
+  "description": "The discipline suite as one installable plugin: phase-aware gates, the conductor, ka123n, grill-me, reviewer agents, and the hooks that run a declared suite to completion.",
+  "owner": { "name": "coywolf" },
+  "plugins": [
+    {
+      "name": "discipline",
+      "source": "./",
+      "description": "Nineteen phase-aware gates, the conductor, ka123n, grill-me, four reviewer agents, and nine hooks. Declare the gates you adopt in ~/.claude/discipline-suite."
+    }
+  ]
+}
