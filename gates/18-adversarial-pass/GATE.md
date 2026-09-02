@@ -7,7 +7,9 @@
             anything outward-facing: a reviewer runs, or the work does not ship.
     where:  the code form is the estate `pre-push` hook on the primary
             workstation, registered by `core.hooksPath`, opt-in per repo via a
-            `.gate18-guarded` marker in the repo root.
+            `.gate18-guarded` marker in the repo root. The review RECORD is a
+            git note on the reviewed commit (ref `reviews`), written by the
+            reviewer as its last act; the gate reads the pushed tip's note.
 
 ---
 
@@ -54,8 +56,8 @@ the author could not have manufactured.
 |---|---|---|
 | **skill** | the read: what to refute, how to brief a reviewer, why self-review is not this gate | before any non-trivial claim |
 | **agent** | `refuter` — read-only, no build context, briefed to find the failure | money · irreversible · outward-facing |
-| **code** | ADOPTED — the estate `pre-push` hook. Refuses an ordinary push with no review in scope, names what licensed it, consumes the review on a path that reaches the remote, and expires it at 30 minutes. **A record, not a boundary** — see below | every push from a guarded repo |
-| **hook** | `mark_refuter.py`, `PostToolUse[Agent]` — records that a reviewer ran. **Install with the code form or neither:** pre-push reads a flag only this writes | paired |
+| **code** | ADOPTED — the estate `pre-push` hook. Refuses a push whose tip carries no review note, or a note whose verdict is REFUTED / LANDMINES / EXPLOITABLE; names the note that licensed it. **A record, not a boundary** — see below | every push from a guarded repo |
+| **record** | a git note, `git notes --ref=reviews add -f -m "<VERDICT> <reviewer> <date> <one line>" <sha>`, written by the reviewer as its last act. Not consumed; voided by any amend, because the sha moves. Replaced `mark_refuter.py` (a flag in `$TMPDIR`, minted at spawn) on 2026-09-02 | paired with the code form |
 
 ## Why the code form moved to the action point — and what that did NOT buy
 
@@ -444,8 +446,8 @@ and is **not in place today.**
 Three earlier reviews could not read `pre-push`, because it is not in this
 repo. A fourth was given the file, the engine, the corpus and a second
 machine. It found a fourth LAYER, below prose, mechanism and publication:
-**where the fixed code runs.** Of the nine bullets below, three were closed
-the same day and are marked so; six are open as of this writing. Every
+**where the fixed code runs.** Of the nine bullets below, four were closed
+the same day and are marked so; five are open as of this writing. Every
 number here is a dated observation by the author or a named reviewer, not a
 standing check; the retest is the command, never this page.
 
@@ -458,13 +460,17 @@ standing check; the retest is the command, never this page.
   and the author watched a push carrying a fake key be refused there, in a
   scratch repo on that machine, with "Nothing was pushed". Both machines have been
   at the same commit since, through the engine fix below.
-- **The licence is minted at LAUNCH.** `PostToolUse[Agent]` fires when the
-  Agent tool returns, which for a background reviewer is seconds after spawn.
-  The corpus row this page calls the interesting BLOCKED case — *"Refuter
-  spawned, verdict not returned"* — is exactly what the code form licenses.
-  Observed on three spawns in one session. One flag also licenses ANY repo
-  from ANY directory, and two pushes that read it before either consumes it
-  (3/3 concurrent). Fourteen accumulated reviews were consumed by one push.
+- **The licence was minted at LAUNCH — CLOSED the same day by changing the
+  substrate.** The flag in `$TMPDIR` was written when the Agent tool returned,
+  seconds after a background reviewer spawned; it licensed any repo, two
+  concurrent pushes read it before either consumed it, fourteen accumulated
+  reviews were spent by one push, and it could not tell REFUTED from SURVIVED.
+  Six defects, one root: the licence was not attached to what it licensed.
+  The record is now a git note the reviewer writes onto the commit it read;
+  the gate reads the pushed tip's note and refuses on absence or on a refusing
+  verdict. An amend voids it. Seventeen baits in `lint/bait_gate18.py`, seven
+  of them red on the old hook. Forgery stays same-privilege and now leaves an
+  attributed line in history.
 - **"The gate now also reads the state the REMOTE already has" is false.**
   The marker check reads local refs only. Delete the marker in one commit
   and push: no review, no output, and every later push from that clone is

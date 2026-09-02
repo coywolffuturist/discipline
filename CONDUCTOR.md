@@ -184,7 +184,7 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | 15 | vizcheck | `gates/15-vizcheck/GATE.md` · deployed `skills/vizcheck` · tool `coywolf-screenshot` (SECOND MACHINE ONLY) · agent `vizcheck-reader` |
 | 16 | chunk-it | `gates/16-chunk-it/GATE.md` · code `gates/16-chunk-it/capture.py chunk`. No skill BY RULING: an obligation on every table, not a judgement |
 | 17 | write-back | `gates/17-write-back/GATE.md` · code `capture.py writeback` (shared with gate 16, separate rows). No skill BY RULING |
-| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agent `refuter` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · hook `hooks/mark_refuter.py` |
+| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agents `refuter` · `cold-reader` · `mechanism-auditor` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · record: a git note on the reviewed commit (ref `reviews`), written by the reviewer as its last act |
 | 19 | state-the-posterior | `gates/19-state-the-posterior/GATE.md` · deployed `skills/95-percent-rule` — the posterior half · hook `hooks/hook_posterior.py` |
 
 The `ask-dont-pour` bundle remains deployed on the primary workstation as the

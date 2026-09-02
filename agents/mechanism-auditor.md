@@ -37,6 +37,16 @@ Report exactly:
 - If HARDENED: the paths you tested and the residue / trade-offs you could
   not close. Never certify beyond what you audited.
 
+**LAST ACT — write the record onto the commit you audited.** If the mechanism
+lives in a git repository, run from that repository:
+
+    git notes --ref=reviews add -f -m "<VERDICT> mechanism-auditor <yyyy-mm-dd> <one line>" <sha>
+
+where `<VERDICT>` is HARDENED or EXPLOITABLE and `<sha>` is the commit whose
+tree you read. One line; the report stays in your reply. The push gate reads
+this note: no note means the audit never finished, and a commit amended after
+your note needs a fresh one. Write it for EXPLOITABLE too.
+
 > Model defaults to `inherit`. For high-stakes mechanisms (real capital,
 > irreversible settlement), override to a tier different from the
 > designer's for reasoning-independence.
