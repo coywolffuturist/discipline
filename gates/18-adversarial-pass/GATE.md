@@ -444,14 +444,20 @@ and is **not in place today.**
 Three earlier reviews could not read `pre-push`, because it is not in this
 repo. A fourth was given the file, the engine, the corpus and a second
 machine. It found a fourth LAYER, below prose, mechanism and publication:
-**where the fixed code runs.** Open, not fixed, as of this writing.
+**where the fixed code runs.** Of the nine bullets below, three were closed
+the same day and are marked so; six are open as of this writing. Every
+number here is a dated observation by the author or a named reviewer, not a
+standing check; the retest is the command, never this page.
 
-- **Every fix narrated above is an uncommitted working copy.** The hook is 533
-  lines of diff against its own repo's HEAD of 2026-07-13; the engine's
-  `LC_ALL=C`, `diff_added.awk` and `commit-msg` are uncommitted or untracked
-  with it. The second machine runs the 75-line July hook and the engine with
-  no `LC_ALL=C`. "The fix went into the ENGINE so all five callers" (above) is
-  true on one machine's working tree.
+- **Every fix narrated above WAS an uncommitted working copy — CLOSED the
+  same day.** When the review ran, the hook was 533 lines of diff against its
+  own repo's HEAD of 2026-07-13, the engine's `LC_ALL=C`, `diff_added.awk`
+  and `commit-msg` were uncommitted or untracked with it, and the second
+  machine ran the 75-line July hook with no `LC_ALL=C`. On the operator's
+  call the hooks repo was committed and pushed, the second machine pulled it,
+  and the author watched a push carrying a fake key be refused there, in a
+  scratch repo on that machine, with "Nothing was pushed". Both machines have been
+  at the same commit since, through the engine fix below.
 - **The licence is minted at LAUNCH.** `PostToolUse[Agent]` fires when the
   Agent tool returns, which for a background reviewer is seconds after spawn.
   The corpus row this page calls the interesting BLOCKED case — *"Refuter
@@ -464,16 +470,25 @@ machine. It found a fourth LAYER, below prose, mechanism and publication:
   and push: no review, no output, and every later push from that clone is
   ungated. The remote's advertised tips are already in hand and are never
   asked for the marker.
-- **The engine passed realistic secret lines. FIXED the same day, both
-  machines.** Five shapes had each landed on a remote at exit 0: a wallet-key
-  line dropped whole for holding a word like `transaction`; a base58 key
-  alone on a line; an AWS secret access key; a hardcoded fallback beside an
-  env read; and the seed-phrase tier failing open when `python3` failed. Each
-  is now a golden case, seen to fail before the fix. Two reviewer passes
-  found the fix itself failing open without `awk` and printing 43 bytes of a
-  keypair; both closed. Still open, named: a key split by string
-  concatenation, a fallback literal wrapped onto the next line, and
-  `${VAR:-default}`.
+- **The engine passed realistic secret lines. FIXED for six shapes the same
+  day, both machines; five further shapes stay OPEN below.** The six: a
+  wallet-key line dropped whole for holding a word
+  like `transaction`; a base58 key alone on a line; an AWS secret access
+  key; a hardcoded fallback beside an env read; the seed-phrase tier failing
+  open when `python3` failed; and a caught seed phrase echoed unredacted.
+  Fourteen fixed-prefix vendor and wallet patterns were added with them.
+  Each is now a golden case, seen to fail before the fix: the first 26 new
+  cases all failed on the old engine, and 36 of the final 81 do. Two reviewer
+  passes found the fix itself
+  failing open without `awk` and, in an intermediate copy, printing 43 of a
+  keypair's 64 numbers; both closed. **Still open. A reader must not trust
+  the engine against these.** A key split by string concatenation. A
+  fallback literal wrapped onto the NEXT line. A fallback literal under 16
+  characters or holding a space: every value class is 16+, so a short
+  hardcoded password ships. Dotenv `${VAR:-default}`. And four
+  documentation-shaped false positives that `nokeycheck` escapes: a JWT
+  fixture, a Basic-auth example, a bare hex64 before `refs/`, a 64-number
+  array.
 - **"No property of the work can hide from [the watchdog]" is false.** The
   watchdog starts AFTER the per-ref loop that scans trees and tags. A
   lightweight tag at a tree of 2000 blobs ran 14.8s, and a 16MB tree 18s,
@@ -492,8 +507,11 @@ machine. It found a fourth LAYER, below prose, mechanism and publication:
   sentence. "30 legitimate push shapes" and "479 files" have no source
   outside this page. No bait harness for the hook exists anywhere; every
   "verified n/n" above rests on its author's word.
-- **A caught seed phrase is printed unredacted.** The redaction masks tokens
-  of 12+ characters; seed words are short.
+- **A caught seed phrase was printed unredacted — closed with the engine
+  fix above.** The redaction masked tokens of 12+ characters and seed words
+  are short; a seed-phrase hit is now cut after two words. (This is the
+  sixth shape in that bullet's count, so it is three bullets closed, six
+  open.)
 
 What held under the same review: the corpus counts (34 / 19 / 15, and every
 characterisation the page corrected twice); the eight bypasses; the ten
@@ -501,7 +519,8 @@ rounds; every gate-18 refusal shape (no flag, empty, symlink, stale, future
 mtime, undeletable, second push); every secret-scan closure listed above,
 re-driven one by one; the replace-ref lens; trivial-push overhead 0.20s.
 
-The full report with every command: `~/.coywolf/handoff/05-review-four-findings.md`.
+The full report with every command is in the operator's private handoff
+notes, not in this repository.
 
 ## What is still unguarded, named rather than implied
 
