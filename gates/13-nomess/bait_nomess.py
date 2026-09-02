@@ -141,6 +141,23 @@ def upper_name(r, home):
 
 bait("BAIT N9 --done with a file staged but never committed is red", 1, "staged but not committed",
      staged_only, flags=("--done",))
+
+
+def staged_delete(r, home):
+    git(r, "rm", "-q", "README.md")
+
+
+def staged_rename(r, home):
+    git(r, "mv", "README.md", "READ.md")
+
+
+def unstaged_delete(r, home):
+    os.remove(os.path.join(r, "README.md"))
+
+
+bait("BAIT N16 --done with a staged delete is red", 1, "deleted but not committed", staged_delete, flags=("--done",))
+bait("BAIT N17 --done with a staged rename is red", 1, "renamed but not committed", staged_rename, flags=("--done",))
+bait("BAIT N18 --done with an unstaged delete is red", 1, "deleted but not committed", unstaged_delete, flags=("--done",))
 bait("BAIT N10 a deployed copy that differs from the repo copy is DRIFT", 1, "DRIFT", with_install)
 bait("BAIT N11 an install with no copy of a hook is NOT DEPLOYED", 1, "NOT DEPLOYED", not_deployed)
 bait("BAIT N12 .orig and ~ files are debris too", 1, "b.py~", orig_and_tilde)

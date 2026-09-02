@@ -38,13 +38,24 @@ POST_FLAG  = os.path.join(os.environ.get("TMPDIR", "/tmp"), "coywolf-posterior-o
 # Deliberately dropped: the bare-redirect rule. Writing a file through `>` is
 # real, but it fired on every heredoc and diagnostic buffer, and Write/Edit
 # already covers authored files.
+# OPERATOR RULING 2026-09-02: "Tables are only for when we're touching a repo or
+# pushing a build. All this additional text is making it very difficult to do my work."
+#
+# So the trigger is now REPO/BUILD ONLY. Editing a file is not touching a repo until
+# it is committed. Removed: rm, mv, chmod, chown, ln, dd, scp, rsync, and the whole
+# Write/Edit branch. Kept: version control, service management, package installs.
+#
+# The prior wording over-fired for weeks and trained the reminder into noise, which is
+# the precise failure it exists to prevent. A guard nobody can work alongside is a
+# guard that gets switched off.
 MUT = re.compile(
     r"(?:^|[;&|\n]\s*)\s*(?:sudo\s+)?"
-    r"(?:rm|mv|chmod|chown|ln|dd"
-    r"|git\s+(?:commit|push|add|checkout|reset|merge|rebase)"
+    r"(?:git\s+(?:commit|push|add|checkout|reset|merge|rebase|tag|revert)"
+    r"|gh\s+(?:pr|release)"
     r"|launchctl\s+(?:load|unload|bootstrap|bootout|kickstart)"
-    r"|pip\s+install|npm\s+install|brew\s+install"
-    r"|scp|rsync)"
+    r"|pip3?\s+install|npm\s+(?:install|publish|run\s+build)|brew\s+install"
+    r"|make\b|cargo\s+(?:build|publish)|docker\s+(?:build|push)"
+    r"|wrangler\s+(?:deploy|publish)|terraform\s+apply)"
     r"\b"
 )
 
@@ -67,12 +78,7 @@ def main():
     except Exception:
         return
     tool = d.get("tool_name", "")
-    if tool in ("Write", "Edit", "NotebookEdit"):
-        # same carve-out as Bash: editing a notes/canon file is not a build
-        path = (d.get("tool_input") or {}).get("file_path", "") or ""
-        if is_notes(path):
-            return
-        return mark(tool)
+    # Write/Edit no longer flag: authoring a file is not touching a repo.
     if tool != "Bash":
         return
     cmd = (d.get("tool_input") or {}).get("command", "") or ""

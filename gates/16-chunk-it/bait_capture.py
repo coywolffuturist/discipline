@@ -137,6 +137,16 @@ bait("BAIT K14 the index line lands directly under the REAL header, not above it
      rc == 0 and idx.index("# Memory Index") < idx.index("[The bait memory]") < idx.index("> filler"), idx[:60])
 shutil.rmtree(d)
 
+d = store()
+real = read(d, "MEMORY.md")   # read BEFORE opening for write: open("w") truncates first
+io.open(os.path.join(d, "MEMORY.md"), "w", encoding="utf-8").write(
+    "# Memory Indexing notes\n\nsome text\n\n" + real)
+rc, out = run(d, *WB)
+idx = read(d, "MEMORY.md")
+bait("BAIT K17 a decoy '# Memory Indexing…' line above the real header does not capture the entry",
+     rc == 0 and idx.index("# Memory Index — the ROUTER") < idx.index("[The bait memory]"), idx[:60])
+shutil.rmtree(d)
+
 # The budget boundary, exactly. A reviewer moved the check 40 bytes and every
 # bait stayed green. Here the index is sized so the entry lands EXACTLY on the
 # budget, and then one byte past it.

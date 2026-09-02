@@ -4,7 +4,6 @@
 # checks.py DECLARES gate 01's ids; nothing executes or imports it. Its ids are
 # baited through the registry (lint/baits_pair.py) and gates/01-ste/baits.py.
 gates/01-ste/checks.py
-hooks/owe_table.py
 lint/consistency.py
 lint/crumbs.py
 scripts/guard_modals.sh

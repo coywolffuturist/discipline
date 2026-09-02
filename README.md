@@ -45,8 +45,13 @@
 > exist." That was true when written and is now false, and it stayed false long
 > enough for a reader to conclude this repo buys reads rather than enforcement.
 >
-> All 9 hooks in `hooks/` ARE registered on the primary workstation, and the
-> completion table fires unprompted, dozens of times a day.
+> All 9 hooks in `hooks/` were registered on the primary workstation on
+> 2026-09-01, and the completion table fired unprompted, dozens of times a day.
+> **Measured again 2026-09-02: FIVE are registered there** (the PreToolUse and
+> PostToolUse ones); the settings file holds no Stop entry, so the four closers
+> do not fire on that machine today. The operator ruled the same morning that
+> the table is owed only when touching a repo or pushing a build. The plugin's
+> `hooks/hooks.json` registers all nine for anyone who installs it.
 >
 > **They are NOT registered on the second machine.** Measured 2026-09-01, that
 > machine holds ONE deployed skill (`the-screen`) and FIVE hooks of its own —
@@ -143,6 +148,45 @@ masters by `skill_share.sh` and is overwritten on every run — see
 `GATE.md` source and its ruled forms. An earlier version of this paragraph said
 most were "not yet" — it was written before the gates were built and never
 updated, one screen above a table that said the opposite.
+
+### Install it as a plugin, then declare your suite
+
+The repo is a Claude Code plugin. Two commands in a Claude Code session:
+
+    /plugin marketplace add coywolffuturist/discipline
+    /plugin install discipline@coywolffuturist-discipline
+
+That installs the whole bundle:
+
+- the conductor, `/discipline:discipline`, and the nineteen gate skills
+- `ka123n`, the outer loop that picks which step earns the bits
+- `grill-me`, the design interview
+- four reviewer agents: `refuter`, `cold-reader`, `mechanism-auditor`, `vizcheck-reader`
+- nine hooks, in `hooks/hooks.json`. The Stop hooks ask for the completion
+  table, the prior, the posterior, and the classification of any deferral.
+  The tool hooks record builds, reviewers, and repeated command shapes.
+
+Plugins install skills and hooks all-or-nothing. The picking happens next.
+
+**Pick your gates by declaring a suite.** Write the gates you adopt, one per
+line, to `~/.claude/discipline-suite`:
+
+    01 ste
+    07 think-3x
+    09 disprove-first
+    18 adversarial-pass
+
+The conductor's "Your suite" section holds the three rules; the short form:
+the table renders the declared gates and only those, 12 and 19 are always in
+because they define "complete", and a gate that keeps going N/A is removed
+from the file in a commit rather than left unrendered. With no file, the
+suite is all nineteen. Check the install with `claude plugin validate .`
+from a clone.
+
+**What does not travel.** The estate `pre-push` hook (gate 18's code form
+and the secret scanner) is a private repo and is described here, not shipped;
+the firing corpus and the breadcrumb stream are private too, and the two
+build steps that need them print SKIP.
 
 ### If you only want the skills
 

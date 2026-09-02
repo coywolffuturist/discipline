@@ -165,13 +165,16 @@ def done_sweep():
         code, path = parts[0], parts[1]
         if code == "??":
             bad("done", "untracked, so it exists in one place only: %s" % path)
-        elif "A" in code:
-            # STAGED IS NOT COMMITTED. A reviewer found this on 2026-09-02: a
-            # file `git add`ed and never committed reported "done clean". The
-            # index is one more place on the same disk, not a second copy.
-            bad("done", "staged but not committed, so it exists in one place only: %s" % path)
-        elif "M" in code:
-            bad("done", "uncommitted change, so the EDIT exists in one place only: %s" % path)
+        else:
+            # EVERY porcelain line is single-copy work. The first version tested
+            # "M" only; a reviewer added "A" on 2026-09-02, and a second reviewer
+            # the same day showed staged deletes and renames still read as clean.
+            # The index is one more place on the same disk, not a second copy,
+            # so the kind is named and none is exempt.
+            kind = {"A": "staged but not committed", "D": "deleted but not committed",
+                    "R": "renamed but not committed", "C": "copied but not committed",
+                    "M": "uncommitted change"}.get(code.strip()[:1], "uncommitted state %r" % code)
+            bad("done", "%s, so it exists in one place only: %s" % (kind, path))
 
 
 SKIP_REMOTE = False

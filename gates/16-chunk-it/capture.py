@@ -163,7 +163,10 @@ def writeback(name, description, kind, body, index_line):
             # which the real file has never contained, so every entry landed
             # ABOVE the header. A bait built on the real header caught it on
             # 2026-09-02. Match the header LINE, then insert under it.
-            m = re.search(r"^# Memory Index[^\n]*\n\n?", idx, re.M)
+            # The header, or the header with its " — suffix"; not any line that
+            # merely begins with those words (a second reviewer planted
+            # "# Memory Indexing notes" above the real one and caught the entry).
+            m = re.search(r"^# Memory Index(?: —[^\n]*)?\n\n?", idx, re.M)
             if m:
                 idx = idx[:m.end()] + line + idx[m.end():]
             else:
