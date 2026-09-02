@@ -44,8 +44,10 @@ in a git repository, run from that repository:
     git notes --ref=reviews add -f -m "<VERDICT> cold-reader <yyyy-mm-dd> <one line>" <sha>
 
 where `<VERDICT>` is CLEAN or LANDMINES and `<sha>` is the commit whose tree
-you read (`git rev-parse HEAD` there, unless the brief named another). One
-line; the report stays in your reply. The push gate reads this note: no note
+you read (`git rev-parse HEAD` there, unless the brief named another; for a
+RANGE, its END commit). If the tree has uncommitted changes, do NOT write a
+note — it belongs to no commit — and say so. One line; the report stays in
+your reply. The push gate reads this note: no note
 means the read never finished, and a commit amended after your note needs a
 fresh one. Write it for LANDMINES too — the refusal is the record.
 

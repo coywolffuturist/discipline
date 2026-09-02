@@ -43,7 +43,9 @@ lives in a git repository, run from that repository:
     git notes --ref=reviews add -f -m "<VERDICT> mechanism-auditor <yyyy-mm-dd> <one line>" <sha>
 
 where `<VERDICT>` is HARDENED or EXPLOITABLE and `<sha>` is the commit whose
-tree you read. One line; the report stays in your reply. The push gate reads
+tree you read (for a RANGE, its END commit; if the tree has uncommitted
+changes, do NOT write a note — it belongs to no commit — and say so). One
+line; the report stays in your reply. The push gate reads
 this note: no note means the audit never finished, and a commit amended after
 your note needs a fresh one. Write it for EXPLOITABLE too.
 
