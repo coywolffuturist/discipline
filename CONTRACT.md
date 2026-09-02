@@ -4,6 +4,27 @@
 > source, ship a CONTRACT.md in the same pass. Manual edits to a derived side
 > are overwritten.
 
+## Where the working copy lives
+
+**ONE editable clone, on the primary workstation — the machine the hooks, skills
+and reviewer agents deploy to.** Moved there 2026-09-01 from the second machine,
+which now holds only a `RETIRED.md` tombstone and is no longer a git repo.
+
+The remote (`github.com/coywolffuturist/discipline`) is the backup and the
+distribution. It is not a place work happens; git has no such place.
+
+Why the move: everything this repo installs deploys to the primary workstation.
+The repo was the only piece on the far side of an ssh hop, and that hop is where
+the errors clustered — quoting failures in generated patch scripts, and twice a
+forgotten install-outward step that left the deployed conductor stale while the
+consistency checker reported green. The split also misled three independent
+readers in one day, and left gate 14 permanently BLOCKED on the second machine
+because its `cold-reader` agent never existed there.
+
+**A second editable clone is forbidden.** If a scheduled job elsewhere ever needs
+the gates, it clones READ-ONLY and only ever pulls. Two editable clones is the
+exact failure named below.
+
 ## Source of truth
 
 | path | role |

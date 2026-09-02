@@ -10,7 +10,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
 ran=0
-EXPECTED=7
+EXPECTED=8
 
 run() {
   local name="$1"; shift
@@ -50,6 +50,11 @@ run "crumbs — the breadcrumb stream is readable" python3 lint/crumbs.py
 # whose subject is "an eval must not report health it does not have" cannot leave
 # its own claims to the author's memory.
 run "consistency — this repo does not contradict itself" python3 lint/consistency.py
+# Added 2026-09-01. Gate 13 went N/A zero times in 37 encounters, which is the
+# signature of a standard too easy to meet. Only the REPO half runs here: the
+# remote half needs the network, and a build must not depend on another host
+# being reachable. Run `gates/13-nomess/nomess.py --remote` before claiming done.
+run "nomess — no debris, no drift, no stale deployed copy" python3 gates/13-nomess/nomess.py --repo
 
 if [ "$ran" -ne "$EXPECTED" ]; then
   printf "\033[31mFAIL\033[0m  only %d of %d steps ran. A step that did not execute is not a pass.\n" "$ran" "$EXPECTED"

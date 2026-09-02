@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+"""nomess — the sweep, as a command.
+
+Gate 13. Run it before claiming done. Exit 0 clean, 1 mess.
+
+WHY A COMMAND AND NOT A HABIT. Across one day this gate recorded 37 encounters
+and went N/A zero times, which is the signature of a standard too easy to meet:
+if a gate can never fail to apply and always passes, it is not running. In the
+same day it missed a browser lock held for 25 minutes on another machine, caught
+only while listing residue by hand.
+
+TWO SCOPES, deliberately separate:
+
+  --repo    hygiene that must ALWAYS hold. Wired into lint/all.sh, so it fails
+            the build. Cheap, local, no network.
+  --remote  state on other machines: locks held, scratch directories, processes
+            started. NOT wired into the build — it needs the network and a
+            build must not depend on another host being up. Run it before
+            claiming done.
+
+Default runs both and reports separately.
+"""
+import argparse, os, re, subprocess, sys
+
+REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DEN = "coywolfden"
+findings = []
+
+
+def bad(scope, msg):
+    findings.append((scope, msg))
+
+
+def sh(cmd, timeout=25):
+    try:
+        r = subprocess.run(cmd, shell=True, capture_output=True, text=True, timeout=timeout)
+        return r.stdout.strip()
+    except Exception:
+        return ""
+
+
+def repo_sweep():
+    os.chdir(REPO)
+
+    # 1. dead symlinks. A link to nothing reads as a live path.
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for f in files + dirs:
+            p = os.path.join(root, f)
+            if os.path.islink(p) and not os.path.exists(p):
+                bad("repo", "dead symlink: %s -> %s" % (p, os.readlink(p)))
+
+    # 2. debris. Backup copies are what a repo exists to replace; leaving them
+    #    means the next reader cannot tell which file is live.
+    DEBRIS = re.compile(r"\.(bak|orig|rej|tmp|swp)$|\.pre-[a-z0-9-]+$|~$|\.VERIFIED$")
+    tracked = set(sh("git ls-files").splitlines())
+    for root, dirs, files in os.walk("."):
+        dirs[:] = [d for d in dirs if d != ".git"]
+        for f in files:
+            p = os.path.relpath(os.path.join(root, f))
+            if DEBRIS.search(f):
+                bad("repo", "debris file: %s (a repo replaces backup copies)" % p)
+
+    # 3. deployed-copy drift. The CONTRACT says install outward, never edit the
+    #    deployed copy alone — and twice in one day the deployed conductor went
+    #    stale while the consistency checker read green.
+    pairs = [("CONDUCTOR.md", "~/.claude/skills/discipline/SKILL.md")]
+    for f in sorted(os.listdir("hooks")) if os.path.isdir("hooks") else []:
+        if f.endswith(".py"):
+            pairs.append((os.path.join("hooks", f), "~/.claude/hooks/" + f))
+    for src, dst in pairs:
+        d = os.path.expanduser(dst)
+        if not os.path.exists(d):
+            bad("repo", "NOT DEPLOYED: %s has no copy at %s" % (src, dst))
+        elif open(src, "rb").read() != open(d, "rb").read():
+            bad("repo", "DRIFT: %s differs from its deployed copy %s — install outward" % (src, dst))
+
+def done_sweep():
+    """Single-copy work. NOT a build check — see below.
+
+    On 2026-09-01 a critical guard fix lived as a modified-but-uncommitted file
+    on one machine that was about to be retired: one disk failure from gone. So
+    this is worth checking. But it is NOT a repo invariant, and putting it in the
+    build deadlocked instantly — the pre-commit hook runs the build, the build
+    failed because work was uncommitted, so nothing could ever be committed.
+    Uncommitted work is the normal state of working. It is only a defect when you
+    are about to claim done."""
+    os.chdir(REPO)
+    # NOT fixed offsets: sh() strips its output, which eats the leading space of
+    # the first porcelain line and shifts every column by one. That produced
+    # "ONTRACT.md" on this tool's own first run.
+    for line in sh("git status --porcelain").splitlines():
+        parts = line.strip().split(None, 1)
+        if len(parts) != 2:
+            continue
+        code, path = parts[0], parts[1]
+        if code == "??":
+            bad("done", "untracked, so it exists in one place only: %s" % path)
+        elif "M" in code:
+            bad("done", "uncommitted change, so the EDIT exists in one place only: %s" % path)
+
+
+def remote_sweep():
+    if sh("ssh -o ConnectTimeout=8 -o BatchMode=yes %s 'echo up' 2>/dev/null" % DEN) != "up":
+        bad("remote", "cannot reach %s — remote state UNSWEPT, not clean" % DEN)
+        return
+
+    lock = sh("ssh %s '~/.coywolf/scripts/gui-browser-lock who 2>/dev/null'" % DEN)
+    if lock and "free" not in lock.lower():
+        bad("remote", "browser lock still held: %s" % lock[:90])
+
+    # List plainly, filter HERE. Two failures taught this in one sitting:
+    # the remote shell is zsh, which ERRORS on a glob with no matches and aborts
+    # the whole command, so one stale pattern silently disabled every other one;
+    # then a `find` with nested quotes was mangled passing through python, the
+    # local shell, ssh and the remote shell. Both reported CLEAN while scratch
+    # sat there. Send no quotes, and do the matching where there is no shell.
+    SCRATCH = re.compile(r"^(audit|sb\d|sbv|sbd|g1[0-9]|verify_pub|pubcheck|nm|probe_)")
+    listing = sh("ssh %s ls -1 /tmp" % DEN)
+    for s in listing.splitlines():
+        if SCRATCH.match(s.strip()):
+            bad("remote", "scratch left behind: /tmp/%s" % s.strip())
+
+    # A window opened for a one-off task and never closed is remote state too.
+    wins = sh("ssh %s 'osascript -e \"tell application \\\"Google Chrome\\\" to count windows\" 2>/dev/null'" % DEN)
+    if wins.isdigit() and int(wins) > 0:
+        bad("remote", "%s Chrome window(s) open on the remote host" % wins)
+
+
+def main():
+    ap = argparse.ArgumentParser(description="gate 13 nomess — the sweep, as a command")
+    ap.add_argument("--repo", action="store_true", help="repo hygiene only — build-safe, no network")
+    ap.add_argument("--remote", action="store_true", help="state on other machines")
+    ap.add_argument("--done", action="store_true", help="single-copy work, before claiming done")
+    a = ap.parse_args()
+    picked = a.repo or a.remote or a.done
+    scopes = []
+    if a.repo or not picked:
+        repo_sweep(); scopes.append("repo")
+    if a.remote or not picked:
+        remote_sweep(); scopes.append("remote")
+    if a.done or not picked:
+        done_sweep(); scopes.append("done")
+
+    if not findings:
+        print("\033[32mPASS\033[0m  nomess — %s clean" % " + ".join(scopes))
+        return 0
+    print("\033[31mFAIL\033[0m  nomess — %d item(s):" % len(findings))
+    w = max(len(s) for s, _ in findings)
+    for s, m in findings:
+        print("      %-*s  %s" % (w, s, m))
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

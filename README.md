@@ -164,9 +164,9 @@ Two of the three froze on the same day in June and neither errored.
 | 08 | set-the-prior | skill · hook | **built** |
 | 09 | disprove-first | — | GATE.md written, no form yet |
 | 10 | root-cause | — | ruled 2026-09-01, GATE.md owed |
-| 11 | karsholto | — | ruled 2026-09-01, GATE.md owed |
+| 11 | karsholto | skill · code | **built** (code adopted) |
 | 12 | completer | — | ruled 2026-09-01, GATE.md owed |
-| 13 | nomess | — | ruled 2026-09-01, GATE.md owed |
+| 13 | nomess | skill · tool · code | **built** |
 | 14 | cold-read | skill · agent | **built** |
 | 15 | vizcheck | — | ruled 2026-09-01, GATE.md owed |
 | 16 | chunk-it | — | ruled 2026-09-01 · folds into the completion rule |
