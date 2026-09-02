@@ -10,7 +10,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 fail=0
 ran=0
-EXPECTED=8
+EXPECTED=10
 
 run() {
   local name="$1"; shift
@@ -44,6 +44,8 @@ run "baits pair — no check ships unbaited" python3 lint/baits_pair.py
 run "baits pair BAIT — the rule cannot exempt itself" python3 lint/bait_baits_pair.py
 run "the surviving test suite" python3 test_gates.py
 run "crumbs — the breadcrumb stream is readable" python3 lint/crumbs.py
+run "quotes — every quoted artifact traces to the record" python3 lint/quotes.py
+run "quotes BAIT — every quote check seen to fail" python3 lint/bait_quotes.py
 # Added 2026-09-01. Two readers in one hour caught claims in this repo that had
 # gone false — a banner saying the hooks were registered nowhere, and three gate
 # rows citing a skill this repo does not ship. Both were true when written. A repo

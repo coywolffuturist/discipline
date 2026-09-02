@@ -137,23 +137,23 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 |---|---|---|
 | 01 | ste | `gates/01-ste/GATE.md` · deployed `skills/ste` |
 | 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy`. Also carries the price-the-loop lever, folded in 2026-09-01 |
-| 03 | collapse-round-trips | **READ NOT SHIPPED.** Lever 3 of the retired six-lever `ask-dont-pour` bundle, which this repo does not publish: it is the bundle these gates replaced, and no gate may bundle. Owed: its own GATE.md. |
-| 04 | no-collision | **READ NOT SHIPPED.** Lever 6 of the same retired bundle. Owed: its own GATE.md. |
-| 05 | substrate-search | deployed `skills/substrate-search` |
-| 06 | compile-it | deployed `skills/compile-it` |
-| 07 | think-3x | deployed `skills/think-3x` |
+| 03 | collapse-round-trips | `gates/03-collapse-round-trips/GATE.md` · deployed `skills/collapse-round-trips` · hook + code `gates/06-compile-it/repeats.py` (shared with gate 06) |
+| 04 | no-collision | `gates/04-no-collision/GATE.md` · deployed `skills/no-collision` · tool ADOPTED `gui-browser-lock` (SECOND MACHINE) · hook `hooks/warn_shared_path.py` |
+| 05 | substrate-search | `gates/05-substrate-search/GATE.md` · deployed `skills/substrate-search` · code ADOPTED: the estate `commit-msg` guard (shared with gate 11) |
+| 06 | compile-it | `gates/06-compile-it/GATE.md` · deployed `skills/compile-it` · code `gates/06-compile-it/repeats.py report` (shared with gate 03) |
+| 07 | think-3x | `gates/07-think-3x/GATE.md` · deployed `skills/think-3x` |
 | 08 | set-the-prior | `gates/08-set-the-prior/GATE.md` · deployed `skills/set-the-prior` · hook `hooks/hook_prior.py` |
-| 09 | disprove-first | `gates/09-disprove-first/GATE.md` · **NO DEPLOYED READ — GAP.** Nearest kin: `skills/adversarial-pass`, its verify-time twin |
-| 10 | root-cause | deployed `skills/root-cause` |
+| 09 | disprove-first | `gates/09-disprove-first/GATE.md` · deployed `skills/disprove-first` · code ADOPTED `lint/baits_pair.py` |
+| 10 | root-cause | `gates/10-root-cause/GATE.md` · deployed `skills/root-cause` |
 | 11 | karsholto | `gates/11-karsholto/GATE.md` · deployed `skills/karsholto` · code ADOPTED: the estate `commit-msg` YAGNI guard |
-| 12 | completer | deployed `skills/completer` |
+| 12 | completer | `gates/12-completer/GATE.md` · deployed `skills/completer` · hook `hooks/hook_completer.py` |
 | 13 | nomess | `gates/13-nomess/GATE.md` · tool `gates/13-nomess/nomess.py` · code (in `lint/all.sh`) · deployed `skills/nomess` |
 | 14 | cold-read | `gates/14-cold-read/GATE.md` · deployed `skills/cold-read` · agent `skills/agents/cold-reader.md` |
-| 15 | vizcheck | deployed `skills/vizcheck` |
-| 16 | chunk-it | **NO DEPLOYED SKILL, BY RULING.** It folds into the completion rule: an obligation on every table, not a judgement. Ruled 2026-09-01. |
-| 17 | write-back | **NO DEPLOYED SKILL, BY RULING.** Same — an obligation, not a judgement. Ruled 2026-09-01. |
+| 15 | vizcheck | `gates/15-vizcheck/GATE.md` · deployed `skills/vizcheck` · tool `coywolf-screenshot` (SECOND MACHINE ONLY) · agent `vizcheck-reader` |
+| 16 | chunk-it | `gates/16-chunk-it/GATE.md` · code `gates/16-chunk-it/capture.py chunk`. No skill BY RULING: an obligation on every table, not a judgement |
+| 17 | write-back | `gates/17-write-back/GATE.md` · code `capture.py writeback` (shared with gate 16, separate rows). No skill BY RULING |
 | 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agent `refuter` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · hook `hooks/mark_refuter.py` |
-| 19 | state-the-posterior | deployed `skills/95-percent-rule` — the posterior half. NO GATE.md yet |
+| 19 | state-the-posterior | `gates/19-state-the-posterior/GATE.md` · deployed `skills/95-percent-rule` — the posterior half · hook `hooks/hook_posterior.py` |
 
 The `ask-dont-pour` bundle remains deployed on the primary workstation as the
 read-source for gates 03-05 ONLY. It is deliberately NOT published in this repo:
@@ -161,8 +161,9 @@ it is the six-lever bundle those gates replaced, and no gate may bundle. Shippin
 it would hand a reader the exact anti-pattern this suite forbids. The debt is a
 GATE.md for 03, 04 and 05 — not a copy of the bundle.
 It is the retired bundle. Do not run it as one gate.
-`skills/95-percent-rule` is the read-source for BOTH 09 and 20 until each is
-broken down. It still describes them as one act; the split is the ruling above.
+`skills/95-percent-rule` is the read-source for BOTH gate 08 set-the-prior and
+gate 19 state-the-posterior. It still describes them as one act; the split is the
+ruling above, and each gate's own GATE.md is authoritative over it.
 
 ## The forms that make this fire
 
@@ -177,10 +178,11 @@ broken down. It still describes them as one act; the split is the ruling above.
 - Gates 09, 10, 17, 18 and 20 have no dedicated deployed skill. 10 has no read
   anywhere and is the highest-priority gap.
 - `~/.claude/skills/` is still not a checkout of this repo, so installs are
-  manual and drift can recur. The second machine holds exactly ONE deployed skill.
+  manual and drift can recur. The second machine holds exactly ONE deployed skill
+  from this suite, plus five hooks of its own that are NOT part of it.
 - Two seams were interrogated on 2026-08-31 and kept, but named for review:
-  **06 substrate-search / 12 karsholto** are the same principle at two phases,
-  the weakest distinction in the suite; **16 vizcheck** has the narrowest
+  **05 substrate-search / 11 karsholto** are the same principle at two phases,
+  the weakest distinction in the suite; **15 vizcheck** has the narrowest
   trigger and was N/A all day. Neither was merged. Two firing moments are two
   gates under "order is information". Forms describe HOW a gate is enforced,
   never WHEN it fires.

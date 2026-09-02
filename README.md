@@ -45,12 +45,19 @@
 > exist." That was true when written and is now false, and it stayed false long
 > enough for a reader to conclude this repo buys reads rather than enforcement.
 >
-> Both hooks in `hooks/` ARE registered on the primary workstation —
-> `mark_build.py` on `PostToolUse`, `owe_table.py` on `Stop` — and the completion
-> table fires unprompted, dozens of times a day. They are NOT registered on the
-> second machine, which holds one deployed skill and no hooks. This suite spans
-> two machines and its claims resolve differently on each; check which one you are
-> reading from.
+> All 8 hooks in `hooks/` ARE registered on the primary workstation, and the
+> completion table fires unprompted, dozens of times a day.
+>
+> **They are NOT registered on the second machine.** Measured 2026-09-01, that
+> machine holds ONE deployed skill (`the-screen`) and FIVE hooks of its own —
+> `cold-read-check.py`, `howl.py`, `poison-screen.py`, `spend_reflex.py`,
+> `tripwire.sh` — with six registrations. None of them is from this suite. An
+> earlier version of this paragraph said that machine had "no hooks", which was
+> false: it had five, and a reader would have concluded the suite was the only
+> thing running there.
+>
+> This suite spans two machines and its claims resolve differently on each. Check
+> which one you are reading from, and do not assume the other mirrors it.
 >
 > What remains honestly weak is below this banner, and it is about gates 01-02
 > specifically, not about the conductor.
@@ -156,23 +163,23 @@ Two of the three froze on the same day in June and neither errored.
 |---|---|---|---|
 | 01 | ste | skill · tool · hook · code | **built** |
 | 02 | retrieval-economy | tool · skill · hook · code | **built** |
-| 03 | collapse-round-trips | — | ruled 2026-09-01, GATE.md owed |
-| 04 | no-collision | — | ruled 2026-09-01, GATE.md owed |
-| 05 | substrate-search | — | ruled 2026-09-01, GATE.md owed |
-| 06 | compile-it | — | ruled 2026-09-01, GATE.md owed |
-| 07 | think-3x | — | ruled 2026-09-01, GATE.md owed |
+| 03 | collapse-round-trips | skill · hook · code | **built** |
+| 04 | no-collision | skill · tool · hook | **built** |
+| 05 | substrate-search | skill · code | **built** (code adopted) |
+| 06 | compile-it | skill · code | **built** |
+| 07 | think-3x | skill | **built** |
 | 08 | set-the-prior | skill · hook | **built** |
-| 09 | disprove-first | — | GATE.md written, no form yet |
-| 10 | root-cause | — | ruled 2026-09-01, GATE.md owed |
+| 09 | disprove-first | skill · code | **built** |
+| 10 | root-cause | skill | **built** |
 | 11 | karsholto | skill · code | **built** (code adopted) |
-| 12 | completer | — | ruled 2026-09-01, GATE.md owed |
+| 12 | completer | skill · hook | **built** |
 | 13 | nomess | skill · tool · code | **built** |
 | 14 | cold-read | skill · agent | **built** |
-| 15 | vizcheck | — | ruled 2026-09-01, GATE.md owed |
-| 16 | chunk-it | — | ruled 2026-09-01 · folds into the completion rule |
-| 17 | write-back | — | ruled 2026-09-01 · folds into the completion rule |
+| 15 | vizcheck | skill · tool · agent | **built** |
+| 16 | chunk-it | code | **built** |
+| 17 | write-back | code | **built** (shared tool) |
 | 18 | adversarial-pass | skill · agent · hook | **built** |
-| 19 | state-the-posterior | — | ruled 2026-09-01, GATE.md owed |
+| 19 | state-the-posterior | skill · hook | **built** |
 
 The CONDUCTOR (`CONDUCTOR.md`) holds this table with each gate's TRIGGER, the
 three legal states and the completion rule. It is installed to
