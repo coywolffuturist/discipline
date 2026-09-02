@@ -94,8 +94,9 @@ completion table, that turned green when the fault was removed.
 | skill | the read above, and the sentence written before code | nothing mechanical; it is a habit prompt |
 | code | ADOPTED — `lint/baits_pair.py`: a REGISTRY pairing every numbered check with a bait LABEL, ratcheted against `baits_pair.baseline` so a NEW unbaited check fails the build | **it never RUNS anything.** It is a static scan for two string literals, so it cannot tell a bait seen red from one that has never executed |
 
-**ADOPTED FOR HALF THE RULING. THE OTHER HALF IS A NAMED GAP.** The ruled form
-was *"a registry of registered tests, AND a check that each was seen red."*
+**ADOPTED FOR HALF THE RULING. THE OTHER HALF IS A NAMED GAP.** The ruled form asked for a registry of registered tests AND a check that each
+was seen red. (Described, not quoted — the ruling text is in the cast record on
+another machine, unverifiable from here.)
 
 `baits_pair.py` is the registry. It is a static regex scan for a `check("Xn …")`
 literal and a matching `bait("BAIT Xn …")` literal. **It executes nothing.** A

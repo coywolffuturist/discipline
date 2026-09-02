@@ -15,7 +15,7 @@ not.
 WHAT IT DOES NOT DO. It does not decide whether something is worth capturing.
 That judgement is the gate; this is only the hands.
 """
-import argparse, io, os, re, sys
+import argparse, io, os, re, sys, tempfile
 
 LEDGER_NAME = "reference_coywolf_chunk_ledger.md"
 
@@ -54,6 +54,36 @@ INDEX = os.path.join(MEMDIR, "MEMORY.md")
 PENDING = "\n---\n\n## Pending — named but NOT yet chunked"
 
 
+
+def _atomic_write(path, text):
+    """Write via a temp file and os.replace. NEVER truncate the real file.
+
+    `io.open(path, "w").write(text)` TRUNCATES FIRST and flushes in __del__,
+    where an OSError is raised during finalization and SILENTLY IGNORED by the
+    interpreter. A reviewer reproduced it with a size limit standing in for a
+    full disk: MEMORY.md went from 8,616 bytes to 512, the tool printed
+    "wrote / indexed", and exited 0. The rollback never ran because the
+    exception never reached it.
+
+    A partial write that reports success is worse than a crash. os.replace is
+    atomic on POSIX: the original survives untouched until the new content is
+    complete on disk.
+    """
+    d = os.path.dirname(os.path.abspath(path)) or "."
+    fd, tmp = tempfile.mkstemp(dir=d, prefix=".capture-", suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as f:
+            f.write(text)
+            f.flush()
+            os.fsync(f.fileno())     # the error must surface HERE, not in __del__
+        os.replace(tmp, path)
+    except BaseException:
+        try:
+            os.unlink(tmp)
+        except OSError:
+            pass
+        raise
+
 def chunk(title, body):
     """Gate 16. Append a named move to the ledger, above the Pending section."""
     s = io.open(LEDGER, encoding="utf-8").read()
@@ -62,7 +92,13 @@ def chunk(title, body):
     entry = "\n**%s** %s\n" % (title.rstrip(".").upper() + ".", body.strip())
     before = len(s)
     s = s.replace(PENDING, entry + PENDING, 1)
-    io.open(LEDGER, "w", encoding="utf-8").write(s)
+    # chunk() previously had NO error handling whatsoever. The same size-limit
+    # test truncated a 7,257-byte ledger to 512 bytes and reported success.
+    try:
+        _atomic_write(LEDGER, s)
+    except Exception as e:
+        sys.exit("capture: the ledger could not be written (%s). NOTHING was "
+                 "changed — the original is intact." % e)
     # VERIFY the write. A hand-written append was once reported as landed when it
     # had not, so this reads the file back rather than trusting the call.
     after = io.open(LEDGER, encoding="utf-8").read()
@@ -97,7 +133,7 @@ def writeback(name, description, kind, body, index_line):
     # is the only thing that makes "or neither" true.
     body_txt = ("---\nname: %s\ndescription: %s\nmetadata:\n  type: %s\n---\n\n%s\n"
                 % (slug, description, kind, body.strip()))
-    io.open(path, "w", encoding="utf-8").write(body_txt)
+    _atomic_write(path, body_txt)
     try:
         idx = io.open(INDEX, encoding="utf-8").read()
         line = "> %s\n" % index_line.strip()
@@ -107,7 +143,7 @@ def writeback(name, description, kind, body, index_line):
                 idx = idx.replace(anchor, anchor + "\n" + line, 1)
             else:
                 idx = line + idx
-            io.open(INDEX, "w", encoding="utf-8").write(idx)
+            _atomic_write(INDEX, idx)
         if not os.path.exists(path) or line not in io.open(INDEX, encoding="utf-8").read():
             raise IOError("file or index entry did NOT land")
     except Exception as e:

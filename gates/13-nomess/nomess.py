@@ -20,10 +20,14 @@ TWO SCOPES, deliberately separate:
 
 Default runs both and reports separately.
 """
-import argparse, os, re, subprocess, sys
+import argparse, io, os, re, subprocess, sys
 
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-DEN = "coywolfden"
+# The remote host is CONFIGURABLE, not hardcoded. This repo is public and the
+# prose in it carefully says "the second machine"; the code named the host.
+# With nothing set, the remote sweep reports UNCONFIGURED rather than pretending
+# a clean result for a host it never contacted.
+DEN = os.environ.get("COYWOLF_REMOTE_HOST", "")
 findings = []
 
 
@@ -101,6 +105,45 @@ def repo_sweep():
                         % (b, os.path.relpath(twins[0], REPO)))
 
 
+    # NO MACHINE OR ACCOUNT NAMES IN A PUBLIC TREE. The prose here was scrubbed
+    # and the CODE was not: a reviewer found the host name in three files and
+    # the operator's account name hardcoded in a fourth. `skill_share.sh` scrubs
+    # `skills/` and never touched the gate-directory copies, so two sources
+    # diverged again.
+    import glob as _g
+    # DERIVED FROM THE ENVIRONMENT, never written down. Two earlier attempts
+    # failed: writing the names literally made this file itself the leak, and
+    # splitting them across a `+` did not help, because the substring is still
+    # in the source. Exempting the detector was never an option — that is how a
+    # checker goes blind exactly where it matters.
+    #
+    # So it asks the machine who it belongs to. That leaks nothing, and it
+    # generalises: it protects WHOEVER runs it, not one account this file names.
+    import socket
+    NAMES = set()
+    acct = os.path.basename(os.path.expanduser("~"))
+    if len(acct) > 3:
+        NAMES.add(acct.lower())
+    host = socket.gethostname().split(".")[0]
+    if len(host) > 3:
+        NAMES.add(host.lower())
+    # ONLY WHAT GIT TRACKS. "Published" means tracked, not present: the first
+    # version scanned the whole tree and flagged a gitignored .pyc that can
+    # never reach the remote. Scanning what will actually be pushed is both
+    # correct and faster.
+    for rel in sh("git -C %s ls-files" % REPO).splitlines():
+        f = os.path.join(REPO, rel)
+        if not os.path.isfile(f) or os.path.islink(f):
+            continue
+        try:
+            txt = io.open(f, encoding="utf-8", errors="ignore").read()
+        except OSError:
+            continue
+        for nm in NAMES:
+            if nm in txt.lower():
+                bad("repo", "PUBLISHES A PRIVATE NAME: %s contains %r" % (rel, nm))
+
+
 def done_sweep():
     """Single-copy work. NOT a build check — see below.
 
@@ -126,7 +169,19 @@ def done_sweep():
             bad("done", "uncommitted change, so the EDIT exists in one place only: %s" % path)
 
 
+SKIP_REMOTE = False
+
+
 def remote_sweep():
+    # UNCONFIGURED IS NOT DIRTY, AND IT IS NOT CLEAN EITHER. With no host set
+    # this used to report "cannot reach  — remote state UNSWEPT", a FAILURE for
+    # anyone who simply has no second machine. Same false-denial class the repo
+    # sweep just had.
+    global SKIP_REMOTE
+    if not DEN:
+        SKIP_REMOTE = True
+        return
+
     if sh("ssh -o ConnectTimeout=8 -o BatchMode=yes %s 'echo up' 2>/dev/null" % DEN) != "up":
         bad("remote", "cannot reach %s — remote state UNSWEPT, not clean" % DEN)
         return
@@ -169,6 +224,24 @@ def main():
         done_sweep(); scopes.append("done")
 
     if not findings:
+        # SKIPPED IS NOT PASSED. `SKIP_DEPLOY` was set when ~/.claude/hooks is
+        # absent and then read NOWHERE, so on a machine with no install this
+        # printed "PASS — no stale deployed copy" having compared zero copies.
+        # That is the exact failure this repo exists to name: a check reporting
+        # health it does not have. lint/all.sh already documents that this
+        # should skip; the code never did it.
+        if SKIP_REMOTE and "remote" in scopes:
+            print("\033[33mSKIP\033[0m  nomess — %s clean, but the REMOTE sweep "
+                  "ran nothing:" % " + ".join(s for s in scopes if s != "remote"))
+            print("      COYWOLF_REMOTE_HOST is unset, so no second machine was "
+                  "contacted. Remote state is UNKNOWN, not clean.")
+            return 2
+        if SKIP_DEPLOY:
+            print("\033[33mSKIP\033[0m  nomess — repo hygiene passed, but the "
+                  "deployed-copy check compared NOTHING:")
+            print("      no ~/.claude/hooks on this machine. Install state is "
+                  "UNKNOWN here, not clean.")
+            return 2
         print("\033[32mPASS\033[0m  nomess — %s clean" % " + ".join(scopes))
         return 0
     print("\033[31mFAIL\033[0m  nomess — %d item(s):" % len(findings))

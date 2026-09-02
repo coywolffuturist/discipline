@@ -46,7 +46,7 @@ substrate from it. Two gates, one mechanism, different readings. Not a bundle:
 each reports its own row and neither can hide inside the other's.
 
 **What adoption required.** The guard's load-bearing directory list named
-`scripts/lucid/`, `neumann/router/`, `brain/skills/` and others — and **none of
+three directories belonging to archived projects — and **none of
 this repo's directories.** Adding a new tool under `gates/` did not trigger it.
 The gate whose subject is unjustified substrate was inert in the repo whose
 subject is gates. `gates/`, `hooks/`, `lint/` and `scripts/` were added to that

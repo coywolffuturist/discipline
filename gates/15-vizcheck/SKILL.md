@@ -75,11 +75,11 @@ ship code that *should* look right.**
 Localhost / unauthenticated UI QA (the 99% case) — one canonical command:
 
 ```
-ssh coywolfden 'coywolf-screenshot <url> [output_path] [--window-size=WxH]'
+ssh <remote-host> 'coywolf-screenshot <url> [output_path] [--window-size=WxH]'
 ```
 
 Example: `coywolf-screenshot http://localhost:7777/dashboard.html /tmp/qa/check.png --window-size=1440x900`
-Then `scp coywolfden:<output_path> /tmp/local.png` and Read it. Crop with
+Then `scp <remote-host>:<output_path> /tmp/local.png` and Read it. Crop with
 `sips` for small targets. The wrapper IS the proven incantation
 (`~/coywolf/repos/coywolf/scripts/qa/coywolf-screenshot`) — don't hand-roll
 a headless-Chrome call inline.
@@ -87,7 +87,7 @@ a headless-Chrome call inline.
 Coordinate readback: evaluate `getBoundingClientRect()` / computed style
 on the live page (via the page's devtools/JS surface) for exact placement.
 
-Failure diagnostic: `ssh coywolfden 'chrome_qa_diag.sh'` → structured
+Failure diagnostic: `ssh <remote-host> 'chrome_qa_diag.sh'` → structured
 verdict (SNAPSHOT / AB_SCREENSHOT / HEADLESS).
 
 Not to use here:

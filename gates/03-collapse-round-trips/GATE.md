@@ -77,7 +77,7 @@ look, never as a finding.
 **Shared with gate 06 compile-it, and separate rows.** Both gates count a
 repeat; they differ in window and remedy. Gate 03 reads the same shape issued
 **twice in a row** and the remedy is to batch. Gate 06 reads a shape reaching
-**three** in the session log and the remedy is to write the script. One mechanism,
+**three** in the shared log and the remedy is to write the script. One mechanism,
 two readings — the arrangement `capture.py` has with gates 16 and 17.
 
 **Quoted text is treated as data, not action.** `grep "rm " f.txt` reduces to

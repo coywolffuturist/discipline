@@ -51,10 +51,10 @@ remove the judgement calls that were being made by eye and got wrong.
 | form | what it is | when |
 |---|---|---|
 | **skill** | the read: repeats · mechanical · stable · checkable, and crystallize on the second or third | before designing an LLM step |
-| **code** | `gates/06-compile-it/repeats.py report` — shapes repeated three or more times in the SESSION log | when the table is filled |
+| **code** | `gates/06-compile-it/repeats.py report` — shapes repeated three or more times in the shared (boot-scoped) log | when the table is filled |
 
 **Shared with gate 03 collapse-round-trips, and separate rows.** Both count a
-repeat. Gate 03 reads **back-to-back** and batches; this reads **three in the session
+repeat. Gate 03 reads **back-to-back** and batches; this reads **three in the shared
 log** and compiles. One mechanism, two readings.
 
 **The log is not turn-scoped, and not session-scoped either.** It carries no

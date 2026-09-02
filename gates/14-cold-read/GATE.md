@@ -4,10 +4,19 @@
             artifact to read; later it has already shipped.
     forms:  skill · agent
     where:  the `cold-reader` agent and the `cold-read` skill are installed on
-            the PRIMARY WORKSTATION. They are ABSENT on the machine this repo
-            lives on, where this gate is therefore permanently BLOCKED until
-            they are installed. The estate spans two hosts; a path resolves
-            per-host and no file here should name one without saying which.
+            the machine this repo lives on — verified 2026-09-02 at
+            `~/.claude/agents/cold-reader.md` and `~/.claude/skills/cold-read`.
+            This gate can RUN here.
+
+            An earlier version of this block said they were ABSENT here and the
+            gate "permanently BLOCKED". That was true when written and false by
+            the time it was read: the repo moved to this machine on 2026-09-01.
+            A reader following it would have written BLOCKED for a gate that
+            works — which is the "true when written, now false" failure this
+            gate exists to catch, inside this gate's own header.
+
+            The estate spans two hosts; a path resolves per-host and no file
+            here should name one without saying which.
     ruled:  the operator, 2026-09-01 — full moon. Without a context-free reader
             the row is BLOCKED, not FIRED.
 

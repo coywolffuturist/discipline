@@ -45,7 +45,7 @@
 > exist." That was true when written and is now false, and it stayed false long
 > enough for a reader to conclude this repo buys reads rather than enforcement.
 >
-> All 8 hooks in `hooks/` ARE registered on the primary workstation, and the
+> All 9 hooks in `hooks/` ARE registered on the primary workstation, and the
 > completion table fires unprompted, dozens of times a day.
 >
 > **They are NOT registered on the second machine.** Measured 2026-09-01, that
@@ -130,8 +130,9 @@ gates/NN-<name>/
     GATE.md      the read · the intent · the forms   (required)
     <form files> one per form the gate actually has
 skills/          GENERATED deployed forms + the reviewer agents  (derived)
-hooks/           the hooks that make the table fire unprompted. Symlinks into
-                 the gate directories, so a copy cannot drift.
+hooks/           the 9 hooks that make the table fire unprompted. 5 are symlinks
+                 into their gate directory, so those cannot drift; 4 live only
+                 here, because their gate has no other form file.
 lint/            the gates' own checks — `lint/all.sh`
 scripts/         standalone guards, usable without the rest
 ```
@@ -171,7 +172,7 @@ Two of the three froze on the same day in June and neither errored.
 | # | gate | forms | state |
 |---|---|---|---|
 | 01 | ste | skill · tool · hook · code | **built** |
-| 02 | retrieval-economy | tool · skill · hook · code | **built** |
+| 02 | retrieval-economy | tool · skill | **built** (hook + code DELETED) |
 | 03 | collapse-round-trips | skill · hook · code | **built** |
 | 04 | no-collision | skill · tool · hook | **built** |
 | 05 | substrate-search | skill · code | **built** (code adopted) |

@@ -66,8 +66,8 @@ def quotes_in(text):
     """Block quotes, reflowed. A quote may span lines; a blank '>' separates them."""
     out, cur = [], []
     for line in text.splitlines():
-        if line.startswith(">"):
-            body = line[1:].strip()
+        if line.lstrip().startswith(">"):   # indented blockquotes are blockquotes
+            body = line.lstrip()[1:].strip()
             if body:
                 cur.append(body)
             elif cur:
@@ -85,8 +85,11 @@ def inline_quotes(text):
     Only spans long enough to be a real quotation, and only those with a
     sentence's shape — a short quoted term is a name, not a citation."""
     out = []
-    for m in re.finditer(r'[*`]?"([^"\n]{40,})"[*`]?', text):
-        out.append(m.group(1))
+    # Straight AND typographic quotes. A reviewer slipped a wholly fabricated
+    # citation through in curly quotes because only `"` was matched.
+    for pat in (r'[*`]?"([^"\n]{40,})"[*`]?', u'[*`]?\u201c([^\u201d\n]{40,})\u201d[*`]?'):
+        for m in re.finditer(pat, text):
+            out.append(m.group(1))
     return out
 
 
@@ -139,8 +142,14 @@ def main():
                 r = difflib.SequenceMatcher(None, qw, a.split()).ratio()
                 if r > score:
                     score, best = r, a
-            if score >= 0.98:
-                continue                       # verbatim
+            # NO EARLY EXIT ON SIMILARITY. This used to `continue` at >= 0.98
+            # before the number, negation and drop rules ran. On a 45-word
+            # corpus row, DELETING one word scores 0.989 — so "the synthesis is
+            # NOT in the ledger" quoted as "the synthesis IS in the ledger"
+            # passed silently as verbatim. High similarity is exactly where a
+            # meaning inversion hides; it is the least safe place to stop
+            # checking. The rules below run first, and `verbatim` is decided
+            # after them.
             # NUMBERS ARE NEVER A SCRUB. A quote may be genericised for a public
             # repo; it may not carry a number the source does not. This exists
             # because a recorded posterior of "0.4 -> 0.8" was quoted as 0.4,
@@ -165,6 +174,15 @@ def main():
             # scrub; deleting a clause is a different quotation.
             bw = best.split()
 
+            # PADDING, the mirror of dropping. A fabricated clause APPENDED to a
+            # real quote keeps similarity high and passed as a scrub — which is
+            # the more dangerous direction, because the invented half inherits
+            # the credibility of the real half.
+            if score >= 0.70 and len(qw) > len(bw) * 1.15:
+                bad.append("%s: quote ADDS %d words its source row does not have: %r"
+                           % (g, len(qw) - len(bw), q[:70]))
+                continue
+
             # NEGATION POSITION. Sequence similarity cannot see a meaning
             # inversion: moving one word scored 92% when a reviewer turned
             # "split custody meant NO shared write path" into "NO split custody
@@ -177,15 +195,19 @@ def main():
             def _negpairs(ws):
                 return {(w, ws[i + 1]) for i, w in enumerate(ws[:-1]) if w in NEG}
             qneg, bneg = _negpairs(qw), _negpairs(bw)
-            if score >= 0.70 and (qneg - bneg):
-                bad.append("%s: a negation is attached to a different word than in "
-                           "the source %s vs %s: %r"
-                           % (g, sorted(qneg - bneg), sorted(bneg) or "[]", q[:60]))
+            # SYMMETRIC. `qneg - bneg` catches a negation MOVED or ADDED and is
+            # blind to one DELETED — which is the cleaner inversion: drop "not"
+            # and the sentence asserts the opposite at 0.98 similarity.
+            if score >= 0.70 and (qneg ^ bneg):
+                bad.append("%s: negation differs from the source (quote %s / source %s): %r"
+                           % (g, sorted(qneg) or "[]", sorted(bneg) or "[]", q[:60]))
                 continue
             if score >= 0.70 and len(qw) < len(bw) * 0.85:
                 bad.append("%s: quote DROPS %d of %d words from its source row: %r"
                            % (g, len(bw) - len(qw), len(bw), q[:70]))
                 continue
+            if score >= 0.98:
+                continue                       # verbatim, and it survived the rules
             if score >= 0.70:
                 # A scrub. Legitimate, but SHOW it — a silent near-match is how
                 # 0.4 got reported where the record said "0.4 -> 0.8".
@@ -208,8 +230,19 @@ def main():
                         score, best = r, " ".join(fw[i:i + len(qw) + 5])
             if score >= 0.98:
                 continue
+            # An inline quote is normally the author's own emphasis, so a low
+            # score means "not a citation" and passes. UNLESS the sentence
+            # ATTRIBUTES it to the record — then a low score means a fabricated
+            # citation, which is the worst thing this checker exists to catch.
+            # A reviewer walked a wholly invented quotation through in
+            # typographic quotes, attributed to "the operator's own words".
             if inline and score < 0.70:
-                continue                       # the author's own words, not a citation
+                where = t[max(0, t.find(q) - 220): t.find(q) + len(q) + 80].lower()
+                claims_source = re.search(
+                    r"the record|the corpus|the log|verbatim|own words|firing|"
+                    r"recorded|the ruling|reads?:|states?:", where)
+                if not claims_source:
+                    continue                   # the author's own words, not a citation
             bad.append("%s: %s traces to NO single source (best %.0f%%): %r"
                        % (g, "inline quote" if inline else "quote", score * 100, q[:80]))
 
@@ -223,7 +256,12 @@ def main():
         for sent in re.split(r"(?<=[.!?])\s+|\n\n", t):
             # WORD BOUNDARY. Plain `in` matched "ste" inside "estate" and
             # attributed gate 04's own counts to gate 01.
-            named = [o for o in others if re.search(r"\b%s\b" % re.escape(o), sent)]
+            # sorted(), because `others` is a SET and Python randomizes set
+            # iteration per process. Taking named[0] made this check return RED
+            # or GREEN on identical bytes depending on PYTHONHASHSEED — a
+            # build-gating check whose verdict was a coin flip.
+            named = sorted(o for o in others
+                           if re.search(r"\b%s\b" % re.escape(o), sent))
             for num, state in re.findall(r"\b(\d+) (FIRED|N/A|BLOCKED)\b", sent):
                 if named:
                     real = by_name.get(named[0], {})

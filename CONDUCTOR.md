@@ -180,8 +180,9 @@ ruling above, and each gate's own GATE.md is authoritative over it.
   false by the time it was read, and there is no gate 20. This block was never
   updated as the gates were built, so it described a repository that had stopped
   existing — which is worse than no debt list, because a reader trusts it.
-- The real remaining debt: **11 gates carry code forms and 5 have a bait harness
-  that RUNS.** Gate 09 disprove-first records this as its own REVISIT.
+- The real remaining debt: **4 bait harnesses RUN, covering gates 01, 04 and 09**
+  (`gates/01-ste/baits.py`, `lint/bait_baits_pair.py`, `lint/bait_quotes.py`,
+  `lint/bait_warn_shared_path.py`). Every other code form is unbaited in-repo. Gate 09 disprove-first records this as its own REVISIT.
 - `~/.claude/skills/` is still not a checkout of this repo, so installs are
   manual and drift can recur. The second machine holds exactly ONE deployed skill
   from this suite, plus five hooks of its own that are NOT part of it.

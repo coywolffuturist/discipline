@@ -57,7 +57,7 @@ those kits. An edit to one reached none of the others.
 - `~/.claude/skills/` on both machines is not yet a checkout of this repo.
   Until it is, deployment is manual and drift is possible.
 - The suite spans TWO machines, and the deployed paths below resolve differently
-  on each. The primary workstation runs the conductor and both hooks. The second
+  on each. The primary workstation runs the conductor and all 9 hooks. The second
   machine holds exactly ONE installed skill and no discipline hooks, which is why
   a skill-only form cannot be trusted to fire there. A reader who checks a
   `~/.claude/...` path on the wrong machine will correctly conclude the file is

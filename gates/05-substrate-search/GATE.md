@@ -41,8 +41,10 @@ every mechanism in the estate can answer why it exists.
 | **skill** | the read: name the existing piece, name the gap, in writing before building | every proposal |
 | **code** | ADOPTED — the estate `commit-msg` hook refuses a commit that adds a new file in a load-bearing directory, or a new table, without a `Justified-against:` line answering exactly this question | every commit |
 
-**ADOPTED, NOT BUILT — and this gate is the guard's proper owner.** The ruled
-form was "a hook on file creation demands the written justification". That hook
+**ADOPTED, NOT BUILT — and this gate is the guard's proper owner.** The ruled form asked for a hook on file creation that demands the written
+justification. (Described, not quoted: the ruling text lives in the cast record
+on another machine and cannot be verified from this repo, so presenting it as a
+verbatim quotation would be a citation no reader here can check.) That hook
 already existed, and its prompt is this gate's question verbatim: *What existing
 piece already does this, and why is it insufficient for this case?*
 

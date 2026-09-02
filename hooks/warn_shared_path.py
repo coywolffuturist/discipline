@@ -20,11 +20,11 @@ import json, os, re, sys
 # Substrate a second agent can hold. Each entry earned its place: these are the
 # paths where two writers have actually met, or would.
 SHARED = [
-    (r"~?/?pack/|/Users/[^/\s]+/pack/",       "the pack tree — a peer agent writes here"),
+    (r"~?/?pack(/|\b)|/Users/[^/\s]+/pack(/|\b)", "the pack tree — a peer agent writes here"),
     (r"rendezvous",                            "the Rendezvous board — a peer posts to it"),
-    (r"\bssh\s+\S*den|coywolfden",             "the second machine — a peer runs there"),
+    (r"\bssh\s+\S+",                            "another machine — a peer may run there"),
     (r"gui-browser-lock|Chrome|chrome_js",     "the shared browser — take the lock first"),
-    (r"\.coywolf/keys/",                        "signing keys — split custody, never both sides"),
+    (r"/keys?/|\.pem\b|\.key\b",                "signing keys — split custody, never both sides"),
 ]
 
 try:
@@ -40,33 +40,33 @@ cmd = ((d.get("tool_input") or {}).get("command") or "")
 # was ACTIVELY EXEMPTED by the read-shape early-exit below. The paths matched
 # fine every time — the VERB list was the hole, which is why a hand-maintained
 # list of shapes is the wrong instrument for "is this a write".
-REDIRECT = re.compile(r">>?\s*[^|&\s>]")          # > path  or  >> path
-VERB = re.compile(r"(^|[;&|]\s*)(rm|mv|cp|tee|dd|install|ln|sed\s+-i|sqlite3|"
-                  r"git\s+(push|commit|checkout|reset)|python3?\s|bash\s|\bssh\b)")
-has_redirect = bool(REDIRECT.search(cmd))
-if not (has_redirect or VERB.search(cmd)):
-    raise SystemExit(0)
-
-# The read-shape exit applies ONLY with no redirection. `cat file` is a read;
-# `cat > file` is a write, and treating them alike is what exempted the board.
-if not has_redirect and re.match(r"^\s*(cat|ls|grep|rg|head|tail|wc|find|stat|file|diff)\b", cmd):
-    raise SystemExit(0)
-
-# `ssh host 'cat ...'` is a READ on the second machine. The old version warned on
-# every ssh, which is noise, and noise is how a warning gets ignored.
+# INVERTED, AND THIS IS THE THIRD DESIGN. The first matched write VERBS and
+# missed every redirect. The second added redirects and still missed ten shapes
+# a reviewer found in one pass: `cd <shared> && rm f`, truncate, touch, mkdir,
+# rsync, `curl -o`, `perl -i`, `git -C <shared> rm`, chmod, `| sudo tee`.
 #
-# `python3 -c` IS NOT A READ, and listing it here was the defect. A reviewer
-# showed `ssh den "python3 -c 'open(...,\"w\").write(1)'"` passing SILENTLY while
-# `ssh den "echo hi >> ~/pack/board.txt"` warned. A `-c` payload is arbitrary
-# code; nothing about the invocation says whether it writes. This estate runs
-# roughly ten python heredocs a day, so the shape is common, not exotic.
-if re.match(r"^\s*ssh\b", cmd) and not has_redirect and \
-        re.search(r"""['"]\s*(cat|ls|grep|head|tail|wc|find|stat|pgrep|echo|date)\b""", cmd) and \
-        not VERB.search(re.sub(r"^\s*ssh\s+\S+\s*", "", cmd)):
-    raise SystemExit(0)
+# Both a verb list and a path pattern are ENUMERATIONS OF THINGS I THOUGHT OF,
+# which is the failure this gate's own file already names. A longer list loses
+# the same way — so the question is inverted.
+#
+# THE RULE NOW: if a command mentions a shared path at all, WARN — unless it is
+# recognisably read-only. This form WARNS and never denies, so a spurious
+# warning costs one line and a silent miss costs an afternoon. The asymmetry
+# decides the direction of the default.
+READ_ONLY = re.compile(
+    r"""^\s*(?:ssh\s+\S+\s+)?['"]?\s*"""
+    r"""(cat|bat|less|more|head|tail|wc|grep|rg|ag|find|ls|stat|file|diff|"""
+    r"""du|md5|shasum|sha256sum|awk|sed(?!\s+-i)|cut|sort|uniq|jq|column|"""
+    r"""git(\s+-[A-Za-z]\s+\S+)*\s+(log|show|diff|status|blame|ls-files|for-each-ref|cat-file|rev-parse|describe))\b""",
+    re.X)
+REDIRECT = re.compile(r">>?\s*[^|&\s>]")
 
 hits = [why for pat, why in SHARED if re.search(pat, cmd)]
 if not hits:
+    raise SystemExit(0)
+
+# Recognisably read-only AND no redirection anywhere: not a collision.
+if READ_ONLY.match(cmd) and not REDIRECT.search(cmd):
     raise SystemExit(0)
 
 msg = ("GATE 04 no-collision: this command touches " + hits[0] + ". "

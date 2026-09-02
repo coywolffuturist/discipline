@@ -12,9 +12,16 @@ and in the remedy:
     gate 06  the SAME shape a third time in the log   -> write the script
 
 THE LOG IS NOT TURN-SCOPED. Nothing truncates or rotates it, so it spans the
-whole session, and a "back-to-back" pair can straddle a turn boundary. Earlier
-comments here said "in the turn". That was false. Both numbers are SESSION
-readings.
+whole session, and a "back-to-back" pair can straddle a turn boundary.
+
+It is not session-scoped either. The line carries no timestamp, no session id
+and no pid, and $TMPDIR is per-user-per-boot and shared by every concurrent
+process — a reviewer measured 533 lines and 167 distinct shapes with two
+sessions live. Both numbers are BOOT-scoped, CROSS-PROCESS readings.
+
+That changes the verdict, not just the window: two adjacent lines can be two
+different agents' calls, which cannot be batched. Earlier comments here said
+"in the turn", then "session". Both were false.
 
 WHY IT EXISTS AT ALL. Gate 06's own trigger fired on me while I was building the
 suite: the two-step `cp CONDUCTOR.md outward; regenerate the bundle` was typed
