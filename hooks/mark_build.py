@@ -27,6 +27,21 @@ MUT = re.compile(
     r"|\bpip install\b|\bnpm install\b"
     r"|>>?\s*[^|&\s]", re.M)
 
+# NOTES ARE NOT BUILDS. Operator ruling 2026-09-01: appending to canon or memory
+# is the behaviour the conductor WANTS, and charging it a 19-gate table taxes the
+# right action. Worse, a read-only turn that followed a canon write inherited the
+# flag, so investigation turns rendered tables too — training the reminder into
+# noise, which is the precise failure this hook exists to prevent.
+# A notes path only escapes when the command is PURELY notes work: a git commit
+# or a launchctl call in the same command is still a build.
+NOTES = re.compile(
+    r"coo/taxes/CONTEXT\.md|/memory/|MEMORY\.md|\.claude/projects/.*\.md", re.I)
+STILL_A_BUILD = re.compile(r"\bgit\s|launchctl", re.I)
+
+def is_notes(text):
+    return bool(text) and bool(NOTES.search(text)) and not STILL_A_BUILD.search(text)
+
+
 def main():
     try:
         d = json.loads(sys.stdin.read() or "{}")
@@ -34,6 +49,10 @@ def main():
         return
     tool = d.get("tool_name", "")
     if tool in ("Write", "Edit", "NotebookEdit"):
+        # same carve-out as Bash: editing a notes/canon file is not a build
+        path = (d.get("tool_input") or {}).get("file_path", "") or ""
+        if is_notes(path):
+            return
         return mark(tool)
     if tool != "Bash":
         return
@@ -46,6 +65,8 @@ def main():
     # hook exists to prevent. Strip null sinks and temp buffers before matching.
     scrubbed = re.sub(r">>?\s*(/dev/null|/dev/stderr|&\d)", " ", cmd)
     scrubbed = re.sub(r">>?\s*(/tmp|/private/tmp|\$TMPDIR)[^\s;&|]*", " ", scrubbed)
+    if is_notes(cmd):
+        return
     if MUT.search(scrubbed):
         mark("Bash")
 

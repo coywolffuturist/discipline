@@ -145,14 +145,14 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | 08 | set-the-prior | `gates/08-set-the-prior/GATE.md` · deployed `skills/set-the-prior` · hook `hooks/hook_prior.py` |
 | 09 | disprove-first | `gates/09-disprove-first/GATE.md` · **NO DEPLOYED READ — GAP.** Nearest kin: `skills/adversarial-pass`, its verify-time twin |
 | 10 | root-cause | deployed `skills/root-cause` |
-| 11 | karsholto | deployed `skills/karsholto` |
+| 11 | karsholto | `gates/11-karsholto/GATE.md` · deployed `skills/karsholto` · code ADOPTED: the estate `commit-msg` YAGNI guard |
 | 12 | completer | deployed `skills/completer` |
-| 13 | nomess | deployed `skills/nomess` |
+| 13 | nomess | `gates/13-nomess/GATE.md` · tool `gates/13-nomess/nomess.py` · code (in `lint/all.sh`) · deployed `skills/nomess` |
 | 14 | cold-read | `gates/14-cold-read/GATE.md` · deployed `skills/cold-read` · agent `skills/agents/cold-reader.md` |
 | 15 | vizcheck | deployed `skills/vizcheck` |
 | 16 | chunk-it | **NO DEPLOYED SKILL, BY RULING.** It folds into the completion rule: an obligation on every table, not a judgement. Ruled 2026-09-01. |
 | 17 | write-back | **NO DEPLOYED SKILL, BY RULING.** Same — an obligation, not a judgement. Ruled 2026-09-01. |
-| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agent `refuter` · hooks `hooks/hook_ship_guard.py` + `hooks/mark_refuter.py` |
+| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agent `refuter` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · hook `hooks/mark_refuter.py` |
 | 19 | state-the-posterior | deployed `skills/95-percent-rule` — the posterior half. NO GATE.md yet |
 
 The `ask-dont-pour` bundle remains deployed on the primary workstation as the
