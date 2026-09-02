@@ -126,7 +126,7 @@ baits seen red, 9 forms in `run_baits.baseline` as pinned, shrink-only debt
 (`checks.py`, which nothing executes; `owe_table`, `consistency`, `crumbs`,
 `retire-identifier`; and the four shell scripts). Seven baits were written for it the same day —
 `capture` (the memory store), `nomess`, `repeats`, `hook_completer`,
-`hook_prior` + `hook_posterior`, `mark_build`, `mark_refuter` — and each was
+`hook_prior` + `hook_posterior`, `mark_build`, the gate 18 push gate — and each was
 seen red twice: on its own bait, and again after the form was mutated in a
 scratch copy.
 

@@ -45,13 +45,14 @@
 > exist." That was true when written and is now false, and it stayed false long
 > enough for a reader to conclude this repo buys reads rather than enforcement.
 >
-> All 9 hooks in `hooks/` were registered on the primary workstation on
+> All 9 hooks then in `hooks/` were registered on the primary workstation on
 > 2026-09-01, and the completion table fired unprompted, dozens of times a day.
-> **Measured again 2026-09-02: FIVE are registered there** (the PreToolUse and
+> **Measured again 2026-09-02: FOUR are registered there** (the PreToolUse and
 > PostToolUse ones); the settings file holds no Stop entry, so the four closers
-> do not fire on that machine today. The operator ruled the same morning that
+> do not fire on that machine today. The ninth, `mark_refuter.py`, was deleted
+> the same day: the review record is now a git note the reviewer writes. The operator ruled the same morning that
 > the table is owed only when touching a repo or pushing a build. The plugin's
-> `hooks/hooks.json` registers all nine for anyone who installs it.
+> `hooks/hooks.json` registers all eight for anyone who installs it.
 >
 > **They are NOT registered on the second machine.** Measured 2026-09-01, that
 > machine holds ONE deployed skill (`the-screen`) and FIVE hooks of its own —
@@ -135,7 +136,7 @@ gates/NN-<name>/
     GATE.md      the read · the intent · the forms   (required)
     <form files> one per form the gate actually has
 skills/          GENERATED deployed forms + the reviewer agents  (derived)
-hooks/           the 9 hooks that make the table fire unprompted. 5 are symlinks
+hooks/           the 8 hooks that make the table fire unprompted. 4 are symlinks
                  into their gate directory, so those cannot drift; 4 live only
                  here, because their gate has no other form file.
 lint/            the gates' own checks — `lint/all.sh`
@@ -162,9 +163,10 @@ That installs the whole bundle:
 - `ka123n`, the outer loop that picks which step earns the bits
 - `grill-me`, the design interview
 - four reviewer agents: `refuter`, `cold-reader`, `mechanism-auditor`, `vizcheck-reader`
-- nine hooks, in `hooks/hooks.json`. The Stop hooks ask for the completion
+- eight hooks, in `hooks/hooks.json`. The Stop hooks ask for the completion
   table, the prior, the posterior, and the classification of any deferral.
-  The tool hooks record builds, reviewers, and repeated command shapes.
+  The tool hooks record builds and repeated command shapes. The review
+  record is not a hook: the reviewer writes a git note on the commit it read.
 
 Plugins install skills and hooks all-or-nothing. The picking happens next.
 

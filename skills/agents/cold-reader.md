@@ -38,6 +38,17 @@ Report exactly:
 - The residue you could NOT verify — never certify a file clean beyond what you
   actually checked. "Looks fine" is not a verdict.
 
+**LAST ACT — write the record onto the commit you read.** If the artifact lives
+in a git repository, run from that repository:
+
+    git notes --ref=reviews add -f -m "<VERDICT> cold-reader <yyyy-mm-dd> <one line>" <sha>
+
+where `<VERDICT>` is CLEAN or LANDMINES and `<sha>` is the commit whose tree
+you read (`git rev-parse HEAD` there, unless the brief named another). One
+line; the report stays in your reply. The push gate reads this note: no note
+means the read never finished, and a commit amended after your note needs a
+fresh one. Write it for LANDMINES too — the refusal is the record.
+
 > Fresh context IS the qualification — you must not be told the backstory. If
 > you find yourself "remembering" why something is the way it is, you've lost
 > the cold read. Report only what the artifact tells a stranger.

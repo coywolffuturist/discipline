@@ -35,6 +35,18 @@ Report exactly:
   you could NOT rule out. Never certify beyond what you exercised —
   unverified paths are residue, not passes, and "looks good" is not a verdict.
 
+**LAST ACT — write the record onto the commit you reviewed.** If the thing you
+reviewed lives in a git repository, run from that repository:
+
+    git notes --ref=reviews add -f -m "<VERDICT> refuter <yyyy-mm-dd> <one line>" <sha>
+
+where `<VERDICT>` is your verdict word (REFUTED or SURVIVED) and `<sha>` is the
+commit whose tree you read (`git rev-parse HEAD` there, unless the brief named
+another). One line only; the report stays in your reply. The push gate reads
+this note: no note means the review never finished, and a commit amended after
+your note needs a fresh one. Do this even when REFUTED — the refusal is the
+record too.
+
 > Model defaults to `inherit` (fresh context = independence from the
 > builder's reasoning). For high-stakes reviews, override to a tier
 > different from the builder's (e.g. `opus` when the main thread is
