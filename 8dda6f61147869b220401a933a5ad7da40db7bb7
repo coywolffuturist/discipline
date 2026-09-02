@@ -1,0 +1,1 @@
+REFUTED refuter 2026-09-02 five prior shapes closed and diff leak-clean, but the refs/notes/* exemption keys on the LOCAL ref: 'git push origin refs/notes/evil:refs/heads/main' ships an unreviewed commit as main with no gate-18 line; also the printed remedy fails in a fresh clone (no local refs/notes/reviews)
