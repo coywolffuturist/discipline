@@ -25,8 +25,11 @@ deployed, built, refreshed, never a local pre-build proxy.
 **The narrowest trigger in the suite, and that is a feature.** Across one day:
 **12 N/A, 1 FIRED, 2 BLOCKED.**
 
-Ten of the twelve cite the trigger, in two phrasings — *"UI/CSS/layout change"*
-and *"a UI, CSS or layout change"*. **Two cite neither** and are bare: *"No UI"*
+Ten of the twelve cite the trigger, in **three** phrasings: four say
+*"UI/CSS/layout change"*, four say *"a UI, CSS or layout change"*, and two say
+*"UI/CSS/layout"* without the word *change*. An earlier version of this sentence
+said two phrasings covering ten rows; they cover eight. That number was written
+in the same pass that corrected fourteen other false numbers. **Two cite neither** and are bare: *"No UI"*
 and *"No interface authored"*. Separately, **three of the twelve name authorship
 explicitly, and two of those three are inside the ten** — the groups overlap, so
 they do not sum to twelve. An earlier version of this paragraph listed 10, 3 and

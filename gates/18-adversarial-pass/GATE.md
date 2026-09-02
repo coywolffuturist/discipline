@@ -455,9 +455,12 @@ They were never guarded; the retired hook only appeared to guard them.
 **Mechanical, and it points at the enforcement rather than the reviewer:**
 refuted if a push from a guarded repo completes with no review in scope.
 
-**It was refuted ten times.** Eight times by the first reviewer on the day it was
-built, then three of five rewritten claims by a second — including a path that
-reached the remote with the gate emitting nothing at all. The claim as written was too strong; the surviving claim is narrower and
+**It was refuted in ten successive review rounds.** The units below differ, so
+they do not sum: the FIRST round found eight distinct bypass SHAPES; the second
+refuted three of five rewritten CLAIMS, including a path that reached the remote
+with the gate emitting nothing at all. An earlier version of this sentence put
+"ten times", "eight times" and "three" in one line as though they were the same
+unit, and the arithmetic did not close. The claim as written was too strong; the surviving claim is narrower and
 is stated above. This section is kept in its refuted form on purpose — a
 disproof that never fires was never a disproof, and this one earned its place by
 firing.

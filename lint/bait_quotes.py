@@ -102,7 +102,7 @@ bad_before = len(bad)
 
 bait("BAIT Q7 a REVERSED quote is refused (word-set identical)",
      "> Anchored while her cycle ran; no split custody meant shared write path",
-     1, "negation is attached to a different word", corpus=REV_ROW)
+     1, "negation differs", corpus=REV_ROW)
 
 bait("BAIT Q8 the SAME quote, unreversed, passes",
      "> Anchored while her cycle ran; split custody meant no shared write path",
@@ -131,5 +131,56 @@ bait("BAIT Q11 a FALSE count about another gate is refused",
 print("\n%s  %d/%d on the reviewer's reproductions"
       % ("REVIEWER BAITS: PASS" if len(bad) == bad_before else "REVIEWER BAITS: FAIL",
          5 - (len(bad) - bad_before), 5))
+
+# ---- The seven attacks that defeated this checker on 2026-09-02. -----------
+# Every one passed silently or with a note. They are baits now.
+
+LONG = ("2026-09-01T06:00:00\t16\tchunk-it\tFIRED\t"
+        "The move was captured at the moment it was understood rather than at the "
+        "moment it was needed, and the synthesis is not in the ledger because the "
+        "author deferred it to a handoff that never came\n")
+
+b2 = len(bad)
+
+bait("BAIT Q12 a DELETED negation is refused (0.98 similarity)",
+     "> The move was captured at the moment it was understood rather than at the\n"
+     "> moment it was needed, and the synthesis is in the ledger because the\n"
+     "> author deferred it to a handoff that never came",
+     1, "negation differs", corpus=LONG)
+
+bait("BAIT Q13 a PADDED quote is refused",
+     "> The move was captured at the moment it was understood rather than at the\n"
+     "> moment it was needed, and the synthesis is not in the ledger because the\n"
+     "> author deferred it to a handoff that never came and the operator signed\n"
+     "> off on skipping the ledger entirely",
+     1, "", corpus=LONG)
+
+bait("BAIT Q14 an INDENTED blockquote is still checked",
+     "   > this artifact was never recorded anywhere by anyone at all ever",
+     1, "traces to NO single source", corpus=LONG)
+
+bait("BAIT Q15 a TYPOGRAPHIC-quote fabrication is checked",
+     u"The record says \u201cthis artifact was never recorded anywhere by anyone "
+     u"at all, in the operator's own words\u201d and that settles it.",
+     1, "traces to NO single source", corpus=LONG)
+
+LAUNDER = ("2026-09-01T07:00:00\t08\tset-the-prior\tFIRED\ta\n"
+           "2026-09-01T07:01:00\t08\tset-the-prior\tFIRED\tb\n"
+           "2026-09-01T07:02:00\t13\tnomess\tFIRED\tc\n")
+
+bait("BAIT Q16 a false OWN count cannot be laundered by naming a neighbour",
+     "Unlike nomess, this gate recorded 9 FIRED across the day.",
+     1, "", corpus=LAUNDER)
+
+bait("BAIT Q17 the verdict is deterministic across hash seeds",
+     "> The move was captured at the moment it was understood rather than at the\n"
+     "> moment it was needed, and the synthesis is not in the ledger because the\n"
+     "> author deferred it to a handoff that never came",
+     0, "PASS", corpus=LONG)
+
+print("\n%s  %d/%d on the second reviewer's attacks"
+      % ("ATTACK BAITS: PASS" if len(bad) == b2 else "ATTACK BAITS: FAIL",
+         6 - (len(bad) - b2), 6))
 sys.exit(1 if bad else 0)
+
 

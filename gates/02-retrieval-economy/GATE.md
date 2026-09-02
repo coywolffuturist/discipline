@@ -2,7 +2,8 @@
 
     order:  2. Immediately after the language gate, and BEFORE ka123n SELECT.
             You cannot rank work you have not cheaply established.
-    forms:  tool · skill · hook · code
+    forms:  tool · skill   (the hook and code forms were DELETED 2026-08-22 —
+            see DELETED.md in this directory)
     ruled:  the operator, 2026-08-22 — approved the four-way split of the old
             `ask-dont-pour` bundle, and the renumbering below it.
 
@@ -125,8 +126,9 @@ Spend nothing on re-reading, re-deriving, and re-confirming.
 **NO HOOK AND NO CODE FORM. Both were DELETED, and the tombstone is in this
 directory.** `hook_corpus_read.py` and `door_report.py` were removed on
 2026-08-22 after three refutations — one of them wrote a credential verbatim to
-a mode-0644 file. See `DELETED.md` beside this file; `test_gates.py` asserts
-they stay gone. An earlier version of this table listed both as built forms,
+a mode-0644 file. See `DELETED.md` beside this file; `test_gates.py` asserts that `hook_corpus_read.py`
+stays gone. It does NOT assert the same for `door_report.py`, so that one could
+be reintroduced with the suite still green — a gap named rather than implied. An earlier version of this table listed both as built forms,
 which is the worst kind of false claim: a reader would have gone looking for a
 safety net that was deliberately cut.
 
