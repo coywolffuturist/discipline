@@ -68,8 +68,13 @@ and `printf x >> ~/pack/rendezvous/log` passed silently — and `cat >
 exit. Meanwhile `ssh den 'cat notes.md'`, a pure read, warned. The PATHS matched
 every time; the verb list was the hole. A write is now a write verb **or a
 redirection**, the read exit applies only when there is no redirection, and a
-read-only `ssh` payload passes. Baited on twelve shapes, both directions, zero
-wrong.
+read-only `ssh` payload passes. Baited on **fourteen** shapes, both directions, and the baits are in the repo
+at `lint/bait_warn_shared_path.py`, wired into `lint/all.sh`. An earlier version
+of this file said "baited on twelve shapes" with the baits living only in a
+session transcript — unfalsifiable by any reader, which is the property gate 09
+forbids. Two of the fourteen are the defects reviewers actually found: a
+redirect write that passed silently, and `ssh host "python3 -c ...write..."`
+classified as a read.
 
 **What it cannot do, stated rather than implied:** it does not know whether a
 peer is actually holding the path right now. That is the lock's job. The hook

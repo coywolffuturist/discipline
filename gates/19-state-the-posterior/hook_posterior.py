@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 """Stop hook, gate 19. A done claim must carry a PER-CRITERION posterior.
 
-WHY THIS EXISTS. Gate 19 recorded four firings in one day and every one of them
-was a real number, so the gate works when it is reached. The failure is that it
-is reached rarely: the turn ends, the work looks finished, and the claim goes
-out as "done" with no number against it at all.
+WHY THIS EXISTS. Gate 19 recorded four firings in one day and TWO of the four
+artifacts are the literal placeholder "below" — the gate reported itself FIRED
+with no number recorded. The failure is silence: the turn ends, the work looks
+finished, and the claim goes out as "done" with no number against it.
 
 WHY PER-CRITERION, which is the part a single number hides. The ruling of
 2026-09-01 is that the posterior is gated by the WORST failure mode, not the
 best subsystem. The two honest firings on record both split the number:
 
-    "the archive is complete and restorable — 0.95. That it stays current — 0.4:
-     it is a snapshot that will not track tomorrow's changes."
-    "the watcher works and cross-verifies — 0.9. That it keeps working — 0.7:
-     public RPCs change policy without notice, and I depend on three."
+    "Archive complete, clean, byte-identical, restorable — 0.95, all four checks
+     against the artifact. Durability 0.4 -> 0.8: two machines, but same house,
+     and it's a snapshot that won't track tomorrow's changes"
+    "The watcher works and cross-verifies — 0.9. That it keeps working — 0.7:
+     public RPCs change policy without notice, and I now depend on three of them"
 
-One averaged number would have reported 0.7 and 0.8 and concealed both risks.
+One averaged number would report 0.875 and 0.8 and conceal both risks. Note the
+FIRST one: 0.4 -> 0.8 is the prior MOVED. An earlier copy of this docstring
+quoted it as a flat 0.4 — the prior reported as the posterior, inside the hook
+that exists to demand a posterior. A refuter caught it.
 
 IT DOES NOT READ THE ANSWER. This hook cannot tell a real posterior from a
 plausible one, and does not try. It restores the question at the moment the

@@ -21,7 +21,7 @@ artifact and that a stated count matches the corpus. It cannot check a
 superlative ("the most consistently fired gate") — those must be computed, and
 the report prints the true ranking so the claim can be written from evidence.
 """
-import io, os, re, sys, collections
+import difflib, io, os, re, sys, collections
 
 CORPUS = os.path.expanduser("~/.coywolf/gate-corpus")
 GATES = "gates"
@@ -32,6 +32,13 @@ OTHER_SOURCES = [os.path.expanduser("~/.git-hooks/pre-push"),
 
 def rows():
     src = None
+    if not os.path.isdir(CORPUS):
+        # SKIPPED, not failed. The firing corpus is private estate state; a
+        # stranger cannot have it, and refusing their build for that is a false
+        # denial. Saying nothing would be worse — a green that means unchecked.
+        print("quotes: SKIPPED — no firing corpus at %s. Quotes and counts in the "
+              "gate files are UNVERIFIED on this machine, not verified." % CORPUS)
+        sys.exit(2)
     for f in sorted(os.listdir(CORPUS)):
         if f.startswith("firings-") and f.endswith(".tsv"):
             src = os.path.join(CORPUS, f)
@@ -72,6 +79,17 @@ def quotes_in(text):
     return out
 
 
+def inline_quotes(text):
+    """Quotations that sit inside a sentence: *"..."* and plain "...".
+
+    Only spans long enough to be a real quotation, and only those with a
+    sentence's shape — a short quoted term is a name, not a citation."""
+    out = []
+    for m in re.finditer(r'[*`]?"([^"\n]{40,})"[*`]?', text):
+        out.append(m.group(1))
+    return out
+
+
 def main():
     R = rows()
     arts = [norm(r[4]) for r in R]
@@ -87,7 +105,11 @@ def main():
         name = g.split("-", 1)[1]
         t = io.open(p, encoding="utf-8").read()
 
-        # 1. every block quote must trace to ONE real source.
+        # 1. every quotation must trace to ONE real source.
+        #
+        # INLINE ones too. The first version read only lines starting with ">",
+        # so three findings hid in italic and backticked quotations mid-sentence
+        # — including a "verbatim" claim that misquoted the source it named.
         #
         # Not an exact match: this repo is PUBLIC, so quotes from the private
         # record are deliberately scrubbed (a machine name becomes "one
@@ -95,17 +117,28 @@ def main():
         # neither is an invented quote. So the test is best-single-row overlap.
         # A composite fails because no ONE row covers it, which is exactly the
         # defect that shipped in gate 12.
-        for q in quotes_in(t):
+        blocks = quotes_in(t)
+        for q in blocks + inline_quotes(t):
             n = norm(q)
             if len(n) < 25:
                 continue
-            qt = set(n.split())
+            # An INLINE quotation is only judged when it NEARLY matches a source.
+            # A block quote claims to cite; an inline one may simply be the
+            # author's own emphasis, and failing those would train this check
+            # into noise within a day. A near-miss is the real defect: it means
+            # a source was named and then misquoted.
+            inline = q not in blocks
+            # SEQUENCE, not SET. The first version compared word SETS, so a
+            # reviewer reversed gate 04's central finding — "split custody meant
+            # no shared write path" -> "NO split custody meant shared write
+            # path" — and it scored 1.0 and reported "verbatim". Set-identical,
+            # meaning inverted. Order is the whole content of a sentence.
+            qw = n.split()
             best, score = "", 0.0
             for a in arts:
-                at = set(a.split())
-                ov = len(qt & at) / max(1, len(qt))
-                if ov > score:
-                    score, best = ov, a
+                r = difflib.SequenceMatcher(None, qw, a.split()).ratio()
+                if r > score:
+                    score, best = r, a
             if score >= 0.98:
                 continue                       # verbatim
             # NUMBERS ARE NEVER A SCRUB. A quote may be genericised for a public
@@ -126,26 +159,80 @@ def main():
                     why.append("DROPS %s from the source" % ", ".join(missing))
                 bad.append("%s: quote %s: %r" % (g, "; ".join(why), q[:70]))
                 continue
+            # DROPPED MATERIAL. A pure subset scored 89% and passed as a
+            # "scrub": gate 12's quote had lost "Only you can confirm", which is
+            # the evidence its whole argument rests on. Genericising a name is a
+            # scrub; deleting a clause is a different quotation.
+            bw = best.split()
+
+            # NEGATION POSITION. Sequence similarity cannot see a meaning
+            # inversion: moving one word scored 92% when a reviewer turned
+            # "split custody meant NO shared write path" into "NO split custody
+            # meant shared write path". Same words, opposite claim, small edit.
+            #
+            # So each negation in the quote must be followed by the same word it
+            # is followed by in the source. That is what a reversal breaks and a
+            # genericising scrub does not.
+            NEG = {"no", "not", "never", "without", "cannot", "nothing", "none"}
+            def _negpairs(ws):
+                return {(w, ws[i + 1]) for i, w in enumerate(ws[:-1]) if w in NEG}
+            qneg, bneg = _negpairs(qw), _negpairs(bw)
+            if score >= 0.70 and (qneg - bneg):
+                bad.append("%s: a negation is attached to a different word than in "
+                           "the source %s vs %s: %r"
+                           % (g, sorted(qneg - bneg), sorted(bneg) or "[]", q[:60]))
+                continue
+            if score >= 0.70 and len(qw) < len(bw) * 0.85:
+                bad.append("%s: quote DROPS %d of %d words from its source row: %r"
+                           % (g, len(bw) - len(qw), len(bw), q[:70]))
+                continue
             if score >= 0.70:
                 # A scrub. Legitimate, but SHOW it — a silent near-match is how
                 # 0.4 got reported where the record said "0.4 -> 0.8".
-                drift = sorted(qt - set(best.split()))
+                drift = sorted(set(qw) - set(bw))
                 notes.append("%s: quote is scrubbed/adapted (%.0f%% of one row). "
                              "Words not in the source: %s" % (g, score * 100, ", ".join(drift[:8])))
                 continue
-            if any(n in norm(io.open(f, encoding="utf-8", errors="replace").read())
-                   for f in OTHER_SOURCES if os.path.exists(f)):
-                continue                       # quoted from a named non-corpus source
-            bad.append("%s: quote traces to NO single source (best row %.0f%%): %r"
-                       % (g, score * 100, q[:80]))
+            # Other named sources, matched the same way: near-miss = misquote.
+            for f in OTHER_SOURCES:
+                if not os.path.exists(f):
+                    continue
+                ftxt = norm(io.open(f, encoding="utf-8", errors="replace").read())
+                if n in ftxt:
+                    score = 1.0
+                    break
+                fw = ftxt.split()
+                for i in range(0, max(1, len(fw) - len(qw)), 5):
+                    r = difflib.SequenceMatcher(None, qw, fw[i:i + len(qw) + 5]).ratio()
+                    if r > score:
+                        score, best = r, " ".join(fw[i:i + len(qw) + 5])
+            if score >= 0.98:
+                continue
+            if inline and score < 0.70:
+                continue                       # the author's own words, not a citation
+            bad.append("%s: %s traces to NO single source (best %.0f%%): %r"
+                       % (g, "inline quote" if inline else "quote", score * 100, q[:80]))
 
         # 2. every "N FIRED" / "N N/A" / "N BLOCKED" must match this gate's counts
         c = by_name.get(name, {})
-        for num, state in re.findall(r"\*\*(\d+) (FIRED|N/A|BLOCKED)", t) + \
-                          re.findall(r"\b(\d+) (FIRED|N/A|BLOCKED)\b", t):
-            if c.get(state, 0) != int(num):
-                bad.append("%s: claims %s %s; the record has %d"
-                           % (g, num, state, c.get(state, 0)))
+        # ATTRIBUTION. The first version credited every "<n> <STATE>" in a file
+        # to that file's own gate, so a TRUE statement about a neighbour —
+        # "disprove-first ran 38 FIRED" — was reported as fabricated. A count is
+        # only this gate's if no other gate is named in the same sentence.
+        others = set(by_name) - {name}
+        for sent in re.split(r"(?<=[.!?])\s+|\n\n", t):
+            # WORD BOUNDARY. Plain `in` matched "ste" inside "estate" and
+            # attributed gate 04's own counts to gate 01.
+            named = [o for o in others if re.search(r"\b%s\b" % re.escape(o), sent)]
+            for num, state in re.findall(r"\b(\d+) (FIRED|N/A|BLOCKED)\b", sent):
+                if named:
+                    real = by_name.get(named[0], {})
+                    if real.get(state, 0) != int(num):
+                        bad.append("%s: says %s has %s %s; the record has %d"
+                                   % (g, named[0], num, state, real.get(state, 0)))
+                elif c.get(state, 0) != int(num):
+                    bad.append("%s: claims %s %s; the record has %d"
+                               % (g, num, state, c.get(state, 0)))
 
     print("quotes: %d gate file(s) checked against %d corpus rows" % (len(os.listdir(GATES)), len(R)))
     if bad:

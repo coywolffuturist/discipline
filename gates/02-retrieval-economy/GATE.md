@@ -46,7 +46,7 @@ table had none and every row I could re-run came out wrong:**
 | `corpus consult` | ~3,500 | **1 Opus** | 10–20 |
 | reading the corpus by hand | **5,398,044** | 0 | — |
 
-**Roughly 3,400x between the cheapest door and reading the corpus.** That is
+**Roughly 3,960x between the cheapest door and reading the corpus.** That is
 the finding, and it survives the correction.
 
 ### What the first version of this table got wrong
@@ -81,7 +81,12 @@ already standard, and one refuted itself two paragraphs above its own heading.**
 with the query, date and host recorded. That is not a novel idea; it is a
 number nobody else can have, and it is the thing that changes behaviour. A
 principle everyone agrees with did not stop this author reading corpora by hand
-for a full session. The measured 3,400x did.
+for a full session. The measured 3,960x did.
+
+(An earlier version said 3,400x. That is 5,398,044 / 1,567 — the `corpus grep`
+row, which this same table says was NOT cheapest on this query. The cheapest
+door is `corpus rulings` at 1,363 bytes, and 5,398,044 / 1,363 = 3,960. The
+ratio was attached to the wrong row.)
 
 **No novelty is claimed anywhere in this gate.** If a claim of that kind
 reappears here, it needs a citation or it comes out.
@@ -117,8 +122,13 @@ Spend nothing on re-reading, re-deriving, and re-confirming.
 |---|---|---|
 | **tool** | the doors themselves — `mind` CLI, `mind_*` MCP, `codebase-memory` MCP | Nothing. They ARE the rungs. Already built; this gate does not rebuild them. |
 | **skill** | `SKILL.md` | Nothing. Choosing a door is judgment. |
-| **hook** | `hook_corpus_read.py` — PreToolUse on Bash | **Warns, never blocks.** Names the cheaper door when a command reads a known corpus by hand. |
-| **code** | `door_report.py` | Nothing. It MEASURES the session ratio for the completion table. |
+**NO HOOK AND NO CODE FORM. Both were DELETED, and the tombstone is in this
+directory.** `hook_corpus_read.py` and `door_report.py` were removed on
+2026-08-22 after three refutations — one of them wrote a credential verbatim to
+a mode-0644 file. See `DELETED.md` beside this file; `test_gates.py` asserts
+they stay gone. An earlier version of this table listed both as built forms,
+which is the worst kind of false claim: a reader would have gone looking for a
+safety net that was deliberately cut.
 
 **Not an agent.** Choosing a door is an inline decision. Delegating it costs
 more than the door.
@@ -134,7 +144,10 @@ this whole repo exists to stop.
 
 ## Disproof — registered before the forms were built
 
-This gate is refuted if the hook fires and hand-reading continues. The
+This gate is refuted if the cheap door is taken and the expensive one is still
+needed anyway. (An earlier version said "refuted if the HOOK fires and
+hand-reading continues" — that hook was deleted in 2026-08, so the stated
+disproof could never fire. A disproof that cannot fire is not a disproof.) The
 advisory form would then be theatre, and must become blocking or be deleted.
 
 **Baseline, measured on the day of writing:** roughly 4 cheap-door calls

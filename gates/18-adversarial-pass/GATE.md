@@ -18,8 +18,20 @@ your context and brief it to REFUTE the claim, not to bless it.
 
 The failure is not carelessness. It is that the reasoning which produced a thing
 also certifies it, so the certification inherits every error the production had.
-Measured across one day: 34 encounters, 19 fired, **15 blocked**, every block
-reading "no independent reviewer ran".
+Measured across one day: 34 encounters, 19 fired, **15 blocked**. All fifteen
+name a refuter; fourteen also name what is unverified as a result.
+
+Fourteen say a refuter did NOT run, in 8 different phrasings. **The
+fifteenth says the opposite** and it is the one worth reading: *"Refuter
+spawned, verdict not returned."* A reviewer HAD run. Blocked is not only "nobody
+looked" — it is also "somebody looked and I did not wait."
+
+An earlier version of this line said *every* block read "no independent reviewer
+ran". No row contains the word *reviewer*, no single phrasing covers fourteen
+rows, and "every" erased the one row that means something different. Correcting
+it, I then wrote "fourteen of the fifteen open 'No refuter'" — also false, since
+only seven use that exact opening. **The count was never the hard part; the
+characterisation was, twice.**
 
 What reviewers found on the days they did run, each time on work the author had
 already verified and believed correct:

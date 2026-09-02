@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Stop hook, gate 08. The completion table must carry a NUMERIC prior.
 
-WHY THIS EXISTS. Gate 08 recorded 37 encounters in one day and never once went
-N/A, while an actual number appeared three times. After the operator ruled the
+WHY THIS EXISTS. Gate 08 recorded 35 firings in one day and never once went
+N/A, while an actual number appeared four times. After the operator ruled the
 number mandatory on 2026-09-01, the very next four completion tables still had
 none — the gate fires BEFORE building and I kept reaching it AFTER.
 

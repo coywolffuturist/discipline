@@ -59,11 +59,20 @@ Pay once for one answer, without letting the batch conceal which part failed.
 | **hook** | `gates/06-compile-it/repeats.py`, `PostToolUse[Bash]` — logs the SHAPE of each command | every call |
 | **code** | `repeats.py report` — the gate 03 reading: shapes issued back-to-back | when the table is filled |
 
-**THE LOG IS NOT TURN-SCOPED, and an earlier version of this file said it was.**
-Nothing truncates or rotates `$TMPDIR/coywolf-cmd-shapes.log`, so it spans the
-whole session and a "back-to-back" pair can straddle a turn boundary. The count
-is still evidence — two identical shapes in a row are worth seeing wherever they
-fall — but it is a SESSION reading, not a turn reading. Read it as such.
+**THE LOG IS NOT TURN-SCOPED, AND IT IS NOT SESSION-SCOPED EITHER.** An earlier
+version of this file claimed the first; the correction to "session" was also
+wrong.
+
+The line carries no timestamp, no session id and no pid, and `$TMPDIR` is
+per-user-per-boot and shared by every concurrent process. A reviewer measured
+533 lines and 167 distinct shapes on this machine while two sessions were live.
+It is a BOOT-scoped, CROSS-PROCESS reading.
+
+**That changes the verdict, not just the window.** Gate 03's remedy is "the same
+shape twice in a row, so batch them" — but two adjacent lines can be two
+different agents' calls, which cannot be batched. The counter reports pairs for
+which the stated remedy does not exist. Treat a back-to-back pair as a prompt to
+look, never as a finding.
 
 **Shared with gate 06 compile-it, and separate rows.** Both gates count a
 repeat; they differ in window and remedy. Gate 03 reads the same shape issued

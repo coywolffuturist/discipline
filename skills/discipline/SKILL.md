@@ -5,7 +5,7 @@
     holds:  the gate table, the three legal states, the completion rule.
     holds NO gate reads. A gate's read lives in gates/NN-<name>/GATE.md.
     ruled:  the operator, 2026-08-31 — the 19-gate order below is approved. All 20 cards of the 2026-09-01 deck cast FULL; gate 03 price-the-loop retired into gate 02 as a lever, and the table renumbered.
-            It splits .95 into gates 09 and 20. It splits gate 17 into 17 and 18.
+            It splits .95 into gates 08 and 19. It splits the old gate 17 into 16 and 17.
 
 ---
 
@@ -44,23 +44,23 @@ artifact is its automation, not its authority.
 |---|---|---|---|---|
 | 01 | ste | DESIGN | you write a prompt, canon page, plan, note or agent message. NOT conversation with the operator — unless he asks for a concept, and then explain it fully | built |
 | 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" — and, as its own lever, before firing a model in a LOOP, price it in CALLS | built |
-| 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one with foreknowledge you could have had. A foreseeable sequence is a MISS, not a pass | approved |
-| 04 | no-collision | DESIGN | you are about to touch SHARED substrate a peer may hold. Scratchpad and single-machine private work is N/A | approved |
-| 05 | substrate-search | DESIGN | you are proposing anything that SURVIVES THE SESSION — table, module, endpoint, daemon, layer, script | not yet |
-| 06 | compile-it | DESIGN | you are deriving something for the SECOND time. Count derivations, not difficulty | not yet |
-| 07 | think-3x | DESIGN | there is a real fork with a second option worth naming. No second option, no gate | not yet |
-| 08 | **set-the-prior** | DESIGN | before building: state the user-outcome ONCE and a NUMERIC prior on it. No number, no FIRED | not yet |
-| 09 | disprove-first | DESIGN | before code: name the observation that would REFUTE the design, and RUN it. Registered-but-unrun is BLOCKED | GATE.md, no form |
-| 10 | root-cause | VERIFY | something FAILED — ask how many distinct faults exist. Nothing failed is N/A | not yet |
-| 11 | karsholto | VERIFY | the change adds substrate — count what a READER MUST HOLD, not what is on disk | not yet |
-| 12 | completer | VERIFY | you are about to write "follow-up / deferred". Residue is legitimate ONLY when the blocker is outside your reach | not yet |
-| 13 | nomess | VERIFY | orphans, dead links, stale gates, doc-vs-runtime drift — INCLUDING remote state: locks held, windows open, processes started | not yet |
-| 14 | cold-read | VERIFY | you are shipping or retiring something another agent reads cold. Without a CONTEXT-FREE READER the row is BLOCKED, not FIRED | not yet |
-| 15 | vizcheck | VERIFY | an interface YOU AUTHORED. Driving or reading someone else's surface is N/A | not yet |
-| 16 | chunk-it | VERIFY | a named move was produced, OR something went wrong. A wrong conclusion is a chunk by definition | not yet |
-| 17 | write-back | VERIFY | a fact was derived that would cost MORE THAN ONE CHEAP CALL to re-derive | not yet |
-| 18 | adversarial-pass | VERIFY | **money, irreversibility, or anything outward-facing — a refuter runs or the work does not ship.** Everything else may block honestly | not yet |
-| 19 | **state-the-posterior** | VERIFY | **LAST. Any claim of done · ready · verified · sure. One number PER CRITERION plus the gated floor** | not yet |
+| 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one with foreknowledge you could have had. A foreseeable sequence is a MISS, not a pass | built |
+| 04 | no-collision | DESIGN | you are about to touch SHARED substrate a peer may hold. Scratchpad and single-machine private work is N/A | built |
+| 05 | substrate-search | DESIGN | you are proposing anything that SURVIVES THE SESSION — table, module, endpoint, daemon, layer, script | built |
+| 06 | compile-it | DESIGN | you are deriving something for the SECOND time. Count derivations, not difficulty | built |
+| 07 | think-3x | DESIGN | there is a real fork with a second option worth naming. No second option, no gate | built |
+| 08 | **set-the-prior** | DESIGN | before building: state the user-outcome ONCE and a NUMERIC prior on it. No number, no FIRED | built |
+| 09 | disprove-first | DESIGN | before code: name the observation that would REFUTE the design, and RUN it. Registered-but-unrun is BLOCKED | built |
+| 10 | root-cause | VERIFY | something FAILED — ask how many distinct faults exist. Nothing failed is N/A | built |
+| 11 | karsholto | VERIFY | the change adds substrate — count what a READER MUST HOLD, not what is on disk | built |
+| 12 | completer | VERIFY | you are about to write "follow-up / deferred". Residue is legitimate ONLY when the blocker is outside your reach | built |
+| 13 | nomess | VERIFY | orphans, dead links, stale gates, doc-vs-runtime drift — INCLUDING remote state: locks held, windows open, processes started | built |
+| 14 | cold-read | VERIFY | you are shipping or retiring something another agent reads cold. Without a CONTEXT-FREE READER the row is BLOCKED, not FIRED | built |
+| 15 | vizcheck | VERIFY | an interface YOU AUTHORED. Driving or reading someone else's surface is N/A | built |
+| 16 | chunk-it | VERIFY | a named move was produced, OR something went wrong. A wrong conclusion is a chunk by definition | built |
+| 17 | write-back | VERIFY | a fact was derived that would cost MORE THAN ONE CHEAP CALL to re-derive | built |
+| 18 | adversarial-pass | VERIFY | **money, irreversibility, or anything outward-facing — a refuter runs or the work does not ship.** Everything else may block honestly | built |
+| 19 | **state-the-posterior** | VERIFY | **LAST. Any claim of done · ready · verified · sure. One number PER CRITERION plus the gated floor** | built |
 
 **Efficiency comes from TRIGGERS, not from running fewer gates.** Tiers were
 tried and refuted: `cold-read` exists as a skill, an agent AND a hook at once,
@@ -88,7 +88,7 @@ It was a bundle of two acts at two moments, so it was split:
 - **Gate 19 state-the-posterior.** DEAD LAST, after the refuter. Give the number
   AND its evidence, gated by the WORST failure mode, never the best subsystem.
 
-Gate 20 is a **standing trigger**, not only a table row. It fires on any claim of
+Gate 19 state-the-posterior is a **standing trigger**, not only a table row. It fires on any claim of
 done, ready, verified or sure. That includes a status report that asserts state.
 It was dropped three times in one session AFTER a correction. A rule
 recalled at the right moment fails; a rule compiled into a gate fires.
@@ -174,9 +174,14 @@ ruling above, and each gate's own GATE.md is authoritative over it.
 
 ## Known debt, recorded rather than hidden
 
-- Gates 03-20 have no `GATE.md`. They fire as reads; they have no automation.
-- Gates 09, 10, 17, 18 and 20 have no dedicated deployed skill. 10 has no read
-  anywhere and is the highest-priority gap.
+- **Every gate has a `GATE.md`.** An earlier version of this block said "Gates
+  03-20 have no GATE.md", that five gates had no deployed skill, and that "10
+  has no read anywhere and is the highest-priority gap". Every one of those was
+  false by the time it was read, and there is no gate 20. This block was never
+  updated as the gates were built, so it described a repository that had stopped
+  existing — which is worse than no debt list, because a reader trusts it.
+- The real remaining debt: **11 gates carry code forms and 5 have a bait harness
+  that RUNS.** Gate 09 disprove-first records this as its own REVISIT.
 - `~/.claude/skills/` is still not a checkout of this repo, so installs are
   manual and drift can recur. The second machine holds exactly ONE deployed skill
   from this suite, plus five hooks of its own that are NOT part of it.
