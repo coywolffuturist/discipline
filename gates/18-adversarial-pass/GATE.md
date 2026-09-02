@@ -473,10 +473,13 @@ standing check; the retest is the command, never this page.
   published. A commit the remote already held under another name was gated.
   A note from another clone was invisible. A blank first line read as no
   note. Two unlicensed refs were named one at a time. Its REFUTED note on
-  that commit is what kept the commit from being pushed. All five are
-  closed: twenty-four baits in `lint/bait_gate18.py`, thirteen of them red
-  on the hook they replaced. Forgery stays same-privilege and now leaves an
-  attributed line in history.
+  that commit is what kept the commit from being pushed. A third reviewer
+  then pushed a local notes ref AS `main` past an exemption that tested the
+  local name; the exemption now tests the destination, the stricter of a
+  local and a remote verdict wins, and the remote's record is fetched fresh
+  per push. Twenty-eight baits in `lint/bait_gate18.py`, thirteen of them
+  red on the hook they replaced. Forgery stays same-privilege and now leaves
+  an attributed line in history.
 - **"The gate now also reads the state the REMOTE already has" is false.**
   The marker check reads local refs only. Delete the marker in one commit
   and push: no review, no output, and every later push from that clone is
