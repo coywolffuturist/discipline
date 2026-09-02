@@ -167,18 +167,18 @@ Two of the three froze on the same day in June and neither errored.
 | 11 | karsholto | — | ruled 2026-09-01, GATE.md owed |
 | 12 | completer | — | ruled 2026-09-01, GATE.md owed |
 | 13 | nomess | — | ruled 2026-09-01, GATE.md owed |
-| 14 | cold-read | — | ruled 2026-09-01, GATE.md owed |
+| 14 | cold-read | skill · agent | **built** |
 | 15 | vizcheck | — | ruled 2026-09-01, GATE.md owed |
 | 16 | chunk-it | — | ruled 2026-09-01 · folds into the completion rule |
 | 17 | write-back | — | ruled 2026-09-01 · folds into the completion rule |
-| 18 | adversarial-pass | — | ruled 2026-09-01, GATE.md owed |
+| 18 | adversarial-pass | skill · agent · hook | **built** |
 | 19 | state-the-posterior | — | ruled 2026-09-01, GATE.md owed |
 
 The CONDUCTOR (`CONDUCTOR.md`) holds this table with each gate's TRIGGER, the
 three legal states and the completion rule. It is installed to
 `~/.claude/skills/discipline/SKILL.md`.
 
-### The split that produced 09 and 20
+### The split that produced 08 and 19
 
 `.95` was ONE gate, first in VERIFY. That let the number be quoted before the
 gates producing its evidence had run. Measured on 2026-08-31: the signer's
@@ -186,9 +186,9 @@ enforcement was called 0.97, and the refuter at gate 19 then found seven
 defects. The repaired version was called sound. A second refuter broke six of
 the seven fixes. Both numbers were stated before gate 19 ran.
 
-Two acts at two moments, so it was split. **Gate 09 set-the-prior** states the
+Two acts at two moments, so it was split. **Gate 08 set-the-prior** states the
 outcome and the prior BEFORE building; you cannot update a posterior you never
-set. **Gate 20 state-the-posterior** is DEAD LAST, after the refuter.
+set. **Gate 19 state-the-posterior** is DEAD LAST, after the refuter.
 
 Approved 2026-08-31.
 

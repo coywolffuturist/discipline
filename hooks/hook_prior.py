@@ -15,13 +15,18 @@ another's message.
 """
 import json, os
 
-FLAG = os.path.join(os.environ.get("TMPDIR", "/tmp"), "coywolf-build-turn.flag")
+FLAG = os.path.join(os.environ.get("TMPDIR", "/tmp"), "coywolf-prior-owed.flag")
 
-# The table hook removes this flag. Read it, do not consume it — order between
-# two Stop hooks is not guaranteed, and a consumer racing a consumer means one
-# of them silently never fires.
+# OWN FLAG, not the table hook's. A cold reader proved on 2026-09-01 that
+# owe_table.py deletes the build flag and is listed FIRST, so this hook was
+# silenced whenever that draw order held. "Read, do not consume" does not help
+# when the other hook is the consumer. Consume this one: it is ours alone.
 if not os.path.exists(FLAG):
     raise SystemExit(0)
+try:
+    os.remove(FLAG)
+except OSError:
+    pass
 
 msg = ("GATE 08 set-the-prior: this turn changed something, so a prior was owed "
        "BEFORE it. State the user-outcome in one sentence and a NUMERIC prior on "
