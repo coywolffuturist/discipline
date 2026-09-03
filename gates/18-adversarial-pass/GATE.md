@@ -496,9 +496,13 @@ standing check; the retest is the command, never this page.
   tree, and every outbound commit carrying a refusing note refuses the push.
   An eighth reviewer gave the record tip an unreviewed second parent and
   renamed a refuted commit; every commit a record publish adds must now be
-  a notes tree, and a held refusal is never given a new name. Sixty baits in
-  `lint/bait_gate18.py`. Forgery stays same-privilege and now leaves an
-  attributed line in history.
+  a notes tree, and a held refusal is never given a new name. A ninth
+  reviewer measured that check at 48 seconds of silence on a large record;
+  it now judges what each record commit changes, and the watchdog starts at
+  the top of the gate. Stated residue: a remote that hides its notes from
+  fetch makes a remote-only refusal invisible to an ordinary push. Sixty-five
+  baits in `lint/bait_gate18.py`. Forgery stays same-privilege and now leaves
+  an attributed line in history.
 - **The page's own claim above, that the gate reads the state the remote already has, is false.**
   The marker check reads local refs only. Delete the marker in one commit
   and push: no review, no output, and every later push from that clone is
