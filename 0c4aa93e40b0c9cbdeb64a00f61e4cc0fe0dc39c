@@ -1,1 +1,2 @@
+SUPERSEDED refuter 2026-09-02 addressed by 3adaba7eb12b52f5c4032d8e157334a35f7516b2
 REFUTED refuter 2026-09-02 n==0 in is_notes_record locks the record out: git notes add -f (same text twice), edit (unchanged), copy -f (identical), merge (identical trees) each write an empty-diff commit; premise 'git notes never writes an empty commit' is false
