@@ -490,9 +490,12 @@ standing check; the retest is the command, never this page.
   absence read as "no record" and a diverged force erased every review; the
   remote's record is now the sha git hands the hook for the push itself, and
   a record the clone cannot see is refused rather than overwritten. Only the
-  repository's own record may land on the record ref. Forty-nine baits in
-  `lint/bait_gate18.py`. Forgery stays same-privilege and now leaves an
-  attributed line in history.
+  repository's own record may land on the record ref. A seventh reviewer
+  renamed an unreviewed commit to the record ref and first-published it, and
+  shipped a REFUTED parent under a SURVIVED tip; a record must now be a notes
+  tree, and every outbound commit carrying a refusing note refuses the push.
+  Fifty-five baits in `lint/bait_gate18.py`. Forgery stays same-privilege and
+  now leaves an attributed line in history.
 - **The page's own claim above, that the gate reads the state the remote already has, is false.**
   The marker check reads local refs only. Delete the marker in one commit
   and push: no review, no output, and every later push from that clone is
