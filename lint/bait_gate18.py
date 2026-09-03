@@ -217,6 +217,33 @@ rc, out = push(d, w)
 bait("BAIT G39 a TAB after the verdict word is still SURVIVED", rc == 0, out)
 shutil.rmtree(d, ignore_errors=True)
 
+# a fifth reviewer: the remaining exemptions were parking spots; the record could be forced away
+d, w, bare = repo()
+A = head(w); note(w, A, "SURVIVED refuter 2026-09-02"); push(d, w); git(w, "push", "-q", "origin", "refs/notes/reviews")
+open(os.path.join(w, "u.md"), "w").write("unreviewed\n"); git(w, "add", "-A"); git(w, "commit", "-q", "-m", "U", "--no-verify"); U = head(w)
+rc, out = push(d, w, U + ":refs/replace/" + A)
+bait("BAIT G40 an unreviewed commit cannot be parked under refs/replace/", rc != 0, out)
+rc, out = push(d, w, U + ":refs/notes/reviews-remote")
+bait("BAIT G41 ...nor under the side ref's name", rc != 0, out)
+# a fresh clone reviews honestly but never fetched the record: its publish must not erase the remote's
+c = os.path.join(d, "clone"); subprocess.run(["git", "clone", "-q", bare, c], env=GIT_ENV, check=True)
+open(os.path.join(c, "c.md"), "w").write("c\n"); git(c, "add", "-A"); git(c, "commit", "-q", "-m", "C", "--no-verify")
+note(c, head(c), "SURVIVED refuter 2026-09-02 honest review in a clone")
+p2 = subprocess.run(["git", "-C", c, "push", "-f", "origin", "refs/notes/reviews"], capture_output=True, text=True, env=dict(GIT_ENV, TMPDIR=d))
+bait("BAIT G42 a record that does not descend from the remote's is refused even with -f, and told to merge",
+     p2.returncode != 0 and "notes --ref=reviews merge" in p2.stdout + p2.stderr, p2.stdout + p2.stderr)
+git(c, "fetch", "-q", "origin", "+refs/notes/reviews:refs/notes/reviews-remote")
+git(c, "notes", "--ref=reviews", "merge", "-q", "reviews-remote")
+p2 = subprocess.run(["git", "-C", c, "push", "origin", "refs/notes/reviews"], capture_output=True, text=True, env=dict(GIT_ENV, TMPDIR=d))
+bait("BAIT G43 after merging, publishing the record fast-forwards and passes", p2.returncode == 0, p2.stdout + p2.stderr)
+remote_note_A = subprocess.run(["git", "-C", c, "notes", "--ref=reviews", "show", A], capture_output=True, text=True, env=GIT_ENV).stdout
+bait("BAIT G44 ...and the earlier review of A survives in the merged record", "SURVIVED" in remote_note_A, remote_note_A)
+git(w, "replace", "-f", A, A) if False else None
+note(w, U, "SURVIVED refuter 2026-09-02 reviewed the replacement")
+rc, out = push(d, w, U + ":refs/replace/" + A)
+bait("BAIT G45 a REVIEWED replacement object is licensed like any other", rc == 0, out)
+shutil.rmtree(d, ignore_errors=True)
+
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
 for l in bad:
     print("   failed: %s" % l)

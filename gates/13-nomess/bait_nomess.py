@@ -37,7 +37,7 @@ def git(r, *a):
 
 
 def run(home, r, *flags):
-    env = dict(os.environ, HOME=home)
+    env = dict(os.environ, HOME=home, NOMESS_ACCOUNT="acctzq7home")
     env.pop("COYWOLF_REMOTE_HOST", None)
     p = subprocess.run([sys.executable, os.path.join(r, "gates", "13-nomess", "nomess.py")] + list(flags),
                        capture_output=True, text=True, env=env, timeout=60)
@@ -163,6 +163,27 @@ bait("BAIT N11 an install with no copy of a hook is NOT DEPLOYED", 1, "NOT DEPLO
 bait("BAIT N12 .orig and ~ files are debris too", 1, "b.py~", orig_and_tilde)
 bait("BAIT N13 one twin linked and one real is still a DUPLICATE", 1, "DUPLICATE", one_twin_linked)
 bait("BAIT N14 the account name in UPPER CASE is still published", 1, "PUBLISHES A PRIVATE NAME", upper_name)
+
+
+def fresh_word(r, home):
+    open(os.path.join(r, "doc.md"), "w").write("a fresh start\n")
+    git(r, "add", "doc.md")
+
+
+total += 0
+_env_backup = os.environ.get("NOMESS_ACCOUNT")
+# HOME's basename must NOT be treated as the account name
+d0, home0, r0 = repo(); fresh_word(r0, home0)
+env = dict(os.environ, HOME=home0); env.pop("NOMESS_ACCOUNT", None); env.pop("COYWOLF_REMOTE_HOST", None)
+home_fresh = os.path.join(d0, "fresh"); os.rename(home0, home_fresh)
+p0 = subprocess.run([sys.executable, os.path.join(r0, "gates", "13-nomess", "nomess.py"), "--repo"],
+                    capture_output=True, text=True, env=dict(env, HOME=home_fresh), timeout=60)
+total += 1
+ok0 = "fresh" not in (p0.stdout + p0.stderr).split("PUBLISHES")[-1] and "PUBLISHES A PRIVATE NAME" not in p0.stdout + p0.stderr
+print("  %s %-62s rc=%s" % ("ok " if ok0 else "XX ", "BAIT N19 a HOME named 'fresh' is not an account name to hunt for", p0.returncode))
+if not ok0:
+    bad.append("N19"); print("      got: %s" % (p0.stdout + p0.stderr).strip()[:200])
+shutil.rmtree(d0, ignore_errors=True)
 
 
 import socket

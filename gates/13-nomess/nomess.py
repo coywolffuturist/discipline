@@ -119,9 +119,15 @@ def repo_sweep():
     #
     # So it asks the machine who it belongs to. That leaks nothing, and it
     # generalises: it protects WHOEVER runs it, not one account this file names.
-    import socket
+    import socket, pwd
     NAMES = set()
-    acct = os.path.basename(os.path.expanduser("~"))
+    # The ACCOUNT, not HOME's basename: under a fresh HOME named `fresh` the
+    # check hunted for the word "fresh" and refused a clean tree (a reviewer's
+    # false GATES RED). NOMESS_ACCOUNT lets a bait inject a name.
+    try:
+        acct = os.environ.get("NOMESS_ACCOUNT") or pwd.getpwuid(os.getuid()).pw_name
+    except Exception:
+        acct = os.environ.get("NOMESS_ACCOUNT") or ""
     if len(acct) > 3:
         NAMES.add(acct.lower())
     host = socket.gethostname().split(".")[0]
