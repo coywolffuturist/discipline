@@ -51,6 +51,13 @@ your reply. The push gate reads this note: no note
 means the read never finished, and a commit amended after your note needs a
 fresh one. Write it for LANDMINES too — the refusal is the record.
 
+**If you certified a RANGE** whose earlier commits carry refusing notes that
+the later commits answered, prepend to each such note one line —
+`SUPERSEDED cold-reader <yyyy-mm-dd> addressed by <descendant sha>` — keeping the
+original refusal beneath it (`git notes --ref=reviews show <sha>` then
+`add -f` with the new first line plus the old text). SUPERSEDED lets the
+range ship; it never licenses that commit as a tip.
+
 > Fresh context IS the qualification — you must not be told the backstory. If
 > you find yourself "remembering" why something is the way it is, you've lost
 > the cold read. Report only what the artifact tells a stranger.

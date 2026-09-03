@@ -49,6 +49,13 @@ gate reads this note: no note means the review never finished, and a commit
 amended after your note needs a fresh one. Do this even when REFUTED — the
 refusal is the record too.
 
+**If you certified a RANGE** whose earlier commits carry refusing notes that
+the later commits answered, prepend to each such note one line —
+`SUPERSEDED refuter <yyyy-mm-dd> addressed by <descendant sha>` — keeping the
+original refusal beneath it (`git notes --ref=reviews show <sha>` then
+`add -f` with the new first line plus the old text). SUPERSEDED lets the
+range ship; it never licenses that commit as a tip.
+
 > Model defaults to `inherit` (fresh context = independence from the
 > builder's reasoning). For high-stakes reviews, override to a tier
 > different from the builder's (e.g. `opus` when the main thread is
