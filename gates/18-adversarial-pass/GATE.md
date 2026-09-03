@@ -504,10 +504,13 @@ standing check; the retest is the command, never this page.
   each note commit, spoken by the watchdog from the fifth second; one new
   note on a 2000-note record takes about one second. A tenth review
   SURVIVED and named one residue, an empty commit riding into the record's
-  ancestry, closed the same hour. Stated residue: a remote that hides its
-  notes from fetch makes a remote-only refusal invisible to an ordinary
-  push. Sixty-seven baits in `lint/bait_gate18.py`. Forgery stays
-  same-privilege and now leaves an attributed line in history.
+  ancestry. The first fix for it refused every empty record commit, and an
+  eleventh reviewer showed git writes one on a retried add, an unchanged
+  edit, an identical copy and a same-tree merge, so it would have locked the
+  record out for good; only a root commit must hold a note. Stated residue:
+  a remote that hides its notes from fetch makes a remote-only refusal
+  invisible to an ordinary push. Seventy-one baits in `lint/bait_gate18.py`.
+  Forgery stays same-privilege and now leaves an attributed line in history.
 - **The page's own claim above, that the gate reads the state the remote already has, is false.**
   The marker check reads local refs only. Delete the marker in one commit
   and push: no review, no output, and every later push from that clone is
