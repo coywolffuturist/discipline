@@ -494,8 +494,11 @@ standing check; the retest is the command, never this page.
   renamed an unreviewed commit to the record ref and first-published it, and
   shipped a REFUTED parent under a SURVIVED tip; a record must now be a notes
   tree, and every outbound commit carrying a refusing note refuses the push.
-  Fifty-five baits in `lint/bait_gate18.py`. Forgery stays same-privilege and
-  now leaves an attributed line in history.
+  An eighth reviewer gave the record tip an unreviewed second parent and
+  renamed a refuted commit; every commit a record publish adds must now be
+  a notes tree, and a held refusal is never given a new name. Sixty baits in
+  `lint/bait_gate18.py`. Forgery stays same-privilege and now leaves an
+  attributed line in history.
 - **The page's own claim above, that the gate reads the state the remote already has, is false.**
   The marker check reads local refs only. Delete the marker in one commit
   and push: no review, no output, and every later push from that clone is
