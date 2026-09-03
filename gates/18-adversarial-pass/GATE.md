@@ -481,7 +481,12 @@ standing check; the retest is the command, never this page.
   because a non-commit tip was never asked for a note and `rev-list` on a
   tree exits 0 empty; trees and blobs now need a note on the object, and
   the record cannot be parked under, overwritten through, or deleted from
-  `refs/notes/`. Thirty-eight baits in `lint/bait_gate18.py`. Forgery stays
+  `refs/notes/`. A fifth reviewer parked commits under the two exemptions
+  that remained and force-pushed a clone's record over the remote's; now no
+  destination is exempt but the local record itself, and only when it
+  fast-forwards the remote's — a diverged record is told to merge. A note on
+  a tree is a licence with no reviewer-read blobs behind it: a policy limit,
+  not a code one. Forty-four baits in `lint/bait_gate18.py`. Forgery stays
   same-privilege and now leaves an attributed line in history.
 - **The page's own claim above, that the gate reads the state the remote already has, is false.**
   The marker check reads local refs only. Delete the marker in one commit
