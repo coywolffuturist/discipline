@@ -1,1 +1,2 @@
+SUPERSEDED refuter 2026-09-02 addressed by a023274e1cda91c6a0f4d05e2178d15f16c9944f
 REFUTED refuter 2026-09-02 prior four shapes closed, leak-clean, build no-FAIL; but a non-commit tip is never asked for a note: 'git push origin <sha-of-B^{tree}>:refs/tags/x' ships the full unreviewed tree rc=0 with only the 'publish the record' trailer (hook line 419 '|| continue'; GATE.md:59 'refuses a push whose tip carries no review note' is false for tree/blob tips); refs/notes/* exemption parks unreviewed commits and -f clobbers the remote record silently
