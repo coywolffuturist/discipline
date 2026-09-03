@@ -1,1 +1,2 @@
+SUPERSEDED refuter 2026-09-02 addressed by 8dda6f61147869b220401a933a5ad7da40db7bb7
 REFUTED refuter 2026-09-02 fresh-HOME build RED (run_baits scores bait_gate18 rc=2 as FAIL+orphan); refs/notes/reviews and --mirror pushes are refused by the gate itself; reachable-non-tip commits are gated (G16 label false)
