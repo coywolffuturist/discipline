@@ -486,8 +486,13 @@ standing check; the retest is the command, never this page.
   destination is exempt but the local record itself, and only when it
   fast-forwards the remote's — a diverged record is told to merge. A note on
   a tree is a licence with no reviewer-read blobs behind it: a policy limit,
-  not a code one. Forty-four baits in `lint/bait_gate18.py`. Forgery stays
-  same-privilege and now leaves an attributed line in history.
+  not a code one. A sixth reviewer hid the notes namespace from fetch, so
+  absence read as "no record" and a diverged force erased every review; the
+  remote's record is now the sha git hands the hook for the push itself, and
+  a record the clone cannot see is refused rather than overwritten. Only the
+  repository's own record may land on the record ref. Forty-nine baits in
+  `lint/bait_gate18.py`. Forgery stays same-privilege and now leaves an
+  attributed line in history.
 - **The page's own claim above, that the gate reads the state the remote already has, is false.**
   The marker check reads local refs only. Delete the marker in one commit
   and push: no review, no output, and every later push from that clone is

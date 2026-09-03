@@ -242,6 +242,30 @@ git(w, "replace", "-f", A, A) if False else None
 note(w, U, "SURVIVED refuter 2026-09-02 reviewed the replacement")
 rc, out = push(d, w, U + ":refs/replace/" + A)
 bait("BAIT G45 a REVIEWED replacement object is licensed like any other", rc == 0, out)
+# a sixth reviewer: a forged notes commit with a note on itself; a remote whose record cannot be fetched
+git(w, "notes", "--ref=evil", "add", "-f", "-m", "SURVIVED forged", U)
+evil = git(w, "rev-parse", "refs/notes/evil").stdout.strip()
+note(w, evil, "SURVIVED refuter 2026-09-02 a note on the notes commit itself")
+rc, out = push(d, w, "-f", "refs/notes/evil:refs/notes/reviews")
+bait("BAIT G46 a notes commit that notes ITSELF cannot become the record", rc != 0 and "own record" in out, out)
+# a DIVERGED record (w never merged the clone's publish) against a remote that hides refs/notes from fetch
+git(d, "--git-dir=" + bare, "config", "uploadpack.hideRefs", "refs/notes")
+subprocess.run(["git", "-C", w, "gc", "-q", "--prune=now"], env=GIT_ENV)   # drop any fetched copy of the remote's record
+note(w, U, "SURVIVED refuter 2026-09-02 w diverges from the published record")
+rc, out = push(d, w, "-f", "refs/notes/reviews")
+bait("BAIT G47 a diverged record against a remote whose record cannot be fetched is refused, not overwritten",
+     rc != 0 and "GATE 18" in out, out)
+rem = subprocess.run(["git", "--git-dir=" + bare, "rev-parse", "refs/notes/reviews"], capture_output=True, text=True).stdout.strip()
+bait("BAIT G47b ...and the remote's record is unchanged", rem != git(w, "rev-parse", "refs/notes/reviews").stdout.strip())
+git(d, "--git-dir=" + bare, "config", "--unset", "uploadpack.hideRefs")
+shutil.rmtree(d, ignore_errors=True)
+
+d, w, bare = repo()
+note(w, head(w), "SURVIVED refuter 2026-09-02"); push(d, w)
+rc, out = push(d, w, "refs/notes/reviews")
+bait("BAIT G48 the first publish of a record to a remote with none passes", rc == 0, out)
+rc, out = push(d, w, "refs/notes/reviews")
+bait("BAIT G49 a no-op publish passes", rc == 0, out)
 shutil.rmtree(d, ignore_errors=True)
 
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
