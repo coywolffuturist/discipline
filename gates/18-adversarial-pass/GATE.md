@@ -509,7 +509,11 @@ standing check; the retest is the command, never this page.
   edit, an identical copy and a same-tree merge, so it would have locked the
   record out for good; only a root commit must hold a note. Stated residue:
   a remote that hides its notes from fetch makes a remote-only refusal
-  invisible to an ordinary push. Seventy-one baits in `lint/bait_gate18.py`.
+  invisible to an ordinary push. When the eleventh review SURVIVED, the gate's
+  own outbound scan refused the push, because the ten commits beneath the tip
+  carry honest refusals; a reviewer who certifies a range now prepends
+  SUPERSEDED to each refusal it saw answered, keeping the refusal beneath, and
+  SUPERSEDED never licenses a tip. Seventy-four baits in `lint/bait_gate18.py`.
   Forgery stays same-privilege and now leaves an attributed line in history.
 - **The page's own claim above, that the gate reads the state the remote already has, is false.**
   The marker check reads local refs only. Delete the marker in one commit

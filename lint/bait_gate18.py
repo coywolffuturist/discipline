@@ -403,6 +403,23 @@ rc, out = push(d, w)
 bait("BAIT G71 ...and the next honest commit is not locked out", rc == 0, out)
 shutil.rmtree(d, ignore_errors=True)
 
+# SUPERSEDED: a refusal addressed by a descendant, marked by the reviewer who certified the range
+d, w, bare = repo()
+A = head(w); note(w, A, "SURVIVED refuter 2026-09-02"); push(d, w)
+open(os.path.join(w, "p.md"), "w").write("p\n"); git(w, "add", "-A"); git(w, "commit", "-q", "-m", "P", "--no-verify"); P = head(w)
+note(w, P, "REFUTED refuter 2026-09-02 a real defect")
+open(os.path.join(w, "f.md"), "w").write("fixed\n"); git(w, "add", "-A"); git(w, "commit", "-q", "-m", "F", "--no-verify"); F = head(w)
+note(w, F, "SURVIVED refuter 2026-09-02 reviewed the range P..F")
+rc, out = push(d, w)
+bait("BAIT G72 a REFUTED ancestor under a SURVIVED tip still refuses until marked", rc != 0 and P[:12] in out, out)
+old_note = subprocess.run(["git", "-C", w, "notes", "--ref=reviews", "show", P], capture_output=True, text=True, env=GIT_ENV).stdout
+note(w, P, "SUPERSEDED refuter 2026-09-02 addressed by " + F[:12] + "\n" + old_note.strip())
+rc, out = push(d, w)
+bait("BAIT G73 ...a SUPERSEDED line prepended by the range's reviewer lets the push through, refusal kept below it", rc == 0, out)
+rc, out = push(d, w, P + ":refs/heads/only-p")
+bait("BAIT G74 a SUPERSEDED commit is still not a licensed TIP", rc != 0, out)
+shutil.rmtree(d, ignore_errors=True)
+
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
 for l in bad:
     print("   failed: %s" % l)
