@@ -328,6 +328,40 @@ rc, out = push(d, w, "refs/notes/reviews")
 bait("BAIT G60 a record that grew by two honest notes fast-forwards", rc == 0, out)
 shutil.rmtree(d, ignore_errors=True)
 
+# a ninth reviewer: the record check was O(N^2) and silent; the accurate refusal was unreachable; a stale side ref false-denied --mirror
+import time
+d, w, bare = repo()
+A = head(w); note(w, A, "SURVIVED refuter 2026-09-02"); push(d, w)
+objs = []
+for i in range(150):   # 150 blobs, each noted: a 150-note record in 150 commits
+    o = subprocess.run(["git", "-C", w, "hash-object", "-w", "--stdin"], input="obj %d\n" % i, capture_output=True, text=True, env=GIT_ENV).stdout.strip()
+    objs.append(o)
+subprocess.run(["bash", "-c", "cd %s && for o in %s; do git notes --ref=reviews add -f -m 'SURVIVED refuter 2026-09-02 bulk' $o; done" % (w, " ".join(objs))], env=GIT_ENV, capture_output=True)
+t0 = time.time(); rc, out = push(d, w, "refs/notes/reviews"); dt = time.time() - t0
+bait("BAIT G61 a first publish of a 150-commit record passes and is never silent (the scan cost is linear, the watchdog speaks)",
+     rc == 0 and dt < 90 and ("not a hang" in out or dt < 6), "%.1fs" % dt)
+note(w, objs[0], "SURVIVED refuter 2026-09-02 one more")
+t0 = time.time(); rc, out = push(d, w, "refs/notes/reviews"); dt = time.time() - t0
+bait("BAIT G62 one new note on a 150-note record publishes in under 5s (no whole-tree walk)", rc == 0 and dt < 5, "%.1fs" % dt)
+git(d, "--git-dir=" + bare, "config", "uploadpack.hideRefs", "refs/notes")
+subprocess.run(["git", "-C", w, "gc", "-q", "--prune=now"], env=GIT_ENV)
+c = os.path.join(d, "clone"); subprocess.run(["git", "clone", "-q", bare, c], env=GIT_ENV, check=True)
+note(c, head(c), "SURVIVED refuter 2026-09-02 a fresh clone's own record")
+p5 = subprocess.run(["git", "-C", c, "push", "-f", "origin", "refs/notes/reviews"], capture_output=True, text=True, env=dict(GIT_ENV, TMPDIR=d))
+o5 = p5.stdout + p5.stderr
+bait("BAIT G63 a diverged record under a hidden remote record is refused with a true reason, record intact",
+     p5.returncode != 0 and ("could not be fetched" in o5 or "does not descend" in o5), o5)
+open(os.path.join(c, "f.md"), "w").write("f\n"); git(c, "add", "-A"); git(c, "commit", "-q", "-m", "F", "--no-verify"); note(c, head(c), "SURVIVED refuter 2026-09-02")
+p6 = subprocess.run(["git", "-C", c, "push", "origin", "HEAD:main"], capture_output=True, text=True, env=dict(GIT_ENV, TMPDIR=d))
+# RESIDUE, stated: with uploadpack.hideRefs a hidden record and an absent one are the same from outside,
+# so a remote-only refusal is invisible to an ordinary push. The push proceeds on local notes.
+bait("BAIT G64 an ordinary push under a remote that hides its record proceeds on local notes (documented residue)", p6.returncode == 0, p6.stdout + p6.stderr)
+git(d, "--git-dir=" + bare, "config", "--unset", "uploadpack.hideRefs")
+git(w, "update-ref", "refs/notes/reviews-remote", git(w, "rev-parse", "refs/notes/reviews").stdout.strip())
+rc, out = push(d, w, "--mirror")
+bait("BAIT G65 a stale side ref in a mirror is named with its remedy, not asked for a review", rc != 0 and "update-ref -d refs/notes/reviews-remote" in out, out)
+shutil.rmtree(d, ignore_errors=True)
+
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
 for l in bad:
     print("   failed: %s" % l)
