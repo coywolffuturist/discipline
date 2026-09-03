@@ -345,12 +345,12 @@ t0 = time.time(); rc, out = push(d, w, "refs/notes/reviews"); dt = time.time() -
 bait("BAIT G62 one new note on a 150-note record publishes in under 5s (no whole-tree walk)", rc == 0 and dt < 5, "%.1fs" % dt)
 git(d, "--git-dir=" + bare, "config", "uploadpack.hideRefs", "refs/notes")
 subprocess.run(["git", "-C", w, "gc", "-q", "--prune=now"], env=GIT_ENV)
-c = os.path.join(d, "clone"); subprocess.run(["git", "clone", "-q", bare, c], env=GIT_ENV, check=True)
+c = os.path.join(d, "clone"); subprocess.run(["git", "clone", "-q", "--no-local", bare, c], env=GIT_ENV, check=True)   # --no-local: no object-store hardlinks past hideRefs
 note(c, head(c), "SURVIVED refuter 2026-09-02 a fresh clone's own record")
 p5 = subprocess.run(["git", "-C", c, "push", "-f", "origin", "refs/notes/reviews"], capture_output=True, text=True, env=dict(GIT_ENV, TMPDIR=d))
 o5 = p5.stdout + p5.stderr
-bait("BAIT G63 a diverged record under a hidden remote record is refused with a true reason, record intact",
-     p5.returncode != 0 and ("could not be fetched" in o5 or "does not descend" in o5), o5)
+bait("BAIT G63 a record the clone truly cannot fetch is refused as 'could not be fetched', record intact",
+     p5.returncode != 0 and "could not be fetched" in o5, o5)
 open(os.path.join(c, "f.md"), "w").write("f\n"); git(c, "add", "-A"); git(c, "commit", "-q", "-m", "F", "--no-verify"); note(c, head(c), "SURVIVED refuter 2026-09-02")
 p6 = subprocess.run(["git", "-C", c, "push", "origin", "HEAD:main"], capture_output=True, text=True, env=dict(GIT_ENV, TMPDIR=d))
 # RESIDUE, stated: with uploadpack.hideRefs a hidden record and an absent one are the same from outside,
@@ -360,6 +360,22 @@ git(d, "--git-dir=" + bare, "config", "--unset", "uploadpack.hideRefs")
 git(w, "update-ref", "refs/notes/reviews-remote", git(w, "rev-parse", "refs/notes/reviews").stdout.strip())
 rc, out = push(d, w, "--mirror")
 bait("BAIT G65 a stale side ref in a mirror is named with its remedy, not asked for a review", rc != 0 and "update-ref -d refs/notes/reviews-remote" in out, out)
+shutil.rmtree(d, ignore_errors=True)
+
+# a tenth reviewer: an empty-tree root commit as the record tip's second parent
+d, w, bare = repo()
+A = head(w); note(w, A, "SURVIVED refuter 2026-09-02"); push(d, w); git(w, "push", "-q", "origin", "refs/notes/reviews")
+rec = git(w, "rev-parse", "refs/notes/reviews").stdout.strip(); tree = git(w, "rev-parse", "refs/notes/reviews^{tree}").stdout.strip()
+empty_tree = subprocess.run(["git", "-C", w, "mktree"], input="", capture_output=True, text=True, env=GIT_ENV).stdout.strip()
+U2 = subprocess.run(["git", "-C", w, "commit-tree", empty_tree, "-m", "smuggled message"], capture_output=True, text=True, env=GIT_ENV).stdout.strip()
+C = subprocess.run(["git", "-C", w, "commit-tree", tree, "-p", rec, "-p", U2, "-m", "record"], capture_output=True, text=True, env=GIT_ENV).stdout.strip()
+git(w, "update-ref", "refs/notes/reviews", C)
+rc, out = push(d, w, "refs/notes/reviews")
+bait("BAIT G66 an empty-tree root commit as the record's second parent is refused", rc != 0, out)
+git(w, "update-ref", "refs/notes/reviews", rec)
+git(w, "notes", "--ref=reviews", "remove", A)
+rc, out = push(d, w, "refs/notes/reviews")
+bait("BAIT G67 removing the only note (a deletion, not an empty diff) still publishes", rc == 0, out)
 shutil.rmtree(d, ignore_errors=True)
 
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
