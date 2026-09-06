@@ -15,7 +15,7 @@ This one link is the whole thing. Start with the conductor.
 | [skills/grill-me](skills/grill-me) | the design interview: one question per turn, the next chosen from the last answer |
 | [gates/](gates) | one folder per gate, `NN-<name>/GATE.md`: the read, the intent, the forms |
 | [agents/](agents) | the four reviewers: `refuter`, `cold-reader`, `mechanism-auditor`, `vizcheck-reader` (a copy of `skills/agents/`) |
-| [skills/](skills) | the deployed skills, regenerated on install from private masters (see CONTRACT.md); gates 16 and 17 have no skill by ruling, gate 19 ships as `95-percent-rule` |
+| [skills/](skills) | the deployed skills, written by the maintainer's install script from private masters (see CONTRACT.md); a plugin install ships them as they are; gates 16 and 17 have no skill by ruling, gate 19 ships as `95-percent-rule` |
 | [hooks/](hooks) | the eight hooks that make the table fire unprompted |
 | [lint/](lint) | the suite's own checks; `bash lint/all.sh` |
 
@@ -28,7 +28,8 @@ The repo is a Claude Code plugin.
 
 That installs the conductor (`/discipline:discipline`), seventeen gate skills
 (gates 16 and 17 have no skill by ruling; gate 19's is `95-percent-rule`),
-`ka123n`, `grill-me`, the four reviewer agents and the eight hooks.
+`adversarial-inverse` (which `think-3x` and `root-cause` invoke), `ka123n`,
+`grill-me`, the four reviewer agents and the eight hooks.
 
 To use only the skills: copy `skills/` into your agent's skills directory and
 `skills/agents/` into its agents directory. Take the whole bundle; the skills
@@ -96,8 +97,9 @@ is private and is described here, not shipped.
 
 Gate 01's language checks were cut to sentence length after three refutations,
 and five known defects in its lint remain open (listed in HISTORY.md). On a
-machine without the private estate state, `bash lint/all.sh` prints four checks
-SKIPPED and refuses to call the run a full pass. The full record of what was refuted, deleted
+machine where this suite is not installed, `bash lint/all.sh` skips the checks
+that need the estate, prints how many, and exits non-zero: a reduced run is
+never a pass. The full record of what was refuted, deleted
 and corrected, with dates, is in [HISTORY.md](HISTORY.md). Read it before
 trusting any claim of enforcement.
 
@@ -107,14 +109,14 @@ trusting any claim of enforcement.
     CONTRACT.md      what is canonical here and what is derived
     HISTORY.md       the refutation record, verbatim
     gates/           canonical, hand-reviewed
-    skills/          generated from private masters on install; do not hand-edit
+    skills/          written from private masters by the maintainer's install script; do not hand-edit
     agents/          the reviewer agents (a copy of skills/agents/)
     hooks/           the hooks, registered by hooks/hooks.json
     lint/            the suite's own checks
     scripts/         standalone guards, usable without the rest
 
 `gates/` is the reviewed source of each gate's read. `skills/` and `agents/` are
-regenerated and overwritten on install. See [CONTRACT.md](CONTRACT.md).
+overwritten by the maintainer's install script. See [CONTRACT.md](CONTRACT.md).
 
 ## License
 

@@ -87,6 +87,7 @@ if [ $fail -ne 0 ]; then
 elif [ "${skipped:-0}" -gt 0 ]; then
   printf "\n\033[33m%d CHECK(S) SKIPPED\033[0m — they need estate state this machine does not have.\n" "$skipped"
   printf "The rest passed. That is reduced coverage, NOT a full pass.\n"
+  exit 3   # a consumer reading the exit code must not take reduced coverage for a pass (refuted 2026-09-06)
 else
   printf "\n\033[32mALL GATES PASS\033[0m\n"
 fi

@@ -75,19 +75,22 @@ def repo_sweep():
     for f in sorted(os.listdir("hooks")) if os.path.isdir("hooks") else []:
         if f.endswith(".py"):
             pairs.append((os.path.join("hooks", f), "~/.claude/hooks/" + f))
-    for src, dst in pairs:
-        d = os.path.expanduser(dst)
-        if not os.path.exists(d):
-            # NOT a failure on a machine that has no install. This check
-            # asserts THIS estate's deployed state; for anyone else it is
-            # unknowable, and refusing their build for it is a false denial.
-            if not os.path.isdir(os.path.expanduser("~/.claude/hooks")):
-                global SKIP_DEPLOY
-                SKIP_DEPLOY = True
-                continue
-            bad("repo", "NOT DEPLOYED: %s has no copy at %s" % (src, dst))
-        elif open(src, "rb").read() != open(d, "rb").read():
-            bad("repo", "DRIFT: %s differs from its deployed copy %s — install outward" % (src, dst))
+    # The check applies only where THIS SUITE is installed: the deployed conductor is
+    # the marker. Keying on `~/.claude/hooks` existing (refuted 2026-09-06) turned any
+    # Claude Code user who had ever added a hook by hand into nine NOT DEPLOYED failures.
+    # No deployed conductor: the machine did not install this suite, so its deployed
+    # state is unknowable here and the check is SKIPPED, loudly. A deployed conductor:
+    # every pair is asserted — a missing hook is NOT DEPLOYED, a differing one is DRIFT.
+    if not os.path.exists(os.path.expanduser(pairs[0][1])):
+        global SKIP_DEPLOY
+        SKIP_DEPLOY = True
+    else:
+        for src, dst in pairs:
+            d = os.path.expanduser(dst)
+            if not os.path.exists(d):
+                bad("repo", "NOT DEPLOYED: %s has no copy at %s" % (src, dst))
+            elif open(src, "rb").read() != open(d, "rb").read():
+                bad("repo", "DRIFT: %s differs from its deployed copy %s — install outward" % (src, dst))
 
     # A repo-internal DUPLICATE is a drift source the deployed-copy check above
     # cannot see: that one compares repo to INSTALLED, never repo to repo. Four
