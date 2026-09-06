@@ -1,6 +1,6 @@
 ---
 name: discipline
-description: "CONDUCTOR — the phase-aware gate runner. Fires the nineteen discipline gates by phase (DESIGN, BUILD, VERIFY) inside the ka123n outer loop, renders the completion table with three legal states, and runs a declared suite to completion. Trigger: any non-trivial build, fix, review, or a claim of done / ready / clean; shorthand 'discipline'."
+description: "CONDUCTOR — the phase-aware gate runner. Fires the nineteen discipline gates by phase (DESIGN, VERIFY) inside the ka123n outer loop, renders the completion table with three legal states, and runs a declared suite to completion. Trigger: any non-trivial build, fix, review, or a claim of done / ready / clean; shorthand 'discipline'."
 ---
 
 # CONDUCTOR — the phase-aware gate runner
@@ -34,7 +34,7 @@ bits.** Every pass below sits inside one turn of that loop.
 - **SELECT** — before any design work: is this step #1 by EV-per-byte? SELECT
   ends by SHOWING the window: three steps, ranked, priced. Each carries **why it
   is first**. That column proves a ranking happened rather than a list. A
-  window he has not seen has not been selected; it has been assumed.
+  window the operator has not seen has not been selected; it has been assumed.
 - **SLIDE** — after VERIFY and commit: re-rank. Never proceed by momentum into
   the old #2. Dropping SLIDE is how a session goes depth-first on a settled
   question while a live one waits.
@@ -47,7 +47,7 @@ artifact is its automation, not its authority.
 
 | # | gate | phase | fires when | state |
 |---|---|---|---|---|
-| 01 | ste | DESIGN | you write a prompt, canon page, plan, note or agent message. NOT conversation with the operator — unless he asks for a concept, and then explain it fully | built |
+| 01 | ste | DESIGN | you write a prompt, canon page, plan, note or agent message. NOT conversation with the operator — unless the operator asks for a concept, and then explain it fully | built |
 | 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" — and, as its own lever, before firing a model in a LOOP, price it in CALLS | built |
 | 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one with foreknowledge you could have had. A foreseeable sequence is a MISS, not a pass | built |
 | 04 | no-collision | DESIGN | you are about to touch SHARED substrate a peer may hold. Scratchpad and single-machine private work is N/A | built |
@@ -119,7 +119,7 @@ a row that neither commits to evidence nor admits a gap.
 
 | word used | what it must be instead |
 |---|---|
-| **PARTIAL** | **FIRED**, and the artifact names precisely what was and was not produced. The remainder belongs to gate 13 completer, never to a new state. |
+| **PARTIAL** | **FIRED**, and the artifact names precisely what was and was not produced. The remainder belongs to gate 12 completer, never to a new state. |
 | **FAILED** | **FIRED**, artifact: the failure. A gate that ran and caught you is the gate working. |
 | **NOT FIRED** / **SKIPPED**, when the trigger DID fire | Not a state. Either run the gate, or write **BLOCKED** and say what is now UNVERIFIED. `18 adversarial-pass — NOT FIRED` should read `BLOCKED: no independent refuter ran; the claim is unverified by anyone but its author.` |
 
@@ -187,15 +187,12 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agents `refuter` · `cold-reader` · `mechanism-auditor` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · record: a git note on the reviewed commit (ref `reviews`), written by the reviewer as its last act |
 | 19 | state-the-posterior | `gates/19-state-the-posterior/GATE.md` · deployed `skills/95-percent-rule` — the posterior half · hook `hooks/hook_posterior.py` |
 
-The `ask-dont-pour` bundle remains deployed on the primary workstation as the
-read-source for gates 03-05 ONLY. It is deliberately NOT published in this repo:
-it is the six-lever bundle those gates replaced, and no gate may bundle. Shipping
-it would hand a reader the exact anti-pattern this suite forbids. The debt is a
-GATE.md for 03, 04 and 05 — not a copy of the bundle.
-It is the retired bundle. Do not run it as one gate.
-`skills/95-percent-rule` is the read-source for BOTH gate 08 set-the-prior and
-gate 19 state-the-posterior. It still describes them as one act; the split is the
-ruling above, and each gate's own GATE.md is authoritative over it.
+The `ask-dont-pour` bundle is retired and deliberately NOT published here: it
+was the six-lever bundle gates 02-05 replaced, and no gate may bundle. Gates 03,
+04 and 05 each have their own `GATE.md` in `gates/`; nothing reads the bundle.
+`skills/set-the-prior` is gate 08's deployed read and `skills/95-percent-rule` is
+gate 19's; the latter still describes the two as one act, and each gate's own
+GATE.md is authoritative over it.
 
 ## The forms that make this fire
 

@@ -6,7 +6,7 @@
     {
       "name": "discipline",
       "source": "./",
-      "description": "Nineteen phase-aware gates, the conductor, ka123n, grill-me, four reviewer agents, and nine hooks. Declare the gates you adopt in ~/.claude/discipline-suite."
+      "description": "Nineteen phase-aware gates, the conductor, ka123n, grill-me, four reviewer agents, and eight hooks. Declare the gates you adopt in ~/.claude/discipline-suite."
     }
   ]
 }
