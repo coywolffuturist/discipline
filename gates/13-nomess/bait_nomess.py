@@ -116,10 +116,25 @@ def with_install(r, home, drift=True):
     open(os.path.join(r, "CONDUCTOR.md"), "w").write("c\n")
     os.makedirs(os.path.join(home, ".claude", "skills", "discipline"))
     open(os.path.join(home, ".claude", "skills", "discipline", "SKILL.md"), "w").write("c\n")
+    # the marker scripts/install.sh leaves: these copies came from THIS clone (2026-09-06)
+    open(os.path.join(home, ".claude", "skills", "discipline", ".installed-from"), "w").write(os.path.realpath(r) + "\n")
 
 
 def not_deployed(r, home):
     with_install(r, home, drift=False)
+
+
+def skills_only_copy(r, home):
+    # the two shapes refuted on 2026-09-06: a deployed conductor with NO marker (a plugin or
+    # skills-only install) and a marker naming ANOTHER clone. Neither is this clone's
+    # install-outward state, so both must SKIP, never NOT DEPLOYED.
+    with_install(r, home, drift=False)
+    os.remove(os.path.join(home, ".claude", "skills", "discipline", ".installed-from"))
+
+
+def other_clone_marker(r, home):
+    with_install(r, home, drift=False)
+    open(os.path.join(home, ".claude", "skills", "discipline", ".installed-from"), "w").write("/somewhere/else\n")
 
 
 def orig_and_tilde(r, home):
@@ -160,6 +175,8 @@ bait("BAIT N17 --done with a staged rename is red", 1, "renamed but not committe
 bait("BAIT N18 --done with an unstaged delete is red", 1, "deleted but not committed", unstaged_delete, flags=("--done",))
 bait("BAIT N10 a deployed copy that differs from the repo copy is DRIFT", 1, "DRIFT", with_install)
 bait("BAIT N11 an install with no copy of a hook is NOT DEPLOYED", 1, "NOT DEPLOYED", not_deployed)
+bait("BAIT N20 a deployed conductor with no install marker (plugin or skills-only) is SKIP, not RED", 2, "not installed from this clone", skills_only_copy)
+bait("BAIT N21 a marker naming another clone is SKIP, not RED", 2, "not installed from this clone", other_clone_marker)
 bait("BAIT N12 .orig and ~ files are debris too", 1, "b.py~", orig_and_tilde)
 bait("BAIT N13 one twin linked and one real is still a DUPLICATE", 1, "DUPLICATE", one_twin_linked)
 bait("BAIT N14 the account name in UPPER CASE is still published", 1, "PUBLISHES A PRIVATE NAME", upper_name)

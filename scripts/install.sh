@@ -11,6 +11,8 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 cp CONDUCTOR.md ~/.claude/skills/discipline/SKILL.md
+# the marker gate 13 reads: the deployed copies on this machine came from THIS clone
+printf '%s\n' "$(pwd -P)" > ~/.claude/skills/discipline/.installed-from
 for h in hooks/*.py; do cp "$h" ~/.claude/hooks/; done
 for a in gates/*/[a-z]*-reader.md gates/*/[a-z]*-auditor.md; do
   [ -e "$a" ] && cp "$a" ~/.claude/agents/

@@ -75,13 +75,18 @@ def repo_sweep():
     for f in sorted(os.listdir("hooks")) if os.path.isdir("hooks") else []:
         if f.endswith(".py"):
             pairs.append((os.path.join("hooks", f), "~/.claude/hooks/" + f))
-    # The check applies only where THIS SUITE is installed: the deployed conductor is
-    # the marker. Keying on `~/.claude/hooks` existing (refuted 2026-09-06) turned any
-    # Claude Code user who had ever added a hook by hand into nine NOT DEPLOYED failures.
-    # No deployed conductor: the machine did not install this suite, so its deployed
-    # state is unknowable here and the check is SKIPPED, loudly. A deployed conductor:
-    # every pair is asserted — a missing hook is NOT DEPLOYED, a differing one is DRIFT.
-    if not os.path.exists(os.path.expanduser(pairs[0][1])):
+    # This check asserts the MAINTAINER's install-outward contract (CONTRACT.md): the
+    # deployed copies on this machine were written from THIS clone by scripts/install.sh.
+    # Only that script knows that, so it leaves a marker naming the clone it installed
+    # from. Two earlier keys were refuted on 2026-09-06: "~/.claude/hooks exists" (any
+    # Claude Code user with one hand-added hook went RED) and "the deployed conductor
+    # exists" (a plugin install never has it; a skills-only copy has it without hooks and
+    # went RED). No marker, or a marker naming another clone: the machine's deployed
+    # copies were not installed from here, drift is unknowable, SKIP loudly. Marker
+    # naming this clone: every pair is asserted — missing is NOT DEPLOYED, differing is DRIFT.
+    marker = os.path.expanduser("~/.claude/skills/discipline/.installed-from")
+    installed_from = open(marker).read().strip() if os.path.isfile(marker) else ""
+    if os.path.realpath(installed_from or "/nonexistent") != os.path.realpath(REPO):
         global SKIP_DEPLOY
         SKIP_DEPLOY = True
     else:
@@ -256,8 +261,9 @@ def main():
         if SKIP_DEPLOY:
             print("\033[33mSKIP\033[0m  nomess — repo hygiene passed, but the "
                   "deployed-copy check compared NOTHING:")
-            print("      no ~/.claude/hooks on this machine. Install state is "
-                  "UNKNOWN here, not clean.")
+            print("      the deployed copies on this machine were not installed from this "
+                  "clone by scripts/install.sh (no ~/.claude/skills/discipline/.installed-from "
+                  "naming it). Install-outward drift is UNKNOWN here, not clean.")
             return 2
         print("\033[32mPASS\033[0m  nomess — %s clean" % " + ".join(scopes))
         return 0

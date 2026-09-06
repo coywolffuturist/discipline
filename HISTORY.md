@@ -1,5 +1,24 @@
 # History and refutation record
 
+## 2026-09-06 — the README pass, refuted three times before it shipped
+
+The README was rewritten to open with the map, and the old README moved here verbatim.
+Three refuters read the result cold before the push:
+
+- Round one: the hook count said nine in both plugin manifests (eight ship); the README
+  said `skills/` was generated from `gates/` (it is written from private masters by the
+  maintainer's install script); `agents/` is a copy of `skills/agents/`; "two" lint steps
+  skip for a stranger (four do); a live mailbox had entered the commit identity (amended to
+  the repo's no-reply).
+- Round two: the deployed-copy check in gate 13 skipped only when `~/.claude/hooks` did not
+  exist, so any Claude Code user with one hand-added hook got nine NOT DEPLOYED failures and
+  GATES RED; `lint/all.sh` exited 0 on reduced coverage. Fixed to exit 3. `skills/self-healing`,
+  referenced by nothing, was removed.
+- Round three: the replacement key (the deployed conductor exists) inverted the two install
+  paths: a plugin install never has it, a skills-only copy has it without hooks and went RED.
+  The key is now a marker the maintainer's install script writes, naming the clone it
+  installed from; every other machine skips the check and says so.
+
 > Moved verbatim from the top of README.md on 2026-09-06 so the README could open with the map. Nothing below was edited; dates are as written.
 
 ## Discipline — the canonical gate repository

@@ -96,11 +96,13 @@ is private and is described here, not shipped.
 ## Known limits
 
 Gate 01's language checks were cut to sentence length after three refutations,
-and five known defects in its lint remain open (listed in HISTORY.md). On a
-machine where this suite is not installed, `bash lint/all.sh` skips the checks
-that need the estate, prints how many, and exits non-zero: a reduced run is
-never a pass. The full record of what was refuted, deleted
-and corrected, with dates, is in [HISTORY.md](HISTORY.md). Read it before
+and five known defects in its lint remain open (listed in HISTORY.md). `bash lint/all.sh`
+checks install-outward drift only on the maintainer's machine, where the
+install script has left its marker; everywhere else it skips the checks that
+need the estate, prints how many, and exits non-zero: a reduced run is never a
+pass, and a plugin or skills-only install is never called drift. The record of what was refuted, deleted and
+corrected, with dates, is in [HISTORY.md](HISTORY.md); the newest entries are
+at its top. Read it before
 trusting any claim of enforcement.
 
 ## Layout and contract
