@@ -176,6 +176,31 @@ def digest(path):
         return None
 
 
+def adopted_target(rel):
+    """A bait may cover an ADOPTED form that lives OUTSIDE this repo -- gate 18's
+    code form IS the estate pre-push hook at ~/.git-hooks/pre-push. The tracer
+    only records files under the repo root, so such a bait is an orphan BY
+    CONSTRUCTION and has been reported as one on every run since it was written.
+    A warning that always fires teaches everyone to ignore warnings.
+
+    It may declare its target: `# BAITS-ADOPTED: ~/.git-hooks/pre-push`.
+
+    THE PATH MUST EXIST. Otherwise the annotation would be a way to silence a
+    bait that genuinely covers nothing -- the exact failure the orphan check is
+    for. This suppresses a LINE, never a form: every form in this repo still
+    needs a bait that executes it, and that check is untouched.
+    """
+    try:
+        src = open(os.path.join(ROOT, rel), encoding="utf-8").read()
+    except Exception:
+        return None
+    m = re.search(r"^#\s*BAITS-ADOPTED:\s*(\S+)", src, re.M)
+    if not m:
+        return None
+    t = os.path.expanduser(m.group(1))
+    return t if os.path.exists(t) else None
+
+
 def coverage(forms, traces):
     """forms: rel paths. traces: {bait rel: set("<sha256> <real path>")}."""
     by_real, by_hash = {}, {}
@@ -288,7 +313,12 @@ def main():
           "%d form(s) uncovered (%d in baseline)"
           % (len(forms), ran, seen, len(uncovered), len(uncovered) - len(new)))
     for o in orphans:
-        print("   orphan bait: %s executed no form. A bait for nothing baits nothing." % o)
+        t = adopted_target(o)
+        if t:
+            print("   adopted-form bait: %s covers %s — outside this repo, so the tracer "
+                  "cannot see it" % (o, t))
+        else:
+            print("   orphan bait: %s executed no form. A bait for nothing baits nothing." % o)
     if new and skipped:
         # A bait skipped on this machine may be the one that covers these. That
         # is UNVERIFIED, not RED — and not GREEN. The estate machine, where

@@ -109,6 +109,14 @@ bait("BAIT R10 a baseline entry that is now covered is reported as DEBT PAID",
      dict(base, **{"lint/run_baits.baseline": "gates/09-x/thing.py\n"}), 0, "DEBT PAID")
 bait("BAIT R11 an extensionless executable with a shebang is a form, and unbaited is RED",
      dict(base, **{"scripts/discipline": "#!/usr/bin/env python3\nprint('tool')\n"}), 1, "scripts/discipline")
+bait("BAIT R15 a bait declaring an EXISTING adopted target is not called an orphan",
+     dict(base, **{"gates/09-x/bait_adopted.py":
+                   "# BAITS-ADOPTED: /bin/sh\nprint('BAIT: PASS  1/1')\n"}),
+     0, "adopted-form bait")
+bait("BAIT R16 a bait declaring a NONEXISTENT adopted target is STILL an orphan",
+     dict(base, **{"gates/09-x/bait_adopted.py":
+                   "# BAITS-ADOPTED: /nowhere/never/exists\nprint('BAIT: PASS  1/1')\n"}),
+     0, "orphan bait")
 bait("BAIT R12 a .PY file in upper case is a form", dict(base, **{"hooks/UPPER.PY": OTHER}), 1, "hooks/UPPER.PY")
 bait("BAIT R13 a GREEN over a baseline says DEBT, not 'every form is baited'",
      dict(base, **{"hooks/other.py": OTHER, "lint/run_baits.baseline": "hooks/other.py\n"}), 0, "DEBT, not baited")

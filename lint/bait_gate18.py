@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# BAITS-ADOPTED: ~/.git-hooks/pre-push
 """bait_gate18.py — the gate 18 code form (the estate pre-push hook), seen to refuse and to pass.
 
 The review record is a git NOTE on the reviewed commit (ref `reviews`),
