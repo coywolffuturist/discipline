@@ -14,6 +14,11 @@ cp CONDUCTOR.md ~/.claude/skills/discipline/SKILL.md
 # the marker gate 13 reads: the deployed copies on this machine came from THIS clone
 printf '%s\n' "$(pwd -P)" > ~/.claude/skills/discipline/.installed-from
 for h in hooks/*.py; do cp "$h" ~/.claude/hooks/; done
+# code forms the hooks and the shell both read (gate 02 budget, gate 19 calibration)
+mkdir -p ~/.claude/scripts
+cp gates/02-retrieval-economy/budget.py ~/.claude/scripts/
+cp gates/19-state-the-posterior/posterior.py ~/.claude/scripts/
+chmod +x ~/.claude/scripts/budget.py ~/.claude/scripts/posterior.py
 for a in gates/*/[a-z]*-reader.md gates/*/[a-z]*-auditor.md; do
   [ -e "$a" ] && cp "$a" ~/.claude/agents/
 done

@@ -46,6 +46,23 @@ msg = ("GATE 19 state-the-posterior: this turn changed something. Before any "
        "If the prior was never set or was set against a different outcome, the "
        "posterior cannot update it: say BLOCKED rather than inventing a number.")
 
+# The floor is READ here, never recalled: posterior.py audit MOVES it when HIGH
+# claims come back wrong, and a floor quoted from memory is the exact failure
+# gate 19 was split off to prevent. Fail QUIET — a hook must never wedge a turn.
+try:
+    import importlib.util
+    _p = os.path.expanduser("~/.claude/scripts/posterior.py")
+    _spec = importlib.util.spec_from_file_location("posterior", _p)
+    _m = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(_m)
+    _f = _m._floors()
+    _open = sum(1 for e in _m._entries() if e.get("outcome") == "TBD")
+    msg += (" FLOOR NOW: reversible %.2f, one-way-door %.2f (read live, not recalled). "
+            "Log the number so it can be scored: posterior.py log <p> <door> <claim>. "
+            "%d claim(s) still unsettled." % (_f["reversible"], _f["one-way-door"], _open))
+except Exception:
+    pass
+
 print(json.dumps({"suppressOutput": True,
                   "hookSpecificOutput": {"hookEventName": "Stop",
                                          "additionalContext": msg}}))

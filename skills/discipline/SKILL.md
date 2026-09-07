@@ -9,7 +9,7 @@ description: "CONDUCTOR — the phase-aware gate runner. Fires the nineteen disc
             Edit here, install outward, never the reverse (see CONTRACT.md).
     holds:  the gate table, the three legal states, the completion rule.
     holds NO gate reads. A gate's read lives in gates/NN-<name>/GATE.md.
-    ruled:  the operator, 2026-08-31 — the 19-gate order below is approved. All 20 cards of the 2026-09-01 deck cast FULL; gate 03 price-the-loop retired into gate 02 as a lever, and the table renumbered.
+    ruled:  the operator, 2026-08-31 — the 20-gate order below is approved (gate 00 added 2026-09-07). All 20 cards of the 2026-09-01 deck cast FULL; gate 03 price-the-loop retired into gate 02 as a lever, and the table renumbered.
             It splits .95 into gates 08 and 19. It splits the old gate 17 into 16 and 17.
 
 ---
@@ -47,6 +47,7 @@ artifact is its automation, not its authority.
 
 | # | gate | phase | fires when | state |
 |---|---|---|---|---|
+| 00 | **regime-routing** | DESIGN | **FIRST.** the same request could honestly be answered at more than one depth. It sets the DEPTH of the work, never which gates fire | built |
 | 01 | ste | DESIGN | you write a prompt, canon page, plan, note or agent message. NOT conversation with the operator — unless the operator asks for a concept, and then explain it fully | built |
 | 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" — and, as its own lever, before firing a model in a LOOP, price it in CALLS | built |
 | 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one with foreknowledge you could have had. A foreseeable sequence is a MISS, not a pass | built |
@@ -134,7 +135,7 @@ becomes a blank you cannot leave.
 
 ## Your suite — declared once, then run to completion
 
-Another setup need not adopt all nineteen. It adopts the gates it chooses and
+Another setup need not adopt all twenty. It adopts the gates it chooses and
 declares them, one per line, in `~/.claude/discipline-suite` (or the file the
 `DISCIPLINE_SUITE` variable names):
 
@@ -155,7 +156,7 @@ Three rules make a declared suite run to completion rather than fade:
   gate to remove from the file, in a commit, with the reason. Leaving it in
   and not rendering it is the fourth state, and there is no fourth state.
 
-With no file, the suite is all nineteen. `ka123n` and `grill-me` are not
+With no file, the suite is all twenty. `ka123n` and `grill-me` are not
 gates; they are the outer loop and the design interview, and travel with the
 bundle whichever gates are chosen.
 
@@ -167,8 +168,9 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 
 | # | gate | read lives in |
 |---|---|---|
+| 00 | regime-routing | `gates/00-regime-routing/GATE.md` |
 | 01 | ste | `gates/01-ste/GATE.md` · deployed `skills/ste` |
-| 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy`. Also carries the price-the-loop lever, folded in 2026-09-01 |
+| 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy`. Also carries the price-the-loop lever, folded in 2026-09-01 · **code `gates/02-retrieval-economy/budget.py`** (the lever's enforcement, 2026-09-07) |
 | 03 | collapse-round-trips | `gates/03-collapse-round-trips/GATE.md` · deployed `skills/collapse-round-trips` · hook + code `gates/06-compile-it/repeats.py` (shared with gate 06) |
 | 04 | no-collision | `gates/04-no-collision/GATE.md` · deployed `skills/no-collision` · tool ADOPTED `gui-browser-lock` (SECOND MACHINE) · hook `hooks/warn_shared_path.py` |
 | 05 | substrate-search | `gates/05-substrate-search/GATE.md` · deployed `skills/substrate-search` · code ADOPTED: the estate `commit-msg` guard (shared with gate 11) |
@@ -184,8 +186,8 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | 15 | vizcheck | `gates/15-vizcheck/GATE.md` · deployed `skills/vizcheck` · tool `coywolf-screenshot` (SECOND MACHINE ONLY) · agent `vizcheck-reader` |
 | 16 | chunk-it | `gates/16-chunk-it/GATE.md` · code `gates/16-chunk-it/capture.py chunk`. No skill BY RULING: an obligation on every table, not a judgement |
 | 17 | write-back | `gates/17-write-back/GATE.md` · code `capture.py writeback` (shared with gate 16, separate rows). No skill BY RULING |
-| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · agents `refuter` · `cold-reader` · `mechanism-auditor` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · record: a git note on the reviewed commit (ref `reviews`), written by the reviewer as its last act |
-| 19 | state-the-posterior | `gates/19-state-the-posterior/GATE.md` · deployed `skills/95-percent-rule` — the posterior half · hook `hooks/hook_posterior.py` |
+| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · the reversibility DIAL (2026-09-07), recorded through `posterior.py` · agents `refuter` · `cold-reader` · `mechanism-auditor` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · record: a git note on the reviewed commit (ref `reviews`), written by the reviewer as its last act |
+| 19 | state-the-posterior | `gates/19-state-the-posterior/GATE.md` · deployed `skills/95-percent-rule` — the posterior half · hook `hooks/hook_posterior.py` · **code `gates/19-state-the-posterior/posterior.py`** (the calibration ledger, 2026-09-07) |
 
 The `ask-dont-pour` bundle is retired and deliberately NOT published here: it
 was the six-lever bundle gates 02-05 replaced, and no gate may bundle. Gates 03,
@@ -200,6 +202,8 @@ GATE.md is authoritative over it.
 |---|---|---|
 | PostToolUse hook | `hooks/mark_build.py` | flags a turn that CHANGED something. Includes Bash, because a day of estate work can run entirely through ssh. Scratch redirects (`/dev/null`, `/tmp`) are stripped, so read-only turns stay quiet |
 | Stop hook | `hooks/owe_table.py` | states that the completion table is owed, once per turn |
+| code | `gates/02-retrieval-economy/budget.py` | gate 02's ENFORCEMENT: one model run at a time across every session and machine, plus a daily call cap. Called BY the spender with the number it is about to spend, so it never guesses at command text — which is why gate 02's earlier hook form was deleted |
+| code | `gates/19-state-the-posterior/posterior.py` | gate 19's calibration ledger and gate 18's door dial: log the number, settle it later, and RAISE the floor when HIGH claims come back wrong. `posterior.py floor` is the only place the floor may be read from |
 
 ## Known debt, recorded rather than hidden
 

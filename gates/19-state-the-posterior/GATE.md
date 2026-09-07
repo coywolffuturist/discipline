@@ -98,3 +98,33 @@ On a turn that ends in a done claim, N/A is visibly false.
 
 **REVISIT** if firings begin carrying one number instead of a per-criterion
 split — that is the average returning, and it is the failure the ruling names.
+
+---
+
+## The number is now LOGGED, not just spoken (added 2026-09-07, brick A)
+
+Stating a posterior and never scoring it is the open loop this gate has run with
+since it was built. On one day a single session asserted 0.93, 0.96, 0.97 and
+0.99, and nothing anywhere recorded whether any of them was right.
+
+**The closing act of gate 19 is one command:**
+
+    posterior.py log <p> <door> <the claim in words>
+
+Then, when reality arrives: `posterior.py settle <id> right|wrong`.
+
+**Read the floor, never recall it.** `posterior.py floor` prints what may be
+asserted as fact, per door — and it MOVES. If HIGH claims (p ≥ 0.95) come back
+right less than 70% of the time over ≥10 settled claims, `posterior.py audit`
+raises that door's floor by 0.01. Being wrong costs the right to assert cheaply.
+A floor quoted from memory is exactly the failure this gate was split in two to
+prevent.
+
+**The weak point, named rather than hidden.** A ledger nobody settles reads
+100% TBD forever. Claims older than 30 days become `stale_no_followup` and are
+EXCLUDED from the rate — and when stale outnumbers settled, `audit` REFUSES to
+report a rate at all, because a success rate computed from the few claims
+someone bothered to close is not a success rate.
+
+Credit: the calibration loop is adapted from `bajpainaman/solve` (`bin/calibration`),
+read 2026-09-07. The stale-refusal and the per-door floor are ours.

@@ -614,3 +614,24 @@ could never have caught any of the fifty-four hook defects.
 **REVISIT** when a server-side boundary exists, which is the only thing that
 would let this gate claim prevention rather than record. Until then, treat every
 pass as "no review was forgotten", never as "no review was skipped."
+
+---
+
+## The dial — which door is this? (added 2026-09-07, brick D)
+
+Before deciding whether a refuter runs, name the door:
+
+- **Reversible** → **SPEED.** Ship, verify after, and a BLOCKED refuter row is an
+  honest cost. The claim can be withdrawn; the mistake is recoverable.
+- **One-way door** → **QUALITY.** An independent refuter runs, or the work does
+  not ship. Deletion, publication, a signed transaction, a message sent, canon
+  retired. The assertion floor is higher too — gate 19 reads it per door.
+
+The dial is not a mood. It is an input to two other gates, and it is recorded:
+`posterior.py log <p> <door> <claim>` carries it into the calibration ledger, so
+"I called it reversible" becomes a claim that can itself be scored.
+
+**The trap it exists to catch.** On 2026-09-07 a canon page was deleted from
+three machines — a one-way door — with no refuter, because the work felt small.
+It was small. It was also irreversible, and the first attempt at it broke the
+retirement answer without noticing. Size is not the axis. The door is.
