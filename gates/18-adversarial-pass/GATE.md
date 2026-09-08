@@ -635,3 +635,66 @@ The dial is not a mood. It is an input to two other gates, and it is recorded:
 three machines — a one-way door — with no refuter, because the work felt small.
 It was small. It was also irreversible, and the first attempt at it broke the
 retirement answer without noticing. Size is not the axis. The door is.
+
+---
+
+## The CONTINUOUS form (added 2026-09-07)
+
+This gate fires once, at the end, on a finished claim. That catches a wrong
+CONCLUSION. It does not catch a wrong PROCESS — and process is where the errors
+actually are. On the day this was written a single session produced seven
+process errors and almost no wrong conclusions, and **this gate read BLOCKED
+twice that day** because nothing outward-facing fired it. No refuter ran at all
+while all seven went past.
+
+So gate 18 has a second form: `continuous-adversary`, woken with ONE artifact at
+a time as it lands — a file just written, a bait just run, a patch just applied.
+It does not see the builder's reasoning. It reads the artifact, names the three
+strongest ways it could be wrong and the assumption that would invalidate it,
+and scores 0-10 how easily it can break it. **Seven or more interrupts the
+builder**; the record is `adversary.py record <run> <artifact> <score> "<attack>"`.
+
+The two forms are not substitutes and neither replaces the other:
+
+| | refuter | continuous-adversary |
+|---|---|---|
+| fires | once, terminally, on a claim | per artifact, throughout the build |
+| catches | a conclusion that is false | a process that is broken |
+| model | inherit | sonnet — a deliberate cost choice, revisited by the evidence below |
+
+Source: `bajpainaman/solve`, whose adversary polls a directory and messages the
+owner at score >= 7. Ours is woken on demand rather than polling, because a
+poller spends tokens while nothing is happening and that is the constraint we
+keep hitting.
+
+**Its score is itself scored, and that is ours.** Every score is joined to the
+posterior it attacked, and `posterior.py audit` asks whether claims scored >= 7
+settled wrong more often than claims scored low. Until ten of each have settled
+it reports *not enough evidence* and says nothing. **If the score turns out to
+predict nothing, this form is theatre and gets cut on evidence rather than on
+taste.** That test is registered now, before any data exists, so it cannot be
+rewritten once the numbers are in.
+
+### What it found on its first day, before anyone asked it to prove itself
+
+Three passes over one artifact — `budget.py`, the guard on the operator's model
+quota, which at the time had **twelve green baits, a red-proof against every
+reverted fix, a passing lint, and a commit**.
+
+| pass | score | found |
+|---|---|---|
+| 1 | 8 | `PermissionError` read as "process dead" (it is an `OSError` subclass, so a live daemon's lock read as free); and a six-hour stale-lock timer that broke locks on elapsed time alone — where the founding incident was a ~900-call run that can exceed six hours. **The mitigation reintroduced the disaster it mitigated.** |
+| 2 | 9 | The real one: `reserve()` was check-then-act with **no mutual-exclusion primitive at all**. Reproduced two concurrent reservations both winning in 4 of 5 trials, and 800 calls against a cap of 500. |
+| 3 | 6 | Verified the rewrite held — could not break exclusion or the cap — and found two fail-CLOSED bugs plus the assumption that mattered most: **"across both machines" was a claim with no mechanism**, since each host had its own local state directory and its own `O_EXCL` win. |
+
+**Why twelve green baits saw none of it.** They reserved sequentially, in one
+process. A sequential bait cannot observe a race however many cases it holds.
+The replacement races four real callers against a barrier over five trials and
+reproduces the break 2 of 5 times against the old code.
+
+Two corollaries, both paid for:
+- **A fix is a new artifact.** Both of the author's fixes opened the next hole.
+  Re-attack the fix, never only the original.
+- **A low score is not clearance.** Pass 1 tried a 60-way race, could not
+  reproduce it, and honestly declined to claim it. Pass 2 hit it with two
+  processes on the first try.

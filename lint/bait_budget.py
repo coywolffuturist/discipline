@@ -86,6 +86,43 @@ with tempfile.TemporaryDirectory() as d:
         check("a lock held by a DEAD pid on this host is broken", False, str(e))
 
 
+# --- the three the CONTINUOUS ADVERSARY found, score 8 ------------------------
+import tempfile as _tf, json as _json, socket as _socket, os as _os  # noqa: E402 -- this block runs before the one below that also imports them
+# Elapsed time is not liveness, and "permission denied" is not "dead". Both let a
+# second run start beside a first -- the exact disaster budget.py exists to stop.
+with _tf.TemporaryDirectory() as d:
+    b = load(d)
+    _json.dump({"token": "t", "label": "a run owned by another uid", "calls": 10,
+                "host": _socket.gethostname(), "pid": 1, "started": __import__("time").time(),
+                "holder": "inprocess"}, open(_os.path.join(d, "budget.lock"), "w"))
+    try:
+        b.reserve(1, "must not start")
+        check("a lock held by ANOTHER UID's live process is not broken", False,
+              "PermissionError read as dead")
+    except b.BudgetRefused:
+        check("a lock held by ANOTHER UID's live process is not broken", True)
+
+with _tf.TemporaryDirectory() as d:
+    b = load(d)
+    _json.dump({"token": "t", "label": "an eval still running after 7h", "calls": 900,
+                "host": _socket.gethostname(), "pid": 1,
+                "started": __import__("time").time() - 7 * 3600, "holder": "cli"},
+               open(_os.path.join(d, "budget.lock"), "w"))
+    try:
+        b.reserve(1, "must not start")
+        check("a 7-hour-old lock is NOT broken by a timer", False, "elapsed time broke it")
+    except b.BudgetRefused:
+        check("a 7-hour-old lock is NOT broken by a timer", True)
+    check("but `break` removes it by hand, and says so",
+          b.main(["budget.py", "break"]) == 0 and not _os.path.exists(_os.path.join(d, "budget.lock")))
+
+with _tf.TemporaryDirectory() as d:
+    b = load(d)
+    b.reserve(5, "a run whose day must not depend on the caller's timezone")
+    row = _json.loads(open(_os.path.join(d, "budget.jsonl")).read().strip().split("\n")[-1])
+    check("ledger timestamps are UTC-stamped, so two machines share one day",
+          row["ts"].endswith("Z"))
+
 # --- the bait that ESCAPED on 2026-09-07 -------------------------------------
 # A CLI hold has no live process behind it. The first version broke it instantly
 # as a "dead holder" and let a 20-call gate start anyway. Reserving in-process,
@@ -106,6 +143,80 @@ with _tf.TemporaryDirectory() as d:
 # run_baits reads this exact shape: `BAIT: PASS n/m`, n == m >= 1. A bait that
 # exits 0 without it is reported as "did it run anything?" and the whole suite
 # goes red -- correctly, because a silent bait is indistinguishable from none.
+# --- the two the third adversary pass found, score 6 (fail-closed, still bugs) -
+with _tf.TemporaryDirectory() as d:
+    b = load(d)
+    # a truncated lock: a process killed between O_EXCL create and the write.
+    # `break` is the ONLY recovery path, so it must survive exactly this.
+    open(_os.path.join(d, "budget.lock"), "w").write('{"token": "t", "lab')
+    # A bait must REPORT, never die: the first version let break's own crash kill
+    # the bait file, so the whole suite went red with no line naming the case.
+    try:
+        rc = b.main(["budget.py", "break"])
+    except Exception as e:
+        rc = "raised %s" % type(e).__name__
+    check("break survives a corrupt lock file and removes it",
+          rc == 0 and not _os.path.exists(_os.path.join(d, "budget.lock")),
+          "rc=%s, lock still present" % rc)
+
+with _tf.TemporaryDirectory() as d:
+    b = load(d)
+    _json.dump({"token": "t", "label": "a crashed run", "calls": 1,
+                "host": _socket.gethostname(), "pid": 999999, "started": 0,
+                "holder": "inprocess"}, open(_os.path.join(d, "budget.lock"), "w"))
+    import threading as _th2
+    errs, ready = [], _th2.Barrier(4)
+    def _reap():
+        ready.wait()
+        try:
+            b._held_by()
+        except Exception as e:
+            errs.append(type(e).__name__)
+    ts = [_th2.Thread(target=_reap) for _ in range(4)]
+    for t in ts: t.start()
+    for t in ts: t.join()
+    check("four callers reaping ONE dead lock: no raw traceback", not errs,
+          "raised %s" % errs[:3])
+
+# --- CONCURRENCY, reproduced rather than reasoned about ----------------------
+# The continuous adversary broke this file at score 9 with two concurrent
+# `reserve` calls: both won, 4 of 5 trials, and 800 calls landed against a cap of
+# 500. Every earlier bait here reserved sequentially in one process, so the file
+# had NO synchronisation and twelve green baits. A race is baited by racing.
+import subprocess as _sp, threading as _th
+
+def _race(state, n, calls, cap):
+    _os.makedirs(state, exist_ok=True)
+    _json.dump({"daily_call_cap": cap}, open(_os.path.join(state, "budget-config.json"), "w"))
+    env = dict(_os.environ, COYWOLF_BUDGET_STATE=state)
+    wins, start = [], _th.Barrier(n)
+    def go():
+        start.wait()
+        r = _sp.run([_sys.executable, SRC, "reserve", str(calls), "racer"],
+                    capture_output=True, text=True, env=env)
+        if r.returncode == 0:
+            wins.append(r.stdout.strip())
+    ts = [_th.Thread(target=go) for _ in range(n)]
+    for t in ts: t.start()
+    for t in ts: t.join()
+    reserved = sum(json.loads(l)["calls"] for l in
+                   open(_os.path.join(state, "budget.jsonl"), encoding="utf-8")
+                   if l.strip() and json.loads(l).get("event") == "reserve")
+    return len(wins), reserved
+
+_multi, _over = 0, 0
+with _tf.TemporaryDirectory() as base:
+    for trial in range(5):
+        w, reserved = _race(_os.path.join(base, "t%d" % trial), 4, 400, 500)
+        if w > 1:
+            _multi += 1
+        if reserved > 500:
+            _over += 1
+check("4 concurrent reservations: exactly ONE wins, every trial", _multi == 0,
+      "%d/5 trials handed the lock to more than one caller" % _multi)
+check("4 concurrent reservations never exceed the daily cap", _over == 0,
+      "%d/5 trials reserved more than the cap" % _over)
+
 print("\n%s  %d/%d" % ("BAIT: PASS" if not fails else "BAIT: FAIL",
                        len(seen) - len(fails), len(seen)))
 for l in fails:

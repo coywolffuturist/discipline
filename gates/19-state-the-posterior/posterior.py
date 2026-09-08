@@ -96,7 +96,7 @@ def _write(entries):
             f.write(json.dumps(e, sort_keys=True) + "\n")
 
 
-def log(p, door, claim):
+def log(p, door, claim, adv=None):
     p = float(p)
     if not math.isfinite(p) or not 0 <= p <= 1:
         raise SystemExit("REFUSED: p must be a probability in 0..1, got %r" % (p,))
@@ -105,9 +105,14 @@ def log(p, door, claim):
     claim = " ".join(claim).strip()
     if len(claim) < 10:
         raise SystemExit("REFUSED: name the claim — a number with no claim cannot be settled")
+    if adv is not None:
+        if isinstance(adv, bool) or not isinstance(adv, int) or not 0 <= adv <= 10:
+            raise SystemExit("REFUSED: --adv must be an int 0..10 (adversary.py max <run>)")
     rec = {"id": uuid.uuid4().hex[:8], "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
            "p": p, "door": door, "claim": claim[:400], "outcome": "TBD",
            "session": os.environ.get("CLAUDE_SESSION_ID", "")[:8]}
+    if adv is not None:
+        rec["adv"] = adv
     os.makedirs(STATE, exist_ok=True)
     with open(LEDGER, "a", encoding="utf-8") as f:
         f.write(json.dumps(rec, sort_keys=True) + "\n")
@@ -177,6 +182,28 @@ def audit():
             floors[door] = new
             lines.append("%-13s CALIBRATION DRIFT: under %.0f%% — floor raised %.2f -> %.2f"
                          % (door, DRIFT_RATE * 100, *changed[door]))
+    # THE WIRE (2026-09-07). His adversary scores and nothing reads it; this ledger
+    # scores claims and never saw the adversary. Here they meet. The question is
+    # falsifiable: if a high adversary score does NOT predict a claim that settles
+    # wrong, gate 18's continuous form is theatre and gets cut on evidence.
+    scored = [e for e in es if isinstance(e.get("adv"), int)
+              and e.get("outcome") in ("right", "wrong")]
+    hi = [e for e in scored if e["adv"] >= 7]
+    lo = [e for e in scored if e["adv"] < 7]
+    if len(hi) < MIN_SETTLED or len(lo) < MIN_SETTLED:
+        lines.append("adversary signal: not enough evidence — %d settled claims scored >=7, "
+                     "%d scored <7 (need %d each before the score means anything)"
+                     % (len(hi), len(lo), MIN_SETTLED))
+    else:
+        rh = sum(1 for e in hi if e["outcome"] == "right") / len(hi)
+        rl = sum(1 for e in lo if e["outcome"] == "right") / len(lo)
+        lines.append("adversary signal: claims it scored >=7 settled right %.0f%% (%d), "
+                     "claims it scored <7 settled right %.0f%% (%d)"
+                     % (rh * 100, len(hi), rl * 100, len(lo)))
+        lines.append("  %s" % ("the score PREDICTS — a high attack score earns weight"
+                               if rl - rh >= 0.15 else
+                               "the score predicts NOTHING here — gate 18's continuous form is "
+                               "not paying for itself; cut it or change what it attacks"))
     if changed:
         os.makedirs(STATE, exist_ok=True)
         json.dump(floors, open(CFG, "w"), sort_keys=True)
@@ -187,7 +214,12 @@ def main(argv):
     try:
         cmd = argv[1] if len(argv) > 1 else "open"
         if cmd == "log":
-            print(log(argv[2], argv[3], argv[4:]))
+            rest, adv = list(argv[4:]), None
+            if "--adv" in rest:
+                i = rest.index("--adv")
+                adv = int(rest[i + 1])
+                del rest[i:i + 2]
+            print(log(argv[2], argv[3], rest, adv))
         elif cmd == "settle":
             print(settle(argv[2], argv[3], " ".join(argv[4:])))
         elif cmd == "floor":

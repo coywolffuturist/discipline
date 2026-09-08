@@ -186,7 +186,7 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 | 15 | vizcheck | `gates/15-vizcheck/GATE.md` · deployed `skills/vizcheck` · tool `coywolf-screenshot` (SECOND MACHINE ONLY) · agent `vizcheck-reader` |
 | 16 | chunk-it | `gates/16-chunk-it/GATE.md` · code `gates/16-chunk-it/capture.py chunk`. No skill BY RULING: an obligation on every table, not a judgement |
 | 17 | write-back | `gates/17-write-back/GATE.md` · code `capture.py writeback` (shared with gate 16, separate rows). No skill BY RULING |
-| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · the reversibility DIAL (2026-09-07), recorded through `posterior.py` · agents `refuter` · `cold-reader` · `mechanism-auditor` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · record: a git note on the reviewed commit (ref `reviews`), written by the reviewer as its last act |
+| 18 | adversarial-pass | `gates/18-adversarial-pass/GATE.md` · deployed `skills/adversarial-pass` · the reversibility DIAL (2026-09-07), recorded through `posterior.py` · **code `gates/18-adversarial-pass/adversary.py`** and agent **`continuous-adversary`** (the CONTINUOUS form, 2026-09-07) · agents `refuter` · `cold-reader` · `mechanism-auditor` · code ADOPTED: the estate `pre-push` hook (opt-in via `.gate18-guarded`) · record: a git note on the reviewed commit (ref `reviews`), written by the reviewer as its last act |
 | 19 | state-the-posterior | `gates/19-state-the-posterior/GATE.md` · deployed `skills/95-percent-rule` — the posterior half · hook `hooks/hook_posterior.py` · **code `gates/19-state-the-posterior/posterior.py`** (the calibration ledger, 2026-09-07) |
 
 The `ask-dont-pour` bundle is retired and deliberately NOT published here: it
@@ -203,6 +203,7 @@ GATE.md is authoritative over it.
 | PostToolUse hook | `hooks/mark_build.py` | flags a turn that CHANGED something. Includes Bash, because a day of estate work can run entirely through ssh. Scratch redirects (`/dev/null`, `/tmp`) are stripped, so read-only turns stay quiet |
 | Stop hook | `hooks/owe_table.py` | states that the completion table is owed, once per turn |
 | code | `gates/02-retrieval-economy/budget.py` | gate 02's ENFORCEMENT: one model run at a time across every session and machine, plus a daily call cap. Called BY the spender with the number it is about to spend, so it never guesses at command text — which is why gate 02's earlier hook form was deleted |
+| code + agent | `gates/18-adversarial-pass/adversary.py` · `continuous-adversary` | gate 18's CONTINUOUS form: woken with one artifact at a time as it lands, scores 0-10 how easily it breaks, and 7+ interrupts the builder. Catches a broken PROCESS, which the terminal refuter cannot see. Its score is carried onto the posterior it attacked, so the audit can cut this form on evidence if the score predicts nothing |
 | code | `gates/19-state-the-posterior/posterior.py` | gate 19's calibration ledger and gate 18's door dial: log the number, settle it later, and RAISE the floor when HIGH claims come back wrong. `posterior.py floor` is the only place the floor may be read from |
 
 ## Known debt, recorded rather than hidden

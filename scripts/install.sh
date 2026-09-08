@@ -18,8 +18,9 @@ for h in hooks/*.py; do cp "$h" ~/.claude/hooks/; done
 mkdir -p ~/.claude/scripts
 cp gates/02-retrieval-economy/budget.py ~/.claude/scripts/
 cp gates/19-state-the-posterior/posterior.py ~/.claude/scripts/
-chmod +x ~/.claude/scripts/budget.py ~/.claude/scripts/posterior.py
-for a in gates/*/[a-z]*-reader.md gates/*/[a-z]*-auditor.md; do
+cp gates/18-adversarial-pass/adversary.py ~/.claude/scripts/
+chmod +x ~/.claude/scripts/budget.py ~/.claude/scripts/posterior.py ~/.claude/scripts/adversary.py
+for a in gates/*/[a-z]*-reader.md gates/*/[a-z]*-auditor.md gates/*/[a-z]*-adversary.md; do
   [ -e "$a" ] && cp "$a" ~/.claude/agents/
 done
 bash ~/.claude/scripts/skill_share.sh >/dev/null 2>&1
