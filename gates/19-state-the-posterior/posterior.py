@@ -44,6 +44,15 @@ STALE_DAYS = 30
 MIN_SETTLED = 10
 DRIFT_RATE = 0.70
 FLOOR_CAP = 0.99
+# Above this, calibration has recovered and the floor should come back DOWN.
+# The gap between DRIFT_RATE and RECOVER_RATE is deliberate hysteresis: without
+# it a rate oscillating around one threshold would move the floor every audit.
+RECOVER_RATE = 0.80
+# Key in the config recording how many settled claims justified the last move,
+# per door. A move requires MORE settled claims than last time. This is what
+# makes audit idempotent: the same evidence cannot be charged twice, and a
+# second agent running audit does not double-charge it either.
+MARK_KEY = "_settled_at_last_move"
 
 
 class Corrupt(Exception):
@@ -153,11 +162,20 @@ def mark_stale():
     return n
 
 
-def audit():
+def audit(apply=False):
+    """Read-only by default. Only `apply=True` writes the floor.
+
+    An audit must never write: the previous version mutated global
+    state on every invocation, so looking at the calibration changed it.
+    """
     mark_stale()
     es = _entries()
     lines, changed = [], {}
     floors = _floors()
+    try:
+        marks = dict(json.load(open(CFG)).get(MARK_KEY, {}))
+    except Exception:
+        marks = {}
     for door in DOORS:
         d = [e for e in es if e.get("door") == door and e.get("p", 0) >= HIGH]
         settled = [e for e in d if e.get("outcome") in ("right", "wrong")]
@@ -176,12 +194,40 @@ def audit():
         rate = right / len(settled)
         lines.append("%-13s HIGH claims right %d/%d = %.0f%%  (floor %.2f)"
                      % (door, right, len(settled), rate * 100, floors[door]))
+        # IDEMPOTENCE. Move only when THIS evidence is new. Without the mark,
+        # audit raised +0.01 per invocation: 0.95 -> 0.99 in one session on an
+        # unchanged 7/11, four raises from four glances.
+        seen = int(marks.get(door, 0))
+        fresh = len(settled) > seen
+
         if rate < DRIFT_RATE and floors[door] < FLOOR_CAP:
-            new = min(round(floors[door] + 0.01, 2), FLOOR_CAP)
-            changed[door] = (floors[door], new)
-            floors[door] = new
-            lines.append("%-13s CALIBRATION DRIFT: under %.0f%% — floor raised %.2f -> %.2f"
-                         % (door, DRIFT_RATE * 100, *changed[door]))
+            if fresh:
+                new = min(round(floors[door] + 0.01, 2), FLOOR_CAP)
+                changed[door] = (floors[door], new)
+                floors[door] = new
+                marks[door] = len(settled)
+                lines.append("%-13s CALIBRATION DRIFT: under %.0f%% — floor %s %.2f -> %.2f"
+                             % (door, DRIFT_RATE * 100,
+                                "raised" if apply else "WOULD RISE", *changed[door]))
+            else:
+                lines.append("%-13s under %.0f%%, but this evidence already moved the floor "
+                             "(%d settled at last move) — no change"
+                             % (door, DRIFT_RATE * 100, seen))
+        elif rate >= RECOVER_RATE and floors[door] > DEFAULT_FLOORS[door]:
+            # DECAY. A penalty with no route back stops being an incentive and
+            # becomes a tax. Never below the default.
+            if fresh:
+                new = max(round(floors[door] - 0.01, 2), DEFAULT_FLOORS[door])
+                changed[door] = (floors[door], new)
+                floors[door] = new
+                marks[door] = len(settled)
+                lines.append("%-13s RECOVERED: %.0f%% >= %.0f%% — floor %s %.2f -> %.2f"
+                             % (door, rate * 100, RECOVER_RATE * 100,
+                                "lowered" if apply else "WOULD FALL", *changed[door]))
+            else:
+                lines.append("%-13s recovered, but this evidence already moved the floor "
+                             "(%d settled at last move) — no change"
+                             % (door, seen))
     # THE WIRE (2026-09-07). His adversary scores and nothing reads it; this ledger
     # scores claims and never saw the adversary. Here they meet. The question is
     # falsifiable: if a high adversary score does NOT predict a claim that settles
@@ -204,9 +250,15 @@ def audit():
                                if rl - rh >= 0.15 else
                                "the score predicts NOTHING here — gate 18's continuous form is "
                                "not paying for itself; cut it or change what it attacks"))
-    if changed:
+    if changed and apply:
         os.makedirs(STATE, exist_ok=True)
-        json.dump(floors, open(CFG, "w"), sort_keys=True)
+        payload = dict(floors)
+        payload[MARK_KEY] = marks
+        json.dump(payload, open(CFG, "w"), sort_keys=True)
+    elif changed:
+        lines.append("DRY RUN — nothing written. Re-run `posterior.py audit --apply` "
+                     "to move the floor. This split exists because audit used to "
+                     "mutate the floor every time it was consulted.")
     return "\n".join(lines) or "no HIGH claims logged yet"
 
 
@@ -227,7 +279,7 @@ def main(argv):
             print(("%.2f" % f[argv[2]]) if len(argv) > 2 else
                   "  ".join("%s %.2f" % (d, f[d]) for d in DOORS))
         elif cmd == "audit":
-            print(audit())
+            print(audit(apply=("--apply" in argv)))
         elif cmd == "stale":
             print("%d claim(s) marked stale_no_followup" % mark_stale())
         elif cmd == "open":

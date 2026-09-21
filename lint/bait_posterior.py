@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """bait_posterior.py — the calibration ledger must be SEEN to refuse and to drift."""
-import importlib.util, json, os, sys, tempfile, time
+import importlib.util, io, json, os, sys, tempfile, time
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.realpath(os.path.join(HERE, "..", "gates", "19-state-the-posterior", "posterior.py"))
@@ -55,7 +55,8 @@ with tempfile.TemporaryDirectory() as d:
     for e in p._entries():
         p.settle(e["id"], "wrong")
     before = p._floors()["one-way-door"]
-    p.audit()
+    p.audit(apply=True)   # apply=True since 2026-09-21: audit alone no longer writes,
+                          # so without it this bait would pass on a broken guard
     check("under 10 settled, the floor is NOT moved", p._floors()["one-way-door"] == before,
           "moved on 9")
 
@@ -69,7 +70,7 @@ with tempfile.TemporaryDirectory() as d:
     for e in es[4:]:
         p.settle(e["id"], "wrong")
     before = p._floors()["one-way-door"]
-    out = p.audit()
+    out = p.audit(apply=True)
     check("40%% right over 10 settled RAISES the floor", p._floors()["one-way-door"] > before,
           "floor stayed %.2f" % before)
     check("the drift is reported, not silent", "CALIBRATION DRIFT" in out)
@@ -98,6 +99,66 @@ with tempfile.TemporaryDirectory() as d:
         check("a NaN posterior FAILS CLOSED", False, "accepted")
     except p.Corrupt:
         check("a NaN posterior FAILS CLOSED", True)
+
+# --- THE RATCHET. The floor must move on EVIDENCE, never on being looked at.
+# Measured 2026-09-20/21: reversible went 0.95 -> 0.99 in one session on ONE
+# unchanged body of evidence (7/11 right). Four raises from four glances --
+# audit added 0.01 whenever it ran while the rate was low, nothing recorded
+# that the evidence had already been charged, and no branch ever lowered a
+# floor. The control below is what makes the rest readable: without it, "the
+# floor did not move" is equally consistent with a working guard and with a
+# bait that never reached the code.
+with tempfile.TemporaryDirectory() as d:
+    p = load(d)
+    DOOR = "reversible"
+    default = p.DEFAULT_FLOORS[DOOR]
+
+    def seed(n_right, n_wrong):
+        """Replace the ledger wholesale, so each stage is a known total."""
+        rows = []
+        for i in range(n_right):
+            rows.append({"id": "r%d" % i, "p": 0.98, "door": DOOR,
+                         "outcome": "right", "claim": "x", "ts": "2026-09-21T00:00:00Z"})
+        for i in range(n_wrong):
+            rows.append({"id": "w%d" % i, "p": 0.98, "door": DOOR,
+                         "outcome": "wrong", "claim": "x", "ts": "2026-09-21T00:00:00Z"})
+        io.open(p.LEDGER, "w").write("".join(json.dumps(r) + "\n" for r in rows))
+
+    def floor():
+        return p._floors()[DOOR]
+
+    seed(6, 6)                       # 12 settled, 50% -- under DRIFT_RATE
+    out = p.audit(apply=False)
+    check("CONTROL: a dry run writes nothing", floor() == default, "floor=%.2f" % floor())
+    check("CONTROL: and it SAYS what it would have done", "WOULD RISE" in out, out[:60])
+
+    p.audit(apply=True)
+    check("apply raises once", floor() == round(default + 0.01, 2), "floor=%.2f" % floor())
+    at_one = floor()
+
+    p.audit(apply=True)
+    check("the SAME evidence does not raise again", floor() == at_one, "floor=%.2f" % floor())
+    p.audit(apply=True)
+    check("nor on a third look", floor() == at_one, "floor=%.2f" % floor())
+
+    seed(8, 8)                       # 16 settled, still 50%
+    p.audit(apply=True)
+    check("NEW settlements, still bad -> raises once more",
+          floor() == round(default + 0.02, 2), "floor=%.2f" % floor())
+
+    seed(19, 1)                      # 20 settled, 95% -- above RECOVER_RATE
+    p.audit(apply=True)
+    check("RECOVERED -> the floor DECAYS", floor() == round(default + 0.01, 2),
+          "floor=%.2f" % floor())
+
+    seed(39, 1)
+    p.audit(apply=True)
+    check("and decays again on new evidence", floor() == default, "floor=%.2f" % floor())
+
+    seed(79, 1)
+    p.audit(apply=True)
+    check("never falls below DEFAULT_FLOORS", floor() == default, "floor=%.2f" % floor())
+
 
 # run_baits reads this exact shape: `BAIT: PASS n/m`, n == m >= 1. A bait that
 # exits 0 without it is reported as "did it run anything?" and the whole suite

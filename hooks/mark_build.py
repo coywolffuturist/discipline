@@ -327,7 +327,11 @@ def mark(what, session):
     # hook draws second sees nothing. Gate 08 had been firing on luck. Each
     # consumer now owns its own flag and cannot silence the other. Adding a
     # consumer means adding a flag here — a shared one reintroduces the bug.
-    for name in ("build-turn", "prior-owed", "posterior-owed"):
+    # "ka123n-owed" added 2026-09-21. His standing order -- every message ends
+    # with the window -- was the ONE obligation held only in memory while the
+    # other three were compiled into flags. He corrected it twice. A rule
+    # recalled at the right moment fails; a rule wired to an event fires.
+    for name in ("build-turn", "prior-owed", "posterior-owed", "ka123n-owed"):
         p = _flags.path(name, session)
         try:
             with open(p, "a") as f:
