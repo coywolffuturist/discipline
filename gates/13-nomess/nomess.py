@@ -34,6 +34,82 @@ findings = []
 SKIP_DEPLOY = False
 
 
+def _scan_history(bad, NAMES):
+    """Every blob reachable from every ref, including notes. See the caller."""
+    import subprocess
+    names = [n.encode() for n in NAMES]
+    # PINNED and SHRINK-ONLY. A known, already-public blob is REPORTED but does
+    # not refuse the build, because a gate that blocks every commit forever gets
+    # bypassed and then guards nothing. Anything not listed fails at once.
+    bl = os.path.join(os.path.dirname(os.path.abspath(__file__)), "history-leak.baseline")
+    baseline = set()
+    try:
+        for line in io.open(bl, encoding="utf-8"):
+            line = line.strip()
+            if line and not line.startswith("#"):
+                baseline.add(line.split()[0])
+    except OSError:
+        pass
+    known = []
+    try:
+        objs = subprocess.run(["git", "-C", REPO, "rev-list", "--objects", "--all"],
+                              capture_output=True, timeout=120).stdout.decode("utf-8", "replace")
+    except Exception as e:
+        bad("repo", "HISTORY SCAN FAILED (%s) — the published history is UNCHECKED" % e)
+        return
+    paths = {}
+    for line in objs.splitlines():
+        part = line.split(" ", 1)
+        if len(part) == 2 and part[1].strip():
+            paths[part[0]] = part[1]
+    if not paths:
+        # A repo with no objects is possible; a FAILED enumeration is not the
+        # same thing and must not read as clean.
+        return
+    try:
+        out = subprocess.run(["git", "-C", REPO, "cat-file", "--batch"],
+                             input=("\n".join(paths) + "\n").encode(),
+                             capture_output=True, timeout=300).stdout
+    except Exception as e:
+        bad("repo", "HISTORY SCAN FAILED (%s) — the published history is UNCHECKED" % e)
+        return
+    i = 0
+    while i < len(out):
+        nl = out.find(b"\n", i)
+        if nl < 0:
+            break
+        head = out[i:nl].split()
+        if len(head) < 3:
+            i = nl + 1
+            continue
+        try:
+            size = int(head[2])
+        except ValueError:
+            i = nl + 1
+            continue
+        body = out[nl + 1:nl + 1 + size]
+        if head[1] == b"blob":
+            low = body.lower()
+            for nm in names:
+                if nm in low:
+                    sha = head[0].decode()
+                    where = paths.get(sha, "?")
+                    if sha[:8] in baseline:
+                        known.append((sha[:8], where))
+                    else:
+                        bad("repo", "HISTORY PUBLISHES A PRIVATE NAME: blob %s (%s) contains %r"
+                            % (sha[:8], where, nm.decode()))
+                    break
+        i = nl + 1 + size + 1
+    if known:
+        # Said out loud every run. A baseline that goes quiet becomes an
+        # exemption, and the operator stops being told the exposure is still there.
+        print("      NOTE  %d known identity blob(s) still in the published history "
+              "(pinned in history-leak.baseline, awaiting a ruling):" % len(known))
+        for sha, where in known:
+            print("              %s  %s" % (sha, where))
+
+
 def bad(scope, msg):
     findings.append((scope, msg))
 
@@ -166,10 +242,23 @@ def repo_sweep():
     host = socket.gethostname().split(".")[0]
     if len(host) > 3:
         NAMES.add(host.lower())
+    # HISTORY AND NOTES, not just the tree -- see _scan_history.
+    _scan_history(bad, NAMES)
+
     # ONLY WHAT GIT TRACKS. "Published" means tracked, not present: the first
     # version scanned the whole tree and flagged a gitignored .pyc that can
     # never reach the remote. Scanning what will actually be pushed is both
     # correct and faster.
+    # HISTORY, NOT JUST THE TREE. Added 2026-09-21. The loop below scans
+    # `git ls-files` -- what the repo holds NOW. A public repo publishes its
+    # HISTORY and its NOTES, and a name removed from the tip stays readable in
+    # the commit that carried it. Measured the same day: the operator name sat
+    # in gates/16-chunk-it/capture.py at 7783bfa, already public since
+    # 2026-09-02, while this check reported the repo clean -- and a scan of
+    # origin/main..HEAD reported it clean too, because a range cannot see an
+    # ancestor. Enumerating every reachable BLOB is the only form that sees
+    # both, and it also catches notes refs, which live in no commit tree.
+    # Cost: 415 blobs in 0.2s, one `git cat-file --batch` process.
     for rel in sh("git -C %s ls-files" % REPO).splitlines():
         f = os.path.join(REPO, rel)
         if not os.path.isfile(f) or os.path.islink(f):

@@ -72,6 +72,35 @@ def private_name(r, home):
     git(r, "add", "doc.md")
 
 
+def history_name_removed_from_tip(r, home):
+    """The exact shape that went undetected: committed, then DELETED from the tip.
+
+    `git ls-files` sees a clean tree and the tip scan reports green, while the
+    blob stays readable in the commit that carried it. A public repo publishes
+    that commit. This is the planted form of a real 2026-09-21 finding.
+    """
+    p = os.path.join(r, "leaky.md")
+    open(p, "w").write("path /Users/acctzq7home/thing\n")
+    git(r, "add", "leaky.md")
+    git(r, "commit", "-m", "adds a path")
+    os.remove(p)
+    git(r, "add", "-A")
+    git(r, "commit", "-m", "removes it again — tip is now clean")
+
+
+def history_name_in_a_note(r, home):
+    """A git note carries no file path and lives in no commit tree.
+
+    A per-commit tree walk cannot see it. Only an all-blobs enumeration can,
+    and notes ARE pushed when the refspec includes them.
+    """
+    open(os.path.join(r, "f.md"), "w").write("ordinary\n")
+    git(r, "add", "f.md")
+    git(r, "commit", "-m", "ordinary commit")
+    git(r, "notes", "--ref=reviews", "add", "-m",
+        "reviewed by acctzq7home", "HEAD")
+
+
 def duplicate(r, home):
     os.makedirs(os.path.join(r, "hooks")); os.makedirs(os.path.join(r, "gates", "01-x"))
     open(os.path.join(r, "hooks", "h.py"), "w").write("x\n")
@@ -90,6 +119,12 @@ bait("BAIT N0 a clean repo with no install is SKIP (rc 2), not PASS", 2, "compar
 bait("BAIT N1 a dead symlink is red", 1, "dead symlink", dead_link)
 bait("BAIT N2 a .bak file is red", 1, "debris", debris)
 bait("BAIT N3 the account name in a tracked file is red", 1, "PUBLISHES A PRIVATE NAME", private_name)
+# The tip-clean/history-dirty shape. Without these two the check reports green
+# on a repo whose published history carries the name, which is what happened.
+bait("BAIT N3a a name REMOVED from the tip is still red in history", 1,
+     "HISTORY PUBLISHES A PRIVATE NAME", history_name_removed_from_tip)
+bait("BAIT N3b a name in a git NOTE is red (it lives in no commit tree)", 1,
+     "HISTORY PUBLISHES A PRIVATE NAME", history_name_in_a_note)
 bait("BAIT N4 a hook existing twice as plain files is red", 1, "DUPLICATE", duplicate)
 bait("BAIT N5 --remote with no host configured is SKIP, not clean", 2, "COYWOLF_REMOTE_HOST is unset",
      flags=("--remote",))

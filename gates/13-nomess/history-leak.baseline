@@ -1,0 +1,17 @@
+# KNOWN identity exposure already in the published history. PINNED and
+# SHRINK-ONLY: a blob listed here is reported but does not fail the build; any
+# blob NOT listed here fails immediately.
+#
+# This file exists so a known, already-public exposure does not refuse every
+# commit forever -- a gate that blocks everything gets bypassed, and then it
+# guards nothing. It is NOT an exemption: the count is printed loudly on every
+# run, and removing a line is the only legal direction.
+#
+# Both entries below are awaiting the operator's ruling (2026-09-21). Removing
+# them requires rewriting history and force-pushing a PUBLIC repo, which also
+# does not reliably purge the blob from GitHub without a support request. That
+# is his call, not this file's.
+#
+# blob-sha  what it is
+9b9ed796  gates/16-chunk-it/capture.py at 7783bfa (2026-09-02) — two home-dir path strings
+f2543739  a git note on 21322f9 — the refuter QUOTED the name while reporting this leak. NOT yet pushed; `git push origin refs/notes/reviews` would publish it.
