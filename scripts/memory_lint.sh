@@ -87,6 +87,27 @@ if [ "$longn" -gt 0 ]; then
   warnings+="  • ${longn} index line(s) exceed ${MAX_CHARS} chars — move detail into the linked topic file.\n"
 fi
 
+# 3a. LINK ACCOUNTING — every opener is well-formed or SKIPPED, and a skip is a
+#     finding. The dead-link check below searches for WELL-FORMED links, so a
+#     link truncated mid-path is invisible to it: it is not a dead link, it is
+#     not a link, and the pattern never fires. That is how the section 166 route
+#     stayed broken across two repairs.
+#     Rule: decision_private_ruling_02.
+#     Logic lives in link_scan.py because inline python with backticks breaks the
+#     shell no matter how the heredoc is quoted.
+SCAN="$HOME/.claude/scripts/link_scan.py"
+if [ -x "$SCAN" ] || [ -f "$SCAN" ]; then
+  scanout=$(python3 "$SCAN" "$INDEX" 2>/dev/null)
+  skipped=$(printf '%s' "$scanout" | head -1 | awk '{print $3+0}')
+  opens=$(printf '%s' "$scanout" | head -1 | awk '{print $1+0}')
+  if [ "${skipped:-0}" -gt 0 ]; then
+    warnings+="  • LINK SCAN SKIPPED ${skipped} of ${opens} opener(s) — the dead-link check did NOT examine them:\n"
+    while IFS= read -r l; do
+      [ -n "$l" ] && warnings+="      $l\n"
+    done <<< "$(printf '%s' "$scanout" | tail -n +2)"
+  fi
+fi
+
 # 3. Dead links: a (file.md) link whose target is missing → broken pointer.
 dead=$(grep -oE '\(([A-Za-z0-9_./-]+\.md)\)' "$INDEX" | tr -d '()' | sort -u \
   | while read -r f; do [ -f "$MEM_DIR/$f" ] || echo "$f"; done)

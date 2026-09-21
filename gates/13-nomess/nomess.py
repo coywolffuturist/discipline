@@ -75,6 +75,31 @@ def repo_sweep():
     for f in sorted(os.listdir("hooks")) if os.path.isdir("hooks") else []:
         if f.endswith(".py"):
             pairs.append((os.path.join("hooks", f), "~/.claude/hooks/" + f))
+    # The CODE forms install.sh copies into ~/.claude/scripts/. Added 2026-09-21
+    # after posterior.py was fixed here and the deployed skill-tree copy kept the
+    # bug. This list checked the conductor and the hooks and NOTHING ELSE, while
+    # install.sh deployed six more files — including the one the Stop hook
+    # actually executes. A drift check that covers less than the installer
+    # deploys reports green over the gap.
+    for src in ("gates/02-retrieval-economy/budget.py",
+                "gates/19-state-the-posterior/posterior.py",
+                "gates/18-adversarial-pass/adversary.py",
+                "scripts/session_gate.sh",
+                "scripts/memory_lint.sh"):
+        if os.path.exists(src):
+            pairs.append((src, "~/.claude/scripts/" + os.path.basename(src)))
+    # The deployed skill tree mirrors gates/ file-for-file. Derived from what is
+    # DEPLOYED, not from what the repo holds: a file added here but never
+    # installed is not drift, while a deployed file that has fallen behind is.
+    deployed_gates = os.path.expanduser("~/.claude/skills/discipline/gates")
+    for root, dirs, files in os.walk(deployed_gates):
+        # __pycache__ is a build product on both sides and drifts on every run.
+        dirs[:] = [x for x in dirs if x != "__pycache__"]
+        for f in sorted(files):
+            dst = os.path.join(root, f)
+            rel = os.path.join("gates", os.path.relpath(dst, deployed_gates))
+            if os.path.exists(rel):
+                pairs.append((rel, dst))
     # This check asserts the MAINTAINER's install-outward contract (CONTRACT.md): the
     # deployed copies on this machine were written from THIS clone by scripts/install.sh.
     # Only that script knows that, so it leaves a marker naming the clone it installed

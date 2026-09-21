@@ -46,6 +46,32 @@ if [ -f "$LEDGER" ]; then
   fi
 fi
 
+# ── Is the off-machine mirror of the record still current? ────────────────────────────
+# coywolf-mind holds 866 commits over 62 days and lived on ONE disk with zero
+# remotes until 2026-09-21. His ruling that day: the Den stores our memory
+# permanently, and nobody else can keep a well-ordered record of our growth.
+# A record on one disk is not permanent.
+#
+# The mirror is refreshed hourly by com.coywolf.mirror-mind. THE STAMP IS WRITTEN
+# ONLY AFTER A VERIFIED-GOOD UPDATE -- fsck clean AND head matching the Den -- so
+# its age is the age of the last RESTORABLE copy, not the last time the job ran.
+# That distinction is the whole point: a job that runs and produces a corrupt
+# mirror must not look healthy.
+STAMP="$HOME/.coywolf/state/mirror-mind.last_success"
+if [ -f "$STAMP" ]; then
+  AGE_H=$(( ( $(date -u +%s) - $(cat "$STAMP" 2>/dev/null || echo 0) ) / 3600 ))
+  if [ "$AGE_H" -gt 72 ]; then
+    OUT="${OUT}
+🗄️  MIND MIRROR IS STALE — last verified-good copy ${AGE_H}h ago (refreshes hourly).
+   The off-machine copy of 866 commits is drifting. Check:
+     launchctl list com.coywolf.mirror-mind ; tail ~/.coywolf/cache/mirror-mind.log"
+  fi
+else
+  OUT="${OUT}
+🗄️  MIND MIRROR HAS NEVER SUCCEEDED — no stamp at $STAMP.
+   The record has NO verified off-machine copy. This is the dead-disk exposure."
+fi
+
 # ── The two MCP levers — UNCONDITIONAL ──────────────────────────────────────────────
 # These print every session, with or without other findings, because the failure
 # mode is not ignorance. On 2026-08-19 two sessions each read files by hand for

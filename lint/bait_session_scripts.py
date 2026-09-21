@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""bait_session_scripts.py — scripts/session_gate.sh and scripts/memory_lint.sh, seen to fire.
+r"""bait_session_scripts.py — scripts/session_gate.sh and scripts/memory_lint.sh, seen to fire.
 
 Two SessionStart-class scripts. Neither can block anything, so the only way
 they fail is SILENTLY: saying nothing when there is something to say, or
@@ -109,6 +109,73 @@ bait("BAIT SG8 session_gate: ka123n is named as the outer loop", "ka123n" in g)
 bait("BAIT SG9 session_gate: the two MCP levers still print", "mind_grep" in g)
 bait("BAIT SG10 session_gate: it does NOT teach the retired ask-dont-pour bundle",
      "ask-dont-pour" not in g)
+
+# ── scripts/link_scan.py — memory_lint's link ACCOUNTING ──────────────────────
+# Split out of memory_lint.sh because inline python with backticks breaks the
+# shell however the heredoc is quoted. It belongs here rather than in a bait of
+# its own: it is the third script in this family, and the defect it exists for
+# is the one this file's docstring already names -- the dead-link check searches
+# for WELL-FORMED links, so a link truncated mid-path is invisible to it. Not a
+# dead link, not a link, the pattern never fires.
+LINK_SCAN = os.path.realpath(os.path.join(ROOT, "scripts", "link_scan.py"))
+
+
+def scan(body):
+    """Run the real script the way the shell runs it, and parse its accounting."""
+    with tempfile.NamedTemporaryFile("w", suffix=".md", delete=False, encoding="utf-8") as f:
+        f.write(body)
+        p = f.name
+    try:
+        out = subprocess.run([sys.executable, LINK_SCAN, p],
+                             capture_output=True, text=True).stdout
+    finally:
+        os.unlink(p)
+    head = out.strip().splitlines()[0].split()
+    return int(head[0]), int(head[1]), int(head[2]), out
+
+
+# CONTROL FIRST. A scanner that reports zero skips on a planted defect and one
+# that never read the file print the same three numbers.
+o, w, k, _ = scan("- [One](one.md) hook\n- [Two](sub/two.md) hook\n")
+bait("BAIT LS1 link_scan: CONTROL — a clean index has ZERO skipped",
+     (o, w, k) == (2, 2, 0), "opens=%d wf=%d skipped=%d" % (o, w, k))
+
+o, w, k, out = scan("- [Good](good.md)\n- [Cut](truncated-mid-pa\n")
+bait("BAIT LS2 link_scan: a TRUNCATED opener is counted as skipped", k == 1, "skipped=%d" % k)
+bait("BAIT LS3 link_scan: and the skip is NAMED, not just tallied",
+     "line 2" in out, out.replace("\n", " ")[:50])
+
+o, w, k, _ = scan("- [A](a.md)\n- [B](b.md)\n- [C](cut\n- [D](also-cut\n")
+bait("BAIT LS4 link_scan: the accounting balances, opens == wellformed + skipped",
+     o == w + k, "opens=%d wf=%d skipped=%d" % (o, w, k))
+
+# The router legitimately contains a literal [text](url) inside a code span, in
+# the entry about giving him bare URLs. Counting it would warn every session,
+# and a check that cries wolf every session gets skimmed.
+o, w, k, _ = scan("- `[text](url)` does not render\n- [Real](real.md)\n")
+bait("BAIT LS5 link_scan: a link inside a CODE SPAN is not counted",
+     (o, w, k) == (1, 1, 0), "opens=%d wf=%d skipped=%d" % (o, w, k))
+
+# Code spans are BLANKED, not deleted, so line numbers stay true to the file
+# the reader will actually open.
+_, _, k, out = scan("`[a](b)`\n\n\n- [Cut](truncated\n")
+bait("BAIT LS6 link_scan: line numbers survive code-span blanking",
+     k == 1 and "line 4" in out, out.replace("\n", " ")[:50])
+
+for label, argv in (("a missing file", [LINK_SCAN, "/nonexistent/nope.md"]),
+                    ("no argument", [LINK_SCAN])):
+    r2 = subprocess.run([sys.executable] + argv, capture_output=True, text=True)
+    bait("BAIT LS%d link_scan: %s prints 0 0 0 rather than crashing"
+         % (7 if "missing" in label else 8, label),
+         r2.returncode == 0 and r2.stdout.strip() == "0 0 0",
+         "rc=%d %r" % (r2.returncode, r2.stdout.strip()))
+
+# PINNED, not fixed: "well-formed" means a .md target, so a plain URL link is
+# reported as skipped. Right for the router, where every real entry points at a
+# page; wrong anywhere URL links are ordinary. Pinned so a change is noticed.
+o, w, k, _ = scan("- [Site](https://example.com) hook\n")
+bait("BAIT LS9 link_scan: PINNED — a URL target counts as skipped, not well-formed",
+     k == 1, "skipped=%d (pinned)" % k)
 
 print()
 if bad:

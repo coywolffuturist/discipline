@@ -22,10 +22,21 @@ mkdir -p ~/.claude/scripts
 # conductor's on-by-default block and the memory loader guard.
 cp scripts/session_gate.sh ~/.claude/scripts/
 cp scripts/memory_lint.sh  ~/.claude/scripts/
-chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh
+# link_scan.py is memory_lint.sh's link accounting, split out because inline
+# python with backticks breaks the shell however the heredoc is quoted. It was
+# created deployed-only on 2026-09-21 -- the exact failure the comment above
+# describes, repeated the same day, which is why the drift check now covers
+# every file this script deploys rather than the conductor and the hooks alone.
+cp scripts/link_scan.py    ~/.claude/scripts/
+chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh ~/.claude/scripts/link_scan.py
 cp gates/02-retrieval-economy/budget.py ~/.claude/scripts/
 cp gates/19-state-the-posterior/posterior.py ~/.claude/scripts/
 cp gates/18-adversarial-pass/adversary.py ~/.claude/scripts/
+# The deployed skill tree mirrors gates/ file-for-file and had NO WRITER: 18 .py
+# files sat under ~/.claude/skills/discipline/gates/ that install.sh never
+# copied. 17 happened to match; posterior.py had fallen behind and still carried
+# the ratchet bug after the repo was fixed. An unmaintained copy still looks current -- give it a writer or delete it, never leave it.
+rsync -a --delete --exclude '__pycache__' gates/ ~/.claude/skills/discipline/gates/
 chmod +x ~/.claude/scripts/budget.py ~/.claude/scripts/posterior.py ~/.claude/scripts/adversary.py
 for a in gates/*/[a-z]*-reader.md gates/*/[a-z]*-auditor.md gates/*/[a-z]*-adversary.md; do
   [ -e "$a" ] && cp "$a" ~/.claude/agents/
