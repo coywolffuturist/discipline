@@ -7,11 +7,17 @@
 # guards nothing. It is NOT an exemption: the count is printed loudly on every
 # run, and removing a line is the only legal direction.
 #
-# Both entries below are awaiting the operator's ruling (2026-09-21). Removing
+# CLOSED 2026-09-21: f2543739, a review note that quoted the account name while
+# reporting this very leak. Rewriting the note was not enough -- a notes commit
+# keeps its predecessor as a parent, so the old blob stayed reachable. The ref
+# was re-parented onto the copy already on the public remote, skipping the one
+# leaking commit. All 17 notes preserved, the REFUTED verdict unchanged, still a
+# fast-forward. That was the only LIVE exposure; what remains is static.
+#
+# The entry below is awaiting the operator's ruling (2026-09-21). Removing
 # them requires rewriting history and force-pushing a PUBLIC repo, which also
 # does not reliably purge the blob from GitHub without a support request. That
 # is his call, not this file's.
 #
 # blob-sha  what it is
 9b9ed796  gates/16-chunk-it/capture.py at 7783bfa (2026-09-02) — two home-dir path strings
-f2543739  a git note on 21322f9 — the refuter QUOTED the name while reporting this leak. NOT yet pushed; `git push origin refs/notes/reviews` would publish it.
