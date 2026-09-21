@@ -16,6 +16,13 @@ printf '%s\n' "$(pwd -P)" > ~/.claude/skills/discipline/.installed-from
 for h in hooks/*.py; do cp "$h" ~/.claude/hooks/; done
 # code forms the hooks and the shell both read (gate 02 budget, gate 19 calibration)
 mkdir -p ~/.claude/scripts
+# The two SessionStart/hygiene scripts. They were deployed-only until
+# 2026-09-21: present on the laptop, absent from this repo, so `install.sh`
+# could not restore them and a reimage would have silently removed the
+# conductor's on-by-default block and the memory loader guard.
+cp scripts/session_gate.sh ~/.claude/scripts/
+cp scripts/memory_lint.sh  ~/.claude/scripts/
+chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh
 cp gates/02-retrieval-economy/budget.py ~/.claude/scripts/
 cp gates/19-state-the-posterior/posterior.py ~/.claude/scripts/
 cp gates/18-adversarial-pass/adversary.py ~/.claude/scripts/

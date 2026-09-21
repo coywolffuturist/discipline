@@ -10,7 +10,18 @@ import json, os, shutil, subprocess, sys, tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOOK = os.path.join(ROOT, "hooks", "mark_build.py")
-FLAGS = ("coywolf-build-turn.flag", "coywolf-prior-owed.flag", "coywolf-posterior-owed.flag")
+# FLAG NAMES ARE SESSION-SCOPED: coywolf-<name>.<session>.flag. Flags became
+# one-per-consumer PER SESSION so one session could not consume another's; this
+# bait kept the old FLAT name and therefore stopped testing the hook entirely
+# (2026-09-21, found when four bait files failed at once). These payloads carry
+# no session_id, so _flags.sid() yields "nosession".
+SESSION = "nosession"
+
+
+def flagname(base):
+    return "coywolf-%s.%s.flag" % (base, SESSION)
+
+FLAGS = tuple(flagname(b) for b in ("build-turn", "prior-owed", "posterior-owed"))
 
 bad = []
 total = 0

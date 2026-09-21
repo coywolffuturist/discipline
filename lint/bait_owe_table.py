@@ -7,6 +7,17 @@ the two closers added when a suite leaves them out.
 """
 import json, os, shutil, subprocess, sys, tempfile
 
+# FLAG NAMES ARE SESSION-SCOPED: coywolf-<name>.<session>.flag. Flags became
+# one-per-consumer PER SESSION so one session could not consume another's; this
+# bait kept the old FLAT name and therefore stopped testing the hook entirely
+# (2026-09-21, found when four bait files failed at once). These payloads carry
+# no session_id, so _flags.sid() yields "nosession".
+SESSION = "nosession"
+
+
+def flagname(base):
+    return "coywolf-%s.%s.flag" % (base, SESSION)
+
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOOK = os.path.join(ROOT, "hooks", "owe_table.py")
 
@@ -23,7 +34,7 @@ def run(d, suite_text=None, flag=True):
         open(sp, "w").write(suite_text)
         env["DISCIPLINE_SUITE"] = sp
     if flag:
-        open(os.path.join(d, "coywolf-build-turn.flag"), "w").write("Bash\nWrite\n")
+        open(os.path.join(d, flagname("build-turn")), "w").write("Bash\nWrite\n")
     r = subprocess.run([sys.executable, HOOK], input="{}", capture_output=True, text=True, env=env, timeout=30)
     ctx = ""
     if r.stdout.strip():
@@ -48,7 +59,7 @@ bait("BAIT O1 no build flag: quiet", rc == 0 and ctx == "")
 rc, ctx = run(d)
 bait("BAIT O2 build flag: the table is owed, all 19 with no suite declared",
      rc == 0 and "all 19 gates" in ctx and "2 change(s)" in ctx, ctx[:36])
-bait("BAIT O3 the flag was consumed", not os.path.exists(os.path.join(d, "coywolf-build-turn.flag")))
+bait("BAIT O3 the flag was consumed", not os.path.exists(os.path.join(d, flagname("build-turn"))))
 rc, ctx = run(d, flag=False)
 bait("BAIT O4 a second Stop is quiet", ctx == "")
 rc, ctx = run(d, "01 ste\n07 think-3x\n12 completer\n19 state-the-posterior\n")
@@ -68,7 +79,7 @@ bait("BAIT O11 a byte-order mark does not swallow the first gate", "(05 07 12 19
 rc, ctx = run(d, "05\r\n07\r\n")
 bait("BAIT O12 CRLF line endings parse", "(05 07 12 19)" in ctx, ctx[:36])
 env_dir = tempfile.mkdtemp(prefix="owe-suite-dir-")
-open(os.path.join(d, "coywolf-build-turn.flag"), "w").write("Bash\n")
+open(os.path.join(d, flagname("build-turn")), "w").write("Bash\n")
 r = subprocess.run([sys.executable, HOOK], input="{}", capture_output=True, text=True,
                    env=dict(os.environ, TMPDIR=d, DISCIPLINE_SUITE=env_dir), timeout=30)
 bait("BAIT O13 DISCIPLINE_SUITE naming a directory means all 19, not a crash",

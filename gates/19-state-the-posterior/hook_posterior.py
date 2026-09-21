@@ -29,8 +29,36 @@ Own flag, per the rule in mark_build.py: a shared flag lets whichever Stop hook
 draws first silence the rest.
 """
 import json, os
+import sys as _sys
+try:
+    _HOOKDIR = os.path.dirname(os.path.abspath(__file__))
+except NameError:
+    _HOOKDIR = os.path.expanduser("~/.claude/hooks")
+for _d in (_HOOKDIR, os.path.expanduser("~/.claude/hooks")):
+    if _d not in _sys.path:
+        _sys.path.insert(0, _d)
+try:
+    import _flags
+except Exception:                     # D2: six hooks share this file. A missing or
+    class _flags:                     # half-saved copy must not rc=1 every hook, and
+        @staticmethod                 # must never crash ABOVE a once-per-turn guard.
+        def payload():
+            return {}
+        @staticmethod
+        def sid(_d):
+            return "nosession"
+        @staticmethod
+        def path(name, session):
+            return os.path.join(os.environ.get("TMPDIR", "/tmp"),
+                                "coywolf-%s.%s.flag" % (name, session))
+_DATA = _flags.payload()
+_SID = _flags.sid(_DATA)
 
-FLAG = os.path.join(os.environ.get("TMPDIR", "/tmp"), "coywolf-posterior-owed.flag")
+
+FLAG = _flags.path("posterior-owed", _SID)
+# D1 2026-09-20: a legacy shared-path fallback lived here and reintroduced the
+# exact cross-session theft this change exists to end -- and not once, but on
+# any later turn, in any session. No leftover ever existed. Removed.
 
 if not os.path.exists(FLAG):
     raise SystemExit(0)
