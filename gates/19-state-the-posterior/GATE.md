@@ -116,9 +116,19 @@ Then, when reality arrives: `posterior.py settle <id> right|wrong`.
 **Read the floor, never recall it.** `posterior.py floor` prints what may be
 asserted as fact, per door — and it MOVES. If HIGH claims (p ≥ 0.95) come back
 right less than 70% of the time over ≥10 settled claims, `posterior.py audit`
-raises that door's floor by 0.01. Being wrong costs the right to assert cheaply.
-A floor quoted from memory is exactly the failure this gate was split in two to
+reports that the door's floor should rise by 0.01, and `posterior.py audit
+--apply` raises it. Being wrong costs the right to assert cheaply. A floor
+quoted from memory is exactly the failure this gate was split in two to
 prevent.
+
+**`audit` reads; `audit --apply` writes.** Until 2026-09-21 there was no split,
+and the floor rose 0.01 on EVERY invocation while the rate was low — 0.95 to
+0.99 in one session on one unchanged body of evidence, four raises from four
+glances, against a config shared by every session on the machine. A move now
+requires MORE settled claims than justified the last move, so the same evidence
+cannot be charged twice. And above 80% the floor DECAYS by 0.01 per new batch,
+never below the default: a penalty with no route back is a tax, not an
+incentive.
 
 **The weak point, named rather than hidden.** A ledger nobody settles reads
 100% TBD forever. Claims older than 30 days become `stale_no_followup` and are

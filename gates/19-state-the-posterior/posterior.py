@@ -28,7 +28,8 @@ from the few claims someone bothered to close is not a success rate.
   posterior.py log <p> <door> <claim...>      door = reversible | one-way-door
   posterior.py settle <id> right|wrong [note]
   posterior.py floor [door]                   what may be asserted, per door
-  posterior.py audit
+  posterior.py audit                          read-only: what the floor WOULD do
+  posterior.py audit --apply                  the only form that moves the floor
   posterior.py stale
   posterior.py open
 """

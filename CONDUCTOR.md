@@ -204,7 +204,7 @@ GATE.md is authoritative over it.
 | Stop hook | `hooks/owe_table.py` | states that the completion table is owed, once per turn |
 | code | `gates/02-retrieval-economy/budget.py` | gate 02's ENFORCEMENT: one model run at a time across every session and machine, plus a daily call cap. Called BY the spender with the number it is about to spend, so it never guesses at command text — which is why gate 02's earlier hook form was deleted |
 | code + agent | `gates/18-adversarial-pass/adversary.py` · `continuous-adversary` | gate 18's CONTINUOUS form: woken with one artifact at a time as it lands, scores 0-10 how easily it breaks, and 7+ interrupts the builder. Catches a broken PROCESS, which the terminal refuter cannot see. Its score is carried onto the posterior it attacked, so the audit can cut this form on evidence if the score predicts nothing |
-| code | `gates/19-state-the-posterior/posterior.py` | gate 19's calibration ledger and gate 18's door dial: log the number, settle it later, and RAISE the floor when HIGH claims come back wrong. `posterior.py floor` is the only place the floor may be read from |
+| code | `gates/19-state-the-posterior/posterior.py` | gate 19's calibration ledger and gate 18's door dial: log the number, settle it later, and move the floor when the record earns it — UP when HIGH claims come back wrong, back DOWN when calibration recovers above 80%, never below the default. `posterior.py audit` only REPORTS; `audit --apply` is the only form that writes, and it will not charge the same settlements twice. `posterior.py floor` is the only place the floor may be read from |
 
 ## Known debt, recorded rather than hidden
 
