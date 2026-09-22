@@ -22,10 +22,20 @@ INDEX="$MEM_DIR/MEMORY.md"
 #
 #   function HSt(e,n="index"){ let {trimmed:r,lineCount:s,byteCount:g}=LXe(e),
 #       h = s>tL,      // tL = 200   LINES
-#       y = g>ez;      // ez = 25000 BYTES
+#       y = g>ez;      // ez = 25000 BYTES  <- TRIGGERS the branch
 #     if(!h&&!y) return {..., wasLineTruncated:h, wasByteTruncated:y};
 #     let w = h ? r.split("\n").slice(0,tL).join("\n") : r;
 #     if (w.length > ez) { let U = w.lastIndexOf("\n", ez); w = w.slice(0, U>0?U:ez); }
+#                ^^^^^^^^ JS string length = UTF-16 CODE UNITS, not bytes.
+#
+# THE TRIGGER AND THE CUT USE DIFFERENT UNITS. `byteCount > 25000` decides
+# whether to enter the branch; `w.length > 25000` decides whether anything is
+# actually removed. For UTF-8 text UTF-16 units are always <= bytes (ASCII is
+# 1:1, a 4-byte emoji is 2 units), so a byte gate can never fire LATE -- but on
+# this emoji-dense router it fires ~730 units early, and a file can trip the
+# byte trigger while nothing is cut at all. Both are reported below, because
+# the byte number explains the harness warning and the UTF-16 number is the
+# one that actually loses content.
 #
 # The byte cut is applied AFTER the line cut and trims back to a line boundary,
 # so it removes WHOLE ENTRIES too.
@@ -60,10 +70,17 @@ if [ "$nlines" -gt "$(( LOADER_LINES - 5 ))" ]; then
   warnings+="      Shortening a line does NOT help here — only REMOVING one does. Blank lines\n"
   warnings+="      cost a slot and carry nothing; reference_/project_ pointers belong in OVERFLOW.md.\n"
 fi
-if [ "$bytes" -gt "$(( LOADER_BYTES - 1500 ))" ]; then
-  warnings+="  • MEMORY.md is ${bytes} bytes of a ${LOADER_BYTES}-byte cap ($(( LOADER_BYTES - bytes )) left).\n"
-  warnings+="      This cap is SEPARATE from the line cap and cuts back to a line boundary, so it\n"
-  warnings+="      drops WHOLE entries. Here shortening long hooks IS the fix.\n"
+u16=$(python3 - "$INDEX" <<'PYU' 2>/dev/null || echo 0
+import io,sys
+print(len(io.open(sys.argv[1],encoding="utf-8").read().encode("utf-16-le"))//2)
+PYU
+)
+if [ "${u16:-0}" -gt "$(( LOADER_BYTES - 1500 ))" ] || [ "$bytes" -gt "$(( LOADER_BYTES - 1500 ))" ]; then
+  warnings+="  • MEMORY.md is ${u16} UTF-16 units and ${bytes} bytes, against a ${LOADER_BYTES} cap.\n"
+  warnings+="      The CUT is on UTF-16 units ($(( LOADER_BYTES - ${u16:-0} )) left); the BYTE count only\n"
+  warnings+="      decides whether the loader enters its truncation branch ($(( LOADER_BYTES - bytes )) left).\n"
+  warnings+="      This cap cuts back to a line boundary, so it drops WHOLE entries. Shortening\n"
+  warnings+="      long hooks IS the fix here — unlike the line cap, where only removal helps.\n"
 fi
 # 1b. THE DEAD ZONE — name the entries that are ALREADY past the cut. Size alone
 #     under-sells this: those lines cost bytes and deliver nothing, and a new
@@ -75,9 +92,10 @@ import io,sys
 p,lim,cap = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
 lines = io.open(p,encoding="utf-8").readlines()
 kept = lines[:lim]                      # the LINE cap, first
-run, cut = 0, len(kept)                 # then the BYTE cap, to a line boundary
+run, cut = 0, len(kept)                 # then the size cap, to a line boundary
 for i,l in enumerate(kept):
-    run += len(l.encode("utf-8"))
+    # UTF-16 code units: the unit `w.length > ez` actually compares.
+    run += len(l.encode("utf-16-le")) // 2
     if run > cap:
         cut = i
         break
