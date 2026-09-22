@@ -34,6 +34,64 @@ findings = []
 SKIP_DEPLOY = False
 
 
+def _scan_deployed_only(bad, note):
+    """REVERSE drift: files in the deployed surfaces with NO repo source.
+
+    The existing pair check asks "did the repo reach the deployed copy?". This
+    asks the opposite, and nothing did until 2026-09-22: a file living only in
+    ~/.claude is restorable by nobody, install.sh cannot carry what it does not
+    track, and the bait runner discovers forms through git -- so an untracked
+    artifact is invisible to the coverage gate too.
+
+    Four were found by accident in one day (link_scan.py, session_gate.sh,
+    memory_lint.sh, owe_ka123n.py). Enumerating found NINETEEN, one of which
+    install.sh CALLED without copying: skill_share.sh, the scrubber that keeps
+    private references out of published skills.
+
+    Known ones are pinned SHRINK-ONLY, reported loudly and not fatal, because a
+    check that refuses every commit gets bypassed and then guards nothing.
+    """
+    import glob, subprocess
+    SURFACES = [("~/.claude/hooks", ["hooks"]),
+                ("~/.claude/scripts", ["scripts", "gates/02-retrieval-economy",
+                                       "gates/19-state-the-posterior",
+                                       "gates/18-adversarial-pass"]),
+                ("~/.claude/agents", ["agents", "skills/agents"])]
+    try:
+        tracked = set(subprocess.run(["git", "-C", REPO, "ls-files"],
+                                     capture_output=True, text=True, timeout=60).stdout.split())
+    except Exception as e:
+        bad("repo", "DEPLOYED-ONLY SCAN FAILED (%s) — unrestorable files are UNCHECKED" % e)
+        return
+    if not tracked:
+        return
+    bl = os.path.join(os.path.dirname(os.path.abspath(__file__)), "deployed-only.baseline")
+    base = set()
+    try:
+        for line in io.open(bl, encoding="utf-8"):
+            line = line.strip()
+            if line and not line.startswith("#"):
+                base.add(line.split()[0])
+    except OSError:
+        pass
+    known = []
+    for dep, srcs in SURFACES:
+        d = os.path.expanduser(dep)
+        if not os.path.isdir(d):
+            continue
+        for f in sorted(os.listdir(d)):
+            if f.startswith(".") or f.endswith((".pyc", ".bak")) or os.path.isdir(os.path.join(d, f)):
+                continue
+            if any(os.path.join(sd, f) in tracked for sd in srcs):
+                continue
+            (known.append((dep, f)) if f in base
+             else bad("repo", "DEPLOYED-ONLY: %s/%s has no repo source — install.sh cannot "
+                              "restore it and no bait can see it" % (dep, f)))
+    if known:
+        note("%d known deployed-only file(s), pinned in deployed-only.baseline "
+             "(shrink-only, awaiting a ruling on where each belongs)" % len(known))
+
+
 def _scan_history(bad, NAMES):
     """Every blob reachable from every ref, including notes. See the caller."""
     import subprocess
@@ -244,6 +302,7 @@ def repo_sweep():
         NAMES.add(host.lower())
     # HISTORY AND NOTES, not just the tree -- see _scan_history.
     _scan_history(bad, NAMES)
+    _scan_deployed_only(bad, lambda m: print("      NOTE  " + m))
 
     # ONLY WHAT GIT TRACKS. "Published" means tracked, not present: the first
     # version scanned the whole tree and flagged a gitignored .pyc that can

@@ -101,6 +101,30 @@ def history_name_in_a_note(r, home):
         "reviewed by acctzq7home", "HEAD")
 
 
+def deployed_only(r, home):
+    """A file in a deployed surface with no repo source — unrestorable.
+
+    install.sh cannot carry what it does not track, and the bait runner finds
+    forms through git, so such a file is invisible to the coverage gate too.
+    Nineteen were found on 2026-09-22 after four turned up by accident.
+    """
+    d = os.path.join(home, ".claude", "hooks")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "orphan_hook_zz.py"), "w").write("# nothing tracks me\n")
+
+
+def deployed_only_but_sourced(r, home):
+    """CONTROL: same shape, but the repo DOES track a source for it."""
+    d = os.path.join(home, ".claude", "hooks")
+    os.makedirs(d, exist_ok=True)
+    open(os.path.join(d, "sourced_hook_zz.py"), "w").write("# tracked\n")
+    os.makedirs(os.path.join(r, "hooks"), exist_ok=True)
+    open(os.path.join(r, "hooks", "sourced_hook_zz.py"), "w").write("# tracked\n")
+    # add only -- `git ls-files` (what the check reads) sees staged files, and
+    # committing here trips the repo's own pre-commit hook.
+    git(r, "add", "hooks/sourced_hook_zz.py")
+
+
 def duplicate(r, home):
     os.makedirs(os.path.join(r, "hooks")); os.makedirs(os.path.join(r, "gates", "01-x"))
     open(os.path.join(r, "hooks", "h.py"), "w").write("x\n")
@@ -121,6 +145,12 @@ bait("BAIT N2 a .bak file is red", 1, "debris", debris)
 bait("BAIT N3 the account name in a tracked file is red", 1, "PUBLISHES A PRIVATE NAME", private_name)
 # The tip-clean/history-dirty shape. Without these two the check reports green
 # on a repo whose published history carries the name, which is what happened.
+bait("BAIT N22 a deployed file with NO repo source is red", 1,
+     "DEPLOYED-ONLY", deployed_only)
+# CONTROL: without this row N14 passes just as well against a check that flags
+# every deployed file, tracked or not.
+bait("BAIT N23 CONTROL a deployed file WITH a repo source is not flagged", 2,
+     "compared NOTHING", deployed_only_but_sourced)
 bait("BAIT N3a a name REMOVED from the tip is still red in history", 1,
      "HISTORY PUBLISHES A PRIVATE NAME", history_name_removed_from_tip)
 bait("BAIT N3b a name in a git NOTE is red (it lives in no commit tree)", 1,

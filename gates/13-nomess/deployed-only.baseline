@@ -1,0 +1,36 @@
+# KNOWN deployed-only files: they live in a surface install.sh deploys to, and
+# are tracked in NO repo on this machine. PINNED and SHRINK-ONLY — reported on
+# every run, not fatal, because a check that refuses every commit gets bypassed
+# and then guards nothing. A file NOT listed here fails immediately.
+#
+# Enumerated 2026-09-22 after four were found by accident in one day. A file
+# here is restorable by nobody: install.sh cannot carry what it does not track,
+# and the bait runner discovers forms through git, so these are invisible to the
+# coverage gate as well.
+#
+# Removing a line is the only legal direction, and each removal is a decision
+# about WHERE the file belongs — this repo, ~/.git-hooks, or deliberately
+# ephemeral. That is the operator's ruling, not this file's.
+#
+# Already closed: skill_share.sh (2026-09-22) — install.sh CALLED it without
+# copying it, and it is the scrubber that keeps private references out of
+# published skills.
+_hook_is_compact.py
+action_report.py
+beacon-researcher.md
+guard_bash_writes.sh
+guard_collision.sh
+guard_mind_first.py
+guard_null_absence.sh
+guard_null_absence.sh.bak-20260921
+guard_unread_probe.sh
+log_reads.sh
+mark_mind_used.py
+postcompact_distill.sh
+precompact_distill.sh
+record_extract.sh
+seed_mind_gate.py
+session_presence.sh
+TESTING.md
+unasked_brief.sh
+unasked_recall.py
