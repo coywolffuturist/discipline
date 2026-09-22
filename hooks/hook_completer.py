@@ -25,6 +25,11 @@ try:
 except Exception:
     raise SystemExit(0)
 
+# Loop guard (2026-09-22): when this Stop fires on a continuation that a Stop hook
+# itself forced, it must not fire again -- it re-read the same phrase and nagged forever.
+if d.get("stop_hook_active"):
+    raise SystemExit(0)
+
 path = d.get("transcript_path") or ""
 if not path or not os.path.exists(path):
     raise SystemExit(0)
