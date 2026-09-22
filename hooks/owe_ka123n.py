@@ -80,6 +80,10 @@ MSG = (
     "a wall of rows has been shown but not surfaced."
 )
 
+# 2026-09-22: silent when this turn already carries it -- a nag is shown to him
+# and forces another turn (see _flags.turn_text).
+if getattr(_flags, "already_said", lambda d, p: False)(_DATA, 'why it.s first'):
+    sys.exit(0)
 print(json.dumps({"suppressOutput": True,
                   "hookSpecificOutput": {"hookEventName": "Stop",
                                          "additionalContext": MSG}}))

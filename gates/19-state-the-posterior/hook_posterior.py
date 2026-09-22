@@ -91,6 +91,10 @@ try:
 except Exception:
     pass
 
+# 2026-09-22: silent when this turn already carries it -- a nag is shown to him
+# and forces another turn (see _flags.turn_text).
+if getattr(_flags, "already_said", lambda d, p: False)(_DATA, '(settled (right|wrong)|posterior[^\\n]{0,30}\\b0?\\.\\d\\d|\\b19\\b[^\\n]{0,20}(fired|blocked))'):
+    _sys.exit(0)
 print(json.dumps({"suppressOutput": True,
                   "hookSpecificOutput": {"hookEventName": "Stop",
                                          "additionalContext": msg}}))

@@ -135,6 +135,10 @@ msg = (
     "rendered, say so in one line and stop."
 ) % (n, scope)
 
+# 2026-09-22: silent when this turn already carries it -- a nag is shown to him
+# and forces another turn (see _flags.turn_text).
+if getattr(_flags, "already_said", lambda d, p: False)(_DATA, '\\bgates?\\b[^\\n]{0,40}\\b(fired|blocked|n/a)\\b'):
+    _sys.exit(0)
 print(json.dumps({"suppressOutput": True,
                   "hookSpecificOutput": {"hookEventName": "Stop",
                                          "additionalContext": msg}}))

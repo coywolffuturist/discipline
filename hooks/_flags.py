@@ -72,3 +72,65 @@ def sid(data):
 def path(name, session):
     """One flag per consumer PER SESSION."""
     return os.path.join(_TMP, "coywolf-%s.%s.flag" % (name, session))
+
+
+def turn_text(data):
+    """Everything I wrote since HIS last message, or "" -- never raises.
+
+    2026-09-22, his screenshot: "Do you think it's appropriate to post multiple
+    Ka123ns per pass? Do you think I need to see all the hooks?" A Stop hook's
+    additionalContext is SHOWN to him and forces another turn. Each nag produced
+    a re-render; three windows in a row, hook text on his screen. So a nag must
+    first check whether its element is ALREADY in this turn. HIS message = a
+    user entry whose text is not a harness tag (<task-notification>,
+    <system-reminder>) and not a tool result."""
+    try:
+        path = (data or {}).get("transcript_path") or ""
+        if not path or not os.path.exists(path):
+            return ""
+        with open(path, "rb") as f:
+            f.seek(0, os.SEEK_END)
+            f.seek(max(0, f.tell() - 400_000))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+        out = []
+        for ln in lines:
+            try:
+                e = json.loads(ln)
+            except Exception:
+                continue
+            msg = e.get("message") or {}
+            c = msg.get("content")
+            if e.get("type") == "user":
+                texts = [c] if isinstance(c, str) else [b.get("text", "") for b in (c or [])
+                                                        if isinstance(b, dict) and b.get("type") == "text"]
+                # Claude Code marks HIS messages origin.kind == "human"; injected ones carry
+                # isMeta. The tag test is the fallback for transcripts without the marker.
+                kind = (e.get("origin") or {}).get("kind")
+                if kind is not None:
+                    human = kind == "human" and not e.get("isMeta")
+                else:
+                    human = not e.get("isMeta") and any(t.strip() and not t.lstrip().startswith("<") for t in texts)
+                if human:
+                    out = []          # his message: the turn starts here
+            elif e.get("type") == "assistant" and isinstance(c, list):
+                out += [b.get("text", "") for b in c if isinstance(b, dict) and b.get("type") == "text"]
+        return "\n".join(out)
+    except Exception:
+        return ""
+
+
+def already_said(data, pattern):
+    """True when this turn's text already carries the element -- the nag stays silent."""
+    try:
+        text = turn_text(data)
+        hit = re.search(pattern, text, re.I | re.M) is not None
+        try:   # one line per decision, so "did the nag stay silent, and on what?" is checkable
+            import time
+            with open(os.path.join(_TMP, "coywolf-hook-silence.log"), "a") as f:
+                f.write("%s %s chars=%d keys=%s %s\n" % (time.strftime("%H:%M:%S"), "SILENT" if hit else "NAG",
+                        len(text), ",".join(sorted((data or {}).keys())), pattern[:24]))
+        except Exception:
+            pass
+        return hit
+    except Exception:
+        return False
