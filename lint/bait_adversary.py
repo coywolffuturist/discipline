@@ -81,7 +81,10 @@ with tempfile.TemporaryDirectory() as d:
     p = load(POST, "POSTERIOR_STATE", d)
     check("posterior refuses an out-of-range adversary score",
           refuses(p, p.log, "0.96", "reversible", ["a claim long enough to settle later"], 11))
-    p.log("0.96", "reversible", ["a claim long enough to settle later"], 8)
+    # Anchored since 2026-09-21: a HIGH claim needs a sha, path, page name or
+    # filename, because an unanchored one cannot be settled by anyone later.
+    p.log("0.96", "reversible",
+          ["a claim about adversary.py, long enough to settle later"], 8)
     check("posterior carries the adversary score onto the claim",
           any(e.get("adv") == 8 for e in p._entries()))
     check("the audit REFUSES to read a signal from too few scored claims",

@@ -26,6 +26,9 @@ outnumbers settled, `audit` REFUSES and says so, because a success rate computed
 from the few claims someone bothered to close is not a success rate.
 
   posterior.py log <p> <door> <claim...>      door = reversible | one-way-door
+                                              a HIGH claim needs an ANCHOR:
+                                              a sha, path, page name or filename
+                                              (--no-anchor to override, with reason)
   posterior.py settle <id> right|wrong [note]
   posterior.py floor [door]                   what may be asserted, per door
   posterior.py audit                          read-only: what the floor WOULD do
@@ -33,7 +36,7 @@ from the few claims someone bothered to close is not a success rate.
   posterior.py stale
   posterior.py open
 """
-import json, math, os, sys, time, uuid
+import json, math, os, re, sys, time, uuid
 
 STATE = os.path.expanduser(os.environ.get("POSTERIOR_STATE", "~/.claude/state"))
 LEDGER = os.path.join(STATE, "posteriors.jsonl")
@@ -54,6 +57,19 @@ RECOVER_RATE = 0.80
 # makes audit idempotent: the same evidence cannot be charged twice, and a
 # second agent running audit does not double-charge it either.
 MARK_KEY = "_settled_at_last_move"
+# An ANCHOR is anything a future reader can go and check: a commit sha, a path,
+# or a canon page name. MEASURED 2026-09-21 over 237 logged claims: a claim
+# carrying a page name settled 100% of the time, a sha 81%, a bare path 56%,
+# and a claim with only a number 39%. Of 122 claims still open, 100 carried NO
+# anchor at all -- not a backlog problem but a WRITER problem, because a claim
+# with nothing to check is unsettleable the moment its author forgets the
+# context, which is about an hour.
+ANCHOR_RE = re.compile(
+    r"\b[0-9a-f]{7,40}\b"                                        # commit sha
+    r"|(?:^|\s)[~/][\w./-]{3,}"                                   # a path
+    r"|\b(?:feedback|decision|incident|correction|reference|project)_[a-z0-9_]{4,}"  # canon page
+    r"|\b[\w./-]+\.(?:py|sh|md|json|ya?ml|txt|plist)\b"          # a named file
+)
 
 
 class Corrupt(Exception):
@@ -106,7 +122,7 @@ def _write(entries):
             f.write(json.dumps(e, sort_keys=True) + "\n")
 
 
-def log(p, door, claim, adv=None):
+def log(p, door, claim, adv=None, no_anchor=False):
     p = float(p)
     if not math.isfinite(p) or not 0 <= p <= 1:
         raise SystemExit("REFUSED: p must be a probability in 0..1, got %r" % (p,))
@@ -115,10 +131,24 @@ def log(p, door, claim, adv=None):
     claim = " ".join(claim).strip()
     if len(claim) < 10:
         raise SystemExit("REFUSED: name the claim — a number with no claim cannot be settled")
+    # The same rule, one rung up. A claim with no ANCHOR cannot be settled
+    # either: nobody can find what it refers to, including its author later.
+    # Only HIGH claims are gated, because those are the ones that move the
+    # floor -- a low-confidence note costs nothing if it goes unsettled.
+    anchored = bool(ANCHOR_RE.search(claim))
+    if p >= HIGH and not anchored and not no_anchor:
+        raise SystemExit(
+            "REFUSED: a HIGH claim needs an ANCHOR — a commit sha, a path, a canon page\n"
+            "  name or a filename. Without one nobody can settle it, including you in an\n"
+            "  hour. Measured: anchored HIGH claims settle 81-100%, unanchored ones 39%,\n"
+            "  and 100 of 122 open claims carry no anchor at all.\n"
+            "  Add the artifact, or pass --no-anchor if the claim is genuinely about an\n"
+            "  observation with no artifact (a delivery, a runtime behaviour).")
     if adv is not None:
         if isinstance(adv, bool) or not isinstance(adv, int) or not 0 <= adv <= 10:
             raise SystemExit("REFUSED: --adv must be an int 0..10 (adversary.py max <run>)")
-    rec = {"id": uuid.uuid4().hex[:8], "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
+    rec = {"anchored": anchored,
+           "id": uuid.uuid4().hex[:8], "ts": time.strftime("%Y-%m-%dT%H:%M:%S"),
            "p": p, "door": door, "claim": claim[:400], "outcome": "TBD",
            "session": os.environ.get("CLAUDE_SESSION_ID", "")[:8]}
     if adv is not None:
@@ -272,7 +302,13 @@ def main(argv):
                 i = rest.index("--adv")
                 adv = int(rest[i + 1])
                 del rest[i:i + 2]
-            print(log(argv[2], argv[3], rest, adv))
+            # The escape hatch is a FLAG, not a silent default: a claim with no
+            # artifact is legitimate (a delivery, a runtime behaviour), but the
+            # author has to say so rather than drift into it.
+            no_anchor = "--no-anchor" in rest
+            if no_anchor:
+                rest.remove("--no-anchor")
+            print(log(argv[2], argv[3], rest, adv, no_anchor))
         elif cmd == "settle":
             print(settle(argv[2], argv[3], " ".join(argv[4:])))
         elif cmd == "floor":

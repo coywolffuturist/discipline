@@ -51,7 +51,8 @@ with tempfile.TemporaryDirectory() as d:
 with tempfile.TemporaryDirectory() as d:
     p = load(d)
     for i in range(9):
-        p.log("0.96", "one-way-door", ["claim number %d about the substrate" % i])
+        p.log("0.96", "one-way-door",
+              ["claim number %d about substrate_%d.py" % (i, i)])
     for e in p._entries():
         p.settle(e["id"], "wrong")
     before = p._floors()["one-way-door"]
@@ -63,7 +64,8 @@ with tempfile.TemporaryDirectory() as d:
 with tempfile.TemporaryDirectory() as d:
     p = load(d)
     for i in range(10):
-        p.log("0.96", "one-way-door", ["claim number %d about the substrate" % i])
+        p.log("0.96", "one-way-door",
+              ["claim number %d about substrate_%d.py" % (i, i)])
     es = p._entries()
     for e in es[:4]:
         p.settle(e["id"], "right")
@@ -158,6 +160,51 @@ with tempfile.TemporaryDirectory() as d:
     seed(79, 1)
     p.audit(apply=True)
     check("never falls below DEFAULT_FLOORS", floor() == default, "floor=%.2f" % floor())
+
+
+# --- THE ANCHOR GATE. A claim nobody can find is a claim nobody can settle.
+# Measured 2026-09-21 over 237 logged claims: a page name settled 100% of the
+# time, a sha 81%, a bare path 56%, a bare number 39% -- and 100 of 122 open
+# claims carried no anchor at all. The gate applies to HIGH claims only,
+# because those are the ones that move the floor.
+with tempfile.TemporaryDirectory() as d:
+    p = load(d)
+
+    def logs(text, **kw):
+        try:
+            p.log(0.96, "reversible", text.split(), **kw)
+            return True
+        except SystemExit:
+            return False
+
+    # CONTROL FIRST. If nothing logs, every refusal below passes for the wrong
+    # reason.
+    check("CONTROL: an ANCHORED high claim still logs",
+          logs("the fix is in gates/19-state-the-posterior/posterior.py"))
+    check("a sha anchors it", logs("landed as commit 9b5181d after the gate ran"))
+    check("a canon page name anchors it",
+          logs("recorded in decision_the_classifier_decides_on_the_argmax"))
+    check("a bare filename anchors it", logs("bait_posterior.py now covers this"))
+
+    check("an UNANCHORED high claim is REFUSED",
+          not logs("everything works properly now and is fully verified"))
+    check("--no-anchor is the escape hatch, not a default",
+          logs("a real telegram message was delivered to him", no_anchor=True))
+
+    # The gate must not touch low claims: an unsettled hunch costs nothing.
+    before = len(p._entries())
+    try:
+        p.log(0.60, "reversible", "some vague low confidence hunch".split())
+        low_ok = True
+    except SystemExit:
+        low_ok = False
+    check("a LOW claim is NOT gated", low_ok and len(p._entries()) == before + 1)
+
+    # The flag is recorded, so the audit can report how much of the record is
+    # unanchored rather than leaving it invisible.
+    es = p._entries()
+    check("anchored is RECORDED on the row, not just enforced",
+          any("anchored" in e for e in es), "no anchored field on any row")
 
 
 # run_baits reads this exact shape: `BAIT: PASS n/m`, n == m >= 1. A bait that
