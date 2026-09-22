@@ -30,6 +30,29 @@ except Exception:
 if d.get("stop_hook_active"):
     raise SystemExit(0)
 
+# 2026-09-22: the transcript is written LATE, so its "last assistant text" is often an
+# OLDER reply -- this hook flagged words the current reply never said. The payload's
+# last_assistant_message is the reply that just ended; use it whenever present.
+_last = d.get("last_assistant_message")
+if isinstance(_last, dict):
+    _last = _last.get("content", _last.get("text", ""))
+if isinstance(_last, list):
+    _last = "\n".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in _last)
+if isinstance(_last, str) and _last.strip():
+    found = sorted({m.group(0).lower() for m in PHRASES.finditer(_last)})
+    if not found:
+        raise SystemExit(0)
+    print(json.dumps({"suppressOutput": True, "hookSpecificOutput": {
+        "hookEventName": "Stop",
+        "additionalContext":
+            "GATE 12 completer: this turn's output used deferral language (%s). "
+            "Classify it, do not just repeat it. A GENUINE blocker is data, a "
+            "decision or access you lack, or a distinct NEW build — name it AND "
+            "what would unblock it. \"It's big\" or \"end of session\" is stopping "
+            "short: finish it now. The user outcome is the whole job."
+            % ", ".join(repr(f) for f in found[:4])}}))
+    raise SystemExit(0)
+
 path = d.get("transcript_path") or ""
 if not path or not os.path.exists(path):
     raise SystemExit(0)
