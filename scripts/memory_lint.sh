@@ -17,23 +17,31 @@ set -u
 CC_PROJ="-$(printf %s "${HOME#/}" | tr / -)"
 MEM_DIR="$HOME/.claude/projects/$CC_PROJ/memory"
 INDEX="$MEM_DIR/MEMORY.md"
-# THE LOADER CUTS ON LINES, NOT BYTES. Measured 2026-09-21 from two harness
-# warnings in one session, both cutting at the SAME line:
+# THE LOADER HAS TWO CAPS, AND EITHER ONE CUTS. Read out of the CLI binary
+# (versions/2.1.278), not inferred:
 #
-#   "211 lines and 25KB ... 11 of 211 lines were cut off, starting at line 201"
-#   "201 lines (limit: 200) ... 1 of 201 lines were cut off, starting at line 201"
+#   function HSt(e,n="index"){ let {trimmed:r,lineCount:s,byteCount:g}=LXe(e),
+#       h = s>tL,      // tL = 200   LINES
+#       y = g>ez;      // ez = 25000 BYTES
+#     if(!h&&!y) return {..., wasLineTruncated:h, wasByteTruncated:y};
+#     let w = h ? r.split("\n").slice(0,tL).join("\n") : r;
+#     if (w.length > ez) { let U = w.lastIndexOf("\n", ez); w = w.slice(0, U>0?U:ez); }
 #
-# 211-200=11 and 201-200=1. Both fit a 200-LINE limit exactly, and the second
-# states the limit outright. The byte figures varied between them.
+# The byte cut is applied AFTER the line cut and trims back to a line boundary,
+# so it removes WHOLE ENTRIES too.
 #
-# This file previously modelled the cut as a byte budget (50000, then 26481,
-# then 24458 "lowest observed"), each number a smaller version of the same
-# error: measuring a quantity the loader does not use. That model gave ACTIVELY
-# WRONG advice -- "shorten your hooks" -- when shortening a line cannot remove
-# it. 28 hooks were trimmed for nothing before this was caught.
+# Two earlier models were both wrong, in opposite directions, and each gave
+# confidently wrong advice:
+#   bytes-only (50000 / 26481 / 24458) said "shorten your hooks" -- useless when
+#     the LINE cap binds, because a shorter line is still a line.
+#   lines-only (200) said "shortening a line DOES NOT HELP" -- false when the
+#     BYTE cap binds, where shortening is the only thing that helps.
+# The two harness message forms are the tell: "N lines and X KB" is emitted only
+# when BOTH caps blew; "N lines (limit: 200)" is the line cap alone.
 #
 # Rule: feedback_private_rule_16.
-LOADER_LINES=200     # stated by the harness, confirmed twice
+LOADER_LINES=200     # tL, from the binary
+LOADER_BYTES=25000   # ez, from the binary
 WARN_BYTES=22500     # fire well before the lowest observed cut
 MAX_CHARS=200      # harness guidance: index entries are one-line hooks
 
@@ -41,28 +49,42 @@ MAX_CHARS=200      # harness guidance: index entries are one-line hooks
 
 warnings=""
 
-# 1. LINE COUNT — the thing that actually causes truncated loads. Bytes were
-#    the old model and were wrong: the harness cuts at line 201 regardless of
-#    how long those lines are.
+# 1. BOTH CAPS. Either one truncates, and they need OPPOSITE remedies: a line
+#    over the line cap must be REMOVED, while bytes over the byte cap can be
+#    reduced by shortening. Saying only one of those is how this script gave
+#    wrong advice twice.
 nlines=$(wc -l < "$INDEX" | tr -d ' ')
 bytes=$(wc -c < "$INDEX" | tr -d ' ')
 if [ "$nlines" -gt "$(( LOADER_LINES - 5 ))" ]; then
   warnings+="  • MEMORY.md is ${nlines} lines; the loader takes the first ${LOADER_LINES}.\n"
-  warnings+="      SHORTENING A LINE DOES NOT HELP — only removing one does. Blank lines cost a\n"
-  warnings+="      slot and carry nothing; reference_/project_ pointers belong in OVERFLOW.md.\n"
+  warnings+="      Shortening a line does NOT help here — only REMOVING one does. Blank lines\n"
+  warnings+="      cost a slot and carry nothing; reference_/project_ pointers belong in OVERFLOW.md.\n"
+fi
+if [ "$bytes" -gt "$(( LOADER_BYTES - 1500 ))" ]; then
+  warnings+="  • MEMORY.md is ${bytes} bytes of a ${LOADER_BYTES}-byte cap ($(( LOADER_BYTES - bytes )) left).\n"
+  warnings+="      This cap is SEPARATE from the line cap and cuts back to a line boundary, so it\n"
+  warnings+="      drops WHOLE entries. Here shortening long hooks IS the fix.\n"
 fi
 # 1b. THE DEAD ZONE — name the entries that are ALREADY past the cut. Size alone
 #     under-sells this: those lines cost bytes and deliver nothing, and a new
 #     entry appended at the bottom lands among them. NAME them, so the warning
 #     is actionable rather than a tidiness nag that gets appended past.
-if [ "$nlines" -gt "$LOADER_LINES" ] && command -v python3 >/dev/null 2>&1; then
-  dz=$(python3 - "$INDEX" "$LOADER_LINES" <<'PYDZ'
+if { [ "$nlines" -gt "$LOADER_LINES" ] || [ "$bytes" -gt "$LOADER_BYTES" ]; } && command -v python3 >/dev/null 2>&1; then
+  dz=$(python3 - "$INDEX" "$LOADER_LINES" "$LOADER_BYTES" <<'PYDZ'
 import io,sys
-p,limit=sys.argv[1],int(sys.argv[2])
+p,lim,cap = sys.argv[1], int(sys.argv[2]), int(sys.argv[3])
+lines = io.open(p,encoding="utf-8").readlines()
+kept = lines[:lim]                      # the LINE cap, first
+run, cut = 0, len(kept)                 # then the BYTE cap, to a line boundary
+for i,l in enumerate(kept):
+    run += len(l.encode("utf-8"))
+    if run > cap:
+        cut = i
+        break
 dead=[]
-for i,ln in enumerate(io.open(p,encoding="utf-8"),start=1):
-    if i > limit and ln.startswith(">"):
-        t=ln.split("](")[0].replace("> ","").lstrip("*[ ")
+for l in lines[cut:]:
+    if l.startswith(">"):
+        t=l.split("](")[0].replace("> ","").lstrip("*[ ")
         dead.append(t[:58])
 print(len(dead))
 for t in dead[:6]: print("      - "+t)
