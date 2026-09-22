@@ -28,7 +28,14 @@ cp scripts/memory_lint.sh  ~/.claude/scripts/
 # describes, repeated the same day, which is why the drift check now covers
 # every file this script deploys rather than the conductor and the hooks alone.
 cp scripts/link_scan.py    ~/.claude/scripts/
-chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh ~/.claude/scripts/link_scan.py
+# skill_share.sh is CALLED below (line ~45) but was never COPIED, and was
+# tracked in no repo at all -- so on a fresh machine this script invoked a
+# file that did not exist. It is the scrubber: it strips machine-specific
+# blocks, private memory slugs, wikilinks and private paths out of the skill
+# masters to make the shareable variants. Losing it loses the thing that
+# keeps published skills free of his private references.
+cp scripts/skill_share.sh  ~/.claude/scripts/
+chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh ~/.claude/scripts/link_scan.py ~/.claude/scripts/skill_share.sh
 cp gates/02-retrieval-economy/budget.py ~/.claude/scripts/
 cp gates/19-state-the-posterior/posterior.py ~/.claude/scripts/
 cp gates/18-adversarial-pass/adversary.py ~/.claude/scripts/
