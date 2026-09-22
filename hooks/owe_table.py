@@ -12,7 +12,7 @@ cannot loop.
 THE SUITE IS DECLARED, NOT ASSUMED (2026-09-02). Another setup adopts the
 gates it chooses. It writes them, one per line, to ~/.claude/discipline-suite
 (or the file DISCIPLINE_SUITE names). This hook then asks for THOSE rows and
-only those. With no file, the suite is all 19. Gates 12 (completer) and 19
+only those. With no file, the suite is every gate on disk (counted, not typed). Gates 12 (completer) and 19
 (state-the-posterior) are always owed, because a suite without its two closers
 cannot be run to completion; the hook adds them and says so.
 """
@@ -51,12 +51,37 @@ SUITE = os.environ.get("DISCIPLINE_SUITE") or os.path.expanduser("~/.claude/disc
 CLOSERS = ("12", "19")
 
 
+def gate_count():
+    """COUNT THE DIRECTORIES. Never type this number.
+
+    It was hardcoded "19" and went stale the day gate 00 regime-routing shipped
+    (2026-09-07), so every table this hook asked for was 19 of 20 gates and the
+    agent repeated the wrong count back for a whole session. The comment further
+    down already records this same value drifting three times in three turns. A
+    restatement of canon is a second copy, and second copies drift -- so derive it.
+
+    Returns None rather than raising: a gate that raises blocks everything, and
+    a missing gates directory must not break every Stop hook on the machine.
+    """
+    import glob
+    for root in (os.path.expanduser("~/.claude/skills/discipline/gates"),
+                 os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "gates")):
+        try:
+            n = len([d for d in glob.glob(os.path.join(root, "[0-9][0-9]-*"))
+                     if os.path.isdir(d)])
+            if n:
+                return n
+        except OSError:
+            continue
+    return None
+
+
 def suite():
     """Gate numbers declared, two digits each, or None for the whole suite."""
     try:
         # utf-8-sig, so a byte-order mark cannot hide the first gate. A reviewer
         # showed a BOM'd "19" reading as "no suite" and a BOM'd "05" vanishing.
-        # An unreadable path (a directory, a permission) is "no file": all 19.
+        # An unreadable path (a directory, a permission) is "no file": every gate.
         text = open(SUITE, encoding="utf-8-sig").read()
     except (OSError, ValueError):
         return None
@@ -92,7 +117,11 @@ except Exception:
 # (stale gate count, missing forbidden words, false turn attribution).
 s = suite()
 if s is None:
-    scope = "Render all 19 gates"
+    # NOT `n` -- that is the change count set above and printed below. Naming
+    # this one `n` clobbered it, so the hook reported the GATE count as the
+    # number of changes. Caught by bait O2, which asserts both in one row.
+    gates_n = gate_count()
+    scope = ("Render all %d gates" % gates_n) if gates_n else "Render every gate in the suite"
 else:
     nums, added = s
     scope = "Render the %d gates of your declared suite (%s)" % (len(nums), " ".join(nums))
