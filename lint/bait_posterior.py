@@ -188,6 +188,25 @@ with tempfile.TemporaryDirectory() as d:
 
     check("an UNANCHORED high claim is REFUSED",
           not logs("everything works properly now and is fully verified"))
+
+    # THE FOUR CASES A REFUTER BROKE, 2026-09-21. Hex alone is not a sha: a
+    # balance and an English word both passed, while a real page name and a
+    # relative repo path were refused. The gate was wrong in BOTH directions.
+    check("a bare BALANCE is not a sha",
+          not logs("the treasury holds 1043210.55 USDC and nothing else"))
+    check("an English word spelled from a-f is not a sha",
+          not logs("every trace of the old rail was effaced before the cutover"))
+    check("a capture_ page name IS an anchor",
+          logs("the command is on page capture_20260101000000_1000000000000000001"))
+    check("a RELATIVE repo path IS an anchor",
+          logs("the gate now lives in gates/19-state-the-posterior and is wired in"))
+    check("prose with a slash is NOT a path",
+          not logs("we shipped it and/or reverted it, unclear which"))
+
+    # The anchor must be in the text that is STORED, not merely in what was typed.
+    long_unanchored = ("padding " * 60) + "landed as commit 9b5181d"
+    check("an anchor PAST the 400-char store cut does not count",
+          not logs(long_unanchored), "anchor sits beyond claim[:400]")
     check("--no-anchor is the escape hatch, not a default",
           logs("a real telegram message was delivered to him", no_anchor=True))
 

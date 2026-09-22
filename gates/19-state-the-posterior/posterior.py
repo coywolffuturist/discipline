@@ -65,10 +65,23 @@ MARK_KEY = "_settled_at_last_move"
 # with nothing to check is unsettleable the moment its author forgets the
 # context, which is about an hour.
 ANCHOR_RE = re.compile(
-    r"\b[0-9a-f]{7,40}\b"                                        # commit sha
-    r"|(?:^|\s)[~/][\w./-]{3,}"                                   # a path
-    r"|\b(?:feedback|decision|incident|correction|reference|project)_[a-z0-9_]{4,}"  # canon page
-    r"|\b[\w./-]+\.(?:py|sh|md|json|ya?ml|txt|plist)\b"          # a named file
+    # A COMMIT SHA. Hex alone is not enough: a refuter showed `1043210` (a
+    # treasury balance) and `effaced` (an English word spelled from a-f) both
+    # passing as shas. A real object id mixes digits AND letters, so require
+    # both. This is the class the gate exists to refuse -- a bare number.
+    r"\b(?=[0-9a-f]{7,40}\b)(?=[0-9a-f]*[0-9])(?=[0-9a-f]*[a-f])[0-9a-f]{7,40}\b"
+    # A CANON PAGE. `capture_` and `HANDOFF-` were missing, so the most
+    # checkable anchor in the estate -- a real page name -- was REFUSED.
+    r"|\b(?:feedback|decision|incident|correction|reference|project|capture)_[a-z0-9_]{4,}"
+    r"|\bHANDOFF-\d{4}-\d{2}-\d{2}"
+    # A PATH. Absolute, or RELATIVE: `gates/19-state-the-posterior` was refused
+    # because the old branch demanded a leading ~ or /, and that is the natural
+    # way to write a repo path. A segment must carry a digit, dot, dash or
+    # underscore so that ordinary prose like "and/or" is not an anchor.
+    r"|(?:^|\s)[~/][\w./-]{3,}"
+    r"|\b[\w.-]+/[\w.-]*[\d._-][\w./-]*"
+    # A NAMED FILE.
+    r"|\b[\w./-]+\.(?:py|sh|md|json|ya?ml|txt|plist)\b"
 )
 
 
@@ -135,7 +148,11 @@ def log(p, door, claim, adv=None, no_anchor=False):
     # either: nobody can find what it refers to, including its author later.
     # Only HIGH claims are gated, because those are the ones that move the
     # floor -- a low-confidence note costs nothing if it goes unsettled.
-    anchored = bool(ANCHOR_RE.search(claim))
+    # Check the anchor on the TEXT THAT WILL BE STORED, not the full claim. A
+    # refuter logged a 460-char claim whose anchor sat past the 400-char cut:
+    # the row recorded "anchored": true with no anchor anywhere in it, which is
+    # the exact unsettleable state the flag exists to prevent.
+    anchored = bool(ANCHOR_RE.search(claim[:400]))
     if p >= HIGH and not anchored and not no_anchor:
         raise SystemExit(
             "REFUSED: a HIGH claim needs an ANCHOR — a commit sha, a path, a canon page\n"
