@@ -96,6 +96,40 @@ bait("BAIT O13 DISCIPLINE_SUITE naming a directory means the whole suite, not a 
 shutil.rmtree(env_dir, ignore_errors=True)
 shutil.rmtree(d, ignore_errors=True)
 
+# ── owe_ka123n.py — the sibling Stop hook ────────────────────────────────────
+# Adopted into the repo 2026-09-22. It had been DEPLOYED-ONLY on both machines:
+# written straight into ~/.claude/hooks, never tracked, so install.sh could not
+# restore it and the den install registered a path with no file behind it.
+# Baited here rather than in a file of its own: same shape as owe_table -- its
+# own flag, written by mark_build, consumed once per turn.
+KA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "hooks", "owe_ka123n.py")
+
+
+def run_ka(tmp, flag=True):
+    import subprocess, json as _j
+    sid = "ka-" + os.urandom(3).hex()
+    env = dict(os.environ, TMPDIR=tmp)
+    if flag:
+        open(os.path.join(tmp, "coywolf-ka123n-owed.%s.flag" % sid), "w").write("1")
+    r = subprocess.run(["python3", KA], input=_j.dumps({"session_id": sid}),
+                       capture_output=True, text=True, env=env, timeout=30)
+    return r.returncode, (r.stdout or "") + (r.stderr or ""), sid
+
+
+d2 = tempfile.mkdtemp(prefix="ka123n-bait-")
+# CONTROL FIRST: no flag means silence. Without this row every assertion below
+# passes just as well against a hook that always speaks.
+rc, out, _ = run_ka(d2, flag=False)
+bait("BAIT K1 no ka123n flag: silent", rc == 0 and out.strip() == "", out[:40])
+
+rc, out, sid = run_ka(d2)
+bait("BAIT K2 with the flag: the window is owed", rc == 0 and "KA123N" in out, out[:40])
+bait("BAIT K3 it says the window goes LAST", "goes LAST" in out, out[:40])
+bait("BAIT K4 emitted as additionalContext, not bare text", '"additionalContext"' in out)
+bait("BAIT K5 the flag is CONSUMED, so it cannot fire twice in a turn",
+     not os.path.exists(os.path.join(d2, "coywolf-ka123n-owed.%s.flag" % sid)))
+shutil.rmtree(d2, ignore_errors=True)
+
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
 for l in bad:
     print("   failed: %s" % l)
