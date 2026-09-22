@@ -33,7 +33,7 @@ from the few claims someone bothered to close is not a success rate.
   posterior.py floor [door]                   what may be asserted, per door
   posterior.py audit                          read-only: what the floor WOULD do
   posterior.py audit --apply                  the only form that moves the floor
-  posterior.py stale
+  posterior.py stale [--apply]               counts; --apply retires them
   posterior.py open
 """
 import json, math, os, re, sys, time, uuid
@@ -193,19 +193,35 @@ def settle(pid, outcome, note=""):
     return "%s settled %s" % (pid, outcome)
 
 
-def mark_stale():
-    es, now, n = _entries(), time.time(), 0
+def _is_stale(e):
+    """Age-out test, shared by the counter and the reporter so they cannot drift."""
+    try:
+        return (time.time() - time.mktime(
+            time.strptime(e["ts"], "%Y-%m-%dT%H:%M:%S"))) > STALE_DAYS * 86400
+    except Exception:
+        return False
+
+
+def mark_stale(apply=False):
+    """COUNT the stale claims; retire them only when apply=True.
+
+    A refuter reproduced this: `audit()` called mark_stale() unconditionally, so
+    a DOCUMENTED read-only audit retired three open claims by looking at them.
+    They vanish from `open`, which means the glance removes from the list the
+    very thing a reader would have gone and settled.
+
+    The audit-that-writes defect was moved from posterior-config.json to
+    posteriors.jsonl and declared fixed. It was not fixed; it changed file.
+    """
+    es, n = _entries(), 0
     for e in es:
         if e.get("outcome") != "TBD":
             continue
-        try:
-            age = now - time.mktime(time.strptime(e["ts"], "%Y-%m-%dT%H:%M:%S"))
-        except Exception:
-            continue
-        if age > STALE_DAYS * 86400:
-            e["outcome"] = "stale_no_followup"
+        if _is_stale(e):
             n += 1
-    if n:
+            if apply:
+                e["outcome"] = "stale_no_followup"
+    if n and apply:
         _write(es)
     return n
 
@@ -215,8 +231,13 @@ def audit(apply=False):
 
     An audit must never write: the previous version mutated global
     state on every invocation, so looking at the calibration changed it.
+
+    That claim was only half true when first written. The FLOOR stopped moving
+    on a read, but mark_stale() still retired aged-out claims on every call, so
+    a read-only audit silently closed open rows. Both writes are now gated.
     """
-    mark_stale()
+    # Counts; retires only under --apply. See mark_stale's docstring.
+    n_stale = mark_stale(apply=apply)
     es = _entries()
     lines, changed = [], {}
     floors = _floors()
@@ -227,7 +248,13 @@ def audit(apply=False):
     for door in DOORS:
         d = [e for e in es if e.get("door") == door and e.get("p", 0) >= HIGH]
         settled = [e for e in d if e.get("outcome") in ("right", "wrong")]
-        stale = [e for e in d if e.get("outcome") == "stale_no_followup"]
+        # Staleness is DERIVED here, not read from the persisted mark. Gating
+        # mark_stale on --apply meant a read-only audit saw zero stale rows and
+        # the "more stale than settled" refusal below went silent -- a safety
+        # guard disabled as a side effect of fixing a write. Caught by its own
+        # bait. Compute it, so the read and the write agree.
+        stale = [e for e in d if e.get("outcome") == "stale_no_followup"
+                 or (e.get("outcome") == "TBD" and _is_stale(e))]
         openn = [e for e in d if e.get("outcome") == "TBD"]
         if len(stale) > len(settled):
             lines.append("%-13s REFUSED to score: %d stale vs %d settled. A rate computed from "
@@ -335,7 +362,17 @@ def main(argv):
         elif cmd == "audit":
             print(audit(apply=("--apply" in argv)))
         elif cmd == "stale":
-            print("%d claim(s) marked stale_no_followup" % mark_stale())
+            # Same read/apply idiom as audit: retiring a claim is destructive,
+            # and the message must say what ACTUALLY happened. Printing
+            # "marked" after a counting call is a lie in the output.
+            _ap = "--apply" in argv
+            _n = mark_stale(apply=_ap)
+            if _ap:
+                print("%d claim(s) marked stale_no_followup" % _n)
+            else:
+                print("%d claim(s) WOULD be marked stale_no_followup "
+                      "(older than %d days). Re-run `stale --apply` to retire them."
+                      % (_n, STALE_DAYS))
         elif cmd == "open":
             es = [e for e in _entries() if e.get("outcome") == "TBD"]
             print("%d unsettled claim(s)" % len(es))

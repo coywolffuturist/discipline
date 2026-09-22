@@ -219,8 +219,33 @@ with tempfile.TemporaryDirectory() as d:
         low_ok = False
     check("a LOW claim is NOT gated", low_ok and len(p._entries()) == before + 1)
 
+    # A READ-ONLY AUDIT MUST NOT RETIRE ANYTHING. A refuter reproduced three
+    # open claims being closed as stale_no_followup by a documented read-only
+    # audit -- the glance removed from the list the very thing a reader would
+    # have gone and settled.
+    import json as _j, io as _io, time as _t
+    old_ts = _t.strftime("%Y-%m-%dT%H:%M:%S", _t.localtime(_t.time() - 400 * 86400))
+    rows = [{"id": "st%d" % i, "p": 0.98, "door": "reversible", "outcome": "TBD",
+             "claim": "an aged claim about stale_%d.py" % i, "ts": old_ts}
+            for i in range(3)]
+    _io.open(p.LEDGER, "w").write("".join(_j.dumps(r) + "\n" for r in rows))
+    open_before = sum(1 for e in p._entries() if e.get("outcome") == "TBD")
+    p.audit(apply=False)
+    open_after = sum(1 for e in p._entries() if e.get("outcome") == "TBD")
+    check("a READ-ONLY audit retires NOTHING",
+          open_before == 3 and open_after == 3,
+          "open %d -> %d" % (open_before, open_after))
+    # CONTROL: --apply must still retire, or the row above passes because the
+    # staleness logic is simply broken.
+    p.audit(apply=True)
+    check("CONTROL: audit --apply DOES retire the stale ones",
+          sum(1 for e in p._entries() if e.get("outcome") == "TBD") == 0,
+          "still open: %d" % sum(1 for e in p._entries() if e.get("outcome") == "TBD"))
+
     # The flag is recorded, so the audit can report how much of the record is
-    # unanchored rather than leaving it invisible.
+    # unanchored rather than leaving it invisible. Log one THROUGH log(), since
+    # the block above wrote raw rows straight to the ledger.
+    p.log(0.96, "reversible", "a fresh anchored claim about posterior.py".split())
     es = p._entries()
     check("anchored is RECORDED on the row, not just enforced",
           any("anchored" in e for e in es), "no anchored field on any row")
