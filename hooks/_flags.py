@@ -119,10 +119,24 @@ def turn_text(data):
         return ""
 
 
+def _last_message(data):
+    """The payload's last_assistant_message as text. The transcript is written LATE:
+    live 2026-09-22 it held 115 chars of a finished turn, so all three nags fired
+    on a reply that carried the window and the posterior. The payload does not lag."""
+    m = (data or {}).get("last_assistant_message")
+    if isinstance(m, str):
+        return m
+    if isinstance(m, dict):
+        m = m.get("content", m.get("text", ""))
+    if isinstance(m, list):
+        return "\n".join(b.get("text", "") if isinstance(b, dict) else str(b) for b in m)
+    return str(m or "")
+
+
 def already_said(data, pattern):
     """True when this turn's text already carries the element -- the nag stays silent."""
     try:
-        text = turn_text(data)
+        text = turn_text(data) + "\n" + _last_message(data)
         hit = re.search(pattern, text, re.I | re.M) is not None
         try:   # one line per decision, so "did the nag stay silent, and on what?" is checkable
             import time
