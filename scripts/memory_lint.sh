@@ -17,24 +17,23 @@ set -u
 CC_PROJ="-$(printf %s "${HOME#/}" | tr / -)"
 MEM_DIR="$HOME/.claude/projects/$CC_PROJ/memory"
 INDEX="$MEM_DIR/MEMORY.md"
-# THE LOADER REACH, MEASURED — not guessed. 2026-09-21: the harness reported
-# "211 lines and 28.3KB. Only part of it was loaded: 17 of 211 lines were cut
-# off, starting at line 195", and head -194 of that file was 26,481 BYTES.
-# This constant was 50000 with a comment claiming truncation began at ~59KB.
-# That was wrong by 2x, so the guard stayed silent while MEMORY.md sat at
-# 34,842 B — 8KB deep in the dead zone — and every index line written on
-# 2026-09-20 was never loaded. A guard calibrated to the wrong constant is
-# worse than no guard: it certifies clean.
-# MEASURED TWICE, HOURS APART, AND THEY DISAGREE:
-#   28.3KB file -> 26,481 B loaded (cut at line 195)
-#   25.0KB file -> 24,458 B loaded (cut at line 201)
-# A 2,023 B spread (7.6%). So the reach is NOT a byte constant — it behaves
-# like a TOKEN budget, and emoji-dense hooks cost more tokens per byte. The
-# first version of this fix hardcoded 26481 from ONE observation, which is the
-# same error as the 50000 it replaced, just smaller. Use the LOWEST observed
-# reach and keep headroom. Re-measure whenever the harness reports a cut: the
-# warning names the line, and head -<line-1> | wc -c is the new datapoint.
-LOADER_REACH=24458   # lowest OBSERVED, 2026-09-21 — not a guarantee
+# THE LOADER CUTS ON LINES, NOT BYTES. Measured 2026-09-21 from two harness
+# warnings in one session, both cutting at the SAME line:
+#
+#   "211 lines and 25KB ... 11 of 211 lines were cut off, starting at line 201"
+#   "201 lines (limit: 200) ... 1 of 201 lines were cut off, starting at line 201"
+#
+# 211-200=11 and 201-200=1. Both fit a 200-LINE limit exactly, and the second
+# states the limit outright. The byte figures varied between them.
+#
+# This file previously modelled the cut as a byte budget (50000, then 26481,
+# then 24458 "lowest observed"), each number a smaller version of the same
+# error: measuring a quantity the loader does not use. That model gave ACTIVELY
+# WRONG advice -- "shorten your hooks" -- when shortening a line cannot remove
+# it. 28 hooks were trimmed for nothing before this was caught.
+#
+# Rule: feedback_private_rule_16.
+LOADER_LINES=200     # stated by the harness, confirmed twice
 WARN_BYTES=22500     # fire well before the lowest observed cut
 MAX_CHARS=200      # harness guidance: index entries are one-line hooks
 
@@ -42,23 +41,27 @@ MAX_CHARS=200      # harness guidance: index entries are one-line hooks
 
 warnings=""
 
-# 1. Total size — the thing that actually causes truncated loads.
+# 1. LINE COUNT — the thing that actually causes truncated loads. Bytes were
+#    the old model and were wrong: the harness cuts at line 201 regardless of
+#    how long those lines are.
+nlines=$(wc -l < "$INDEX" | tr -d ' ')
 bytes=$(wc -c < "$INDEX" | tr -d ' ')
-if [ "$bytes" -gt "$WARN_BYTES" ]; then
-  warnings+="  • MEMORY.md is ${bytes} bytes (loader reaches ~${LOADER_REACH}). Move reference_/project_ lines to OVERFLOW.md.\n"
+if [ "$nlines" -gt "$(( LOADER_LINES - 5 ))" ]; then
+  warnings+="  • MEMORY.md is ${nlines} lines; the loader takes the first ${LOADER_LINES}.\n"
+  warnings+="      SHORTENING A LINE DOES NOT HELP — only removing one does. Blank lines cost a\n"
+  warnings+="      slot and carry nothing; reference_/project_ pointers belong in OVERFLOW.md.\n"
 fi
 # 1b. THE DEAD ZONE — name the entries that are ALREADY past the cut. Size alone
 #     under-sells this: those lines cost bytes and deliver nothing, and a new
 #     entry appended at the bottom lands among them. NAME them, so the warning
 #     is actionable rather than a tidiness nag that gets appended past.
-if [ "$bytes" -gt "$LOADER_REACH" ] && command -v python3 >/dev/null 2>&1; then
-  dz=$(python3 - "$INDEX" "$LOADER_REACH" <<'PYDZ'
+if [ "$nlines" -gt "$LOADER_LINES" ] && command -v python3 >/dev/null 2>&1; then
+  dz=$(python3 - "$INDEX" "$LOADER_LINES" <<'PYDZ'
 import io,sys
-p,reach=sys.argv[1],int(sys.argv[2])
-run=0; dead=[]
-for ln in io.open(p,encoding="utf-8"):
-    run += len(ln.encode("utf-8"))
-    if run > reach and ln.startswith(">"):
+p,limit=sys.argv[1],int(sys.argv[2])
+dead=[]
+for i,ln in enumerate(io.open(p,encoding="utf-8"),start=1):
+    if i > limit and ln.startswith(">"):
         t=ln.split("](")[0].replace("> ","").lstrip("*[ ")
         dead.append(t[:58])
 print(len(dead))
@@ -70,8 +73,9 @@ PYDZ
     warnings+="  • 🚨 ${n} index entr(ies) are PAST THE LOADER CUT and are never loaded.\n"
     warnings+="      A write-back below the cut is a no-op: correct page, correct index line, never loaded.\n"
     warnings+="      Inserting at the TOP does not fix this — with two writers the top is one contested\n"
-    warnings+="      slot and earlier entries migrate back down. SHRINK the file: move reference_/project_\n"
-    warnings+="      lines to OVERFLOW.md. WHICH memories stop firing is a decision for the operator.\n"
+    warnings+="      slot and earlier entries migrate back down. REMOVE LINES: blank lines first,\n"
+    warnings+="      then reference_/project_ pointers to OVERFLOW.md. WHICH memories stop firing is a\n"
+    warnings+="      decision for the operator.\n"
     warnings+="$(echo "$dz" | tail -n +2)\n"
   fi
 fi
