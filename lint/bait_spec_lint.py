@@ -58,6 +58,8 @@ CASES = [
     ("phase needs missing OPEN", CLEAN.replace("| A1, OPEN-1 |", "| A1, OPEN-1, OPEN-2 |"), 1, "needs OPEN-2, which is not in the OPEN table"),
     ("family missing from glossary", CLEAN.replace("| SELF-, BODY- |", "| SELF- |"), 1, "test family BODY-T is not in the glossary"),
     ("no frontmatter status", CLEAN.replace("status: DRAFT\n", ""), 1, "frontmatter lacks status"),
+    ("child-spec phase ids (M0) parse", CLEAN.replace("| P0 First |", "| M0 First |").replace("| P1 Second |", "| M1 Second |"), 0, None),
+    ("invariant rows are not phases", CLEAN.replace("## Rulings", "## Invariants\n| # | invariant | source |\n|---|---|---|\n| I1 | the record is the truth | 09-22 |\n\n## Rulings"), 0, None),
 ]
 
 bad, total = [], 0
@@ -76,6 +78,12 @@ for name, text, want_rc, want_line in CASES:
     rc, out = run("check", text)
     if rc != want_rc or (want_line and want_line not in out):
         bad.append("%s: rc=%s want %s; output: %s" % (name, rc, want_rc, out.strip()[:200]))
+
+total += 1
+kid = CLEAN.replace("OPEN-1", "OPEN-M1")
+rc, out = run("window", kid)
+if "BLOCKED  P1  waiting on OPEN-M1" not in out:
+    bad.append("window: a child spec's OPEN-M1 must block P1; got: %s" % out.strip())
 
 total += 1
 rc, out = run("window", CLEAN)

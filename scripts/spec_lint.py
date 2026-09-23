@@ -31,8 +31,8 @@ TEST_DEF = re.compile(r"^\s*-\s+(?:\*\*)?([A-Z]+-T\d+)\b", re.M)
 TEST_REF = re.compile(r"\b([A-Z]+-T\d+)\b")
 TEST_RANGE = re.compile(r"\b([A-Z]+)-T(\d+)\s*(?:\.\.|to)\s*T?(\d+)\b")
 RULING_ID = re.compile(r"^(R\d+[a-z]?|A\d+)$")
-OPEN_ID = re.compile(r"^OPEN-\d+$")
-NEED = re.compile(r"\b(R\d+[a-z]?|A\d+|OPEN-\d+)\b")
+OPEN_ID = re.compile(r"^OPEN-[A-Z]?\d+$")      # OPEN-3 and a child spec's OPEN-M3
+NEED = re.compile(r"\b(R\d+[a-z]?|A\d+|OPEN-[A-Z]?\d+)\b")
 UNRULED = {"", "—", "-", "–", "tbd", "TBD"}
 
 
@@ -68,7 +68,9 @@ def parse(text):
             rulings[head] = clean(r[-1])
         elif OPEN_ID.match(head):
             opens.add(head)
-        elif re.match(r"^P\d+\b", head) and len(r) >= 3:
+        # A phase row is a short code followed by a NAME ("P0 Stop the bleeding", "M0 Record").
+        # Requiring the name keeps invariant rows ("I1", no name) from being read as phases.
+        elif re.match(r"^[A-Z]{1,2}\d+\s+\S", head) and len(r) >= 3:
             phases.append({"id": head.split()[0], "row": r,
                            "needs": set(NEED.findall(clean(r[-1]))),
                            "tests": expand_refs(" ".join(r[1:-1]))})
@@ -86,7 +88,7 @@ def check(text):
                 bad.append("frontmatter lacks %s:" % key)
     tests, rulings, opens, phases = parse(text)
     if not phases:
-        bad.append("no phases table found (rows starting P0, P1, ...)")
+        bad.append("no phases table found (rows like \"P0 Name\" or \"M0 Name\")")
     scheduled = set().union(*[p["tests"] for p in phases]) if phases else set()
     for t in sorted(tests - scheduled):
         bad.append("test %s is defined but no phase's 'done when' schedules it" % t)
