@@ -35,7 +35,10 @@ cp scripts/link_scan.py    ~/.claude/scripts/
 # masters to make the shareable variants. Losing it loses the thing that
 # keeps published skills free of his private references.
 cp scripts/skill_share.sh  ~/.claude/scripts/
-chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh ~/.claude/scripts/link_scan.py ~/.claude/scripts/skill_share.sh
+# spec_lint: the mechanical half of the spec-driven skill (2026-09-22). Repo-sourced so
+# nomess can see it; baited in lint/bait_spec_lint.py.
+cp scripts/spec_lint.py     ~/.claude/scripts/
+chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh ~/.claude/scripts/link_scan.py ~/.claude/scripts/skill_share.sh ~/.claude/scripts/spec_lint.py
 cp gates/02-retrieval-economy/budget.py ~/.claude/scripts/
 cp gates/19-state-the-posterior/posterior.py ~/.claude/scripts/
 cp gates/18-adversarial-pass/adversary.py ~/.claude/scripts/
