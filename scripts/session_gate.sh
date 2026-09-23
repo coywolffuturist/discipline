@@ -118,6 +118,18 @@ cat <<'CONDUCTOR'
    files -- a gate satisfied by pouring context costs more than the gate saves.
 CONDUCTOR
 
+# ── Unread alerts on THIS machine ─────────────────────────────────────────────────────
+# A job raises an alert by writing $ALERT_DIR/ALERT-<name>. On the den a relay sends each one to the
+# operator; a job on this machine also copies its alert there. When that copy fails (the den is down,
+# the usual reason a backup fails) this is the only reader, so it speaks at session start. Added
+# 2026-09-23 after a refuter found the den-backup alert had no reader at all.
+ALERT_DIR="${ALERT_DIR:-$HOME/.coywolf}"
+for a in "$ALERT_DIR"/ALERT-*; do
+  [ -f "$a" ] || continue
+  OUT="${OUT}
+🚨 ALERT $(basename "$a" | sed 's/^ALERT-//'): $(head -c 300 "$a")"
+done
+
 # ── The standing findings, only alongside something actionable ───────────────────────
 if [ -n "$OUT" ]; then
   cat <<EOF
