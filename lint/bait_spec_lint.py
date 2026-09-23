@@ -59,6 +59,8 @@ CASES = [
     ("family missing from glossary", CLEAN.replace("| SELF-, BODY- |", "| SELF- |"), 1, "test family BODY-T is not in the glossary"),
     ("no frontmatter status", CLEAN.replace("status: DRAFT\n", ""), 1, "frontmatter lacks status"),
     ("child-spec phase ids (M0) parse", CLEAN.replace("| P0 First |", "| M0 First |").replace("| P1 Second |", "| M1 Second |"), 0, None),
+    ("named invariant row is not a phase", CLEAN.replace("## Rulings", "## Invariants\n| # | invariant | source |\n|---|---|---|\n| I4 (reconciled) | forget by key | 09-22 |\n\n## Rulings"), 0, None),
+    ("lettered ruling id RM7 counts as ruled", CLEAN.replace("| A1 | source | den |", "| A1 | source | den |\n| RM7 | forgetting | a and c |").replace("| A1, OPEN-1 |", "| A1, RM7, OPEN-1 |"), 0, None),
     ("invariant rows are not phases", CLEAN.replace("## Rulings", "## Invariants\n| # | invariant | source |\n|---|---|---|\n| I1 | the record is the truth | 09-22 |\n\n## Rulings"), 0, None),
 ]
 

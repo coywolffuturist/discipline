@@ -30,9 +30,9 @@ import sys
 TEST_DEF = re.compile(r"^\s*-\s+(?:\*\*)?([A-Z]+-T\d+)\b", re.M)
 TEST_REF = re.compile(r"\b([A-Z]+-T\d+)\b")
 TEST_RANGE = re.compile(r"\b([A-Z]+)-T(\d+)\s*(?:\.\.|to)\s*T?(\d+)\b")
-RULING_ID = re.compile(r"^(R\d+[a-z]?|A\d+)$")
+RULING_ID = re.compile(r"^(R[A-Z]?\d+[a-z]?|A\d+)$")   # R3, R7b, a child spec's RM7
 OPEN_ID = re.compile(r"^OPEN-[A-Z]?\d+$")      # OPEN-3 and a child spec's OPEN-M3
-NEED = re.compile(r"\b(R\d+[a-z]?|A\d+|OPEN-[A-Z]?\d+)\b")
+NEED = re.compile(r"\b(R[A-Z]?\d+[a-z]?|A\d+|OPEN-[A-Z]?\d+)\b")
 UNRULED = {"", "—", "-", "–", "tbd", "TBD"}
 
 
@@ -70,7 +70,9 @@ def parse(text):
             opens.add(head)
         # A phase row is a short code followed by a NAME ("P0 Stop the bleeding", "M0 Record").
         # Requiring the name keeps invariant rows ("I1", no name) from being read as phases.
-        elif re.match(r"^[A-Z]{1,2}\d+\s+\S", head) and len(r) >= 3:
+        # ...and has the four columns of a phases table (delivers · done when · needs):
+        # an invariant row like "I4 (reconciled)" has a name too, but only three columns.
+        elif re.match(r"^[A-Z]{1,2}\d+\s+\S", head) and len(r) >= 4:
             phases.append({"id": head.split()[0], "row": r,
                            "needs": set(NEED.findall(clean(r[-1]))),
                            "tests": expand_refs(" ".join(r[1:-1]))})
