@@ -95,7 +95,7 @@ except Exception:
 # and forces another turn (see _flags.turn_text).
 # 2026-09-23: the delivered reply is reworded before this hook reads it; "posterior so far 0.90"
 # arrived as "My current estimate is 0.90". Both forms count.
-if getattr(_flags, "already_said", lambda d, p: False)(_DATA, '(settled (right|wrong)|(posterior|current estimate|estimate is|estimate now)[^\\n]{0,30}\\b0?\\.\\d\\d|(posterior|estimate)[^\\n]{0,40}\\bblocked\\b|\\bblocked\\b[^\\n]{0,40}(posterior|estimate)|\\b19\\b[^\\n]{0,20}(fired|blocked))'):
+if getattr(_flags, "already_said", lambda d, p: False)(_DATA, '(settled (right|wrong)|(posterior|current estimate|estimate is|estimate now)[\\s\\S]{0,160}?\\b0?\\.\\d\\d|(posterior|estimate)[\\s\\S]{0,160}?\\bblocked\\b|\\bblocked\\b[^\\n]{0,40}(posterior|estimate)|\\b19\\b[^\\n]{0,20}(fired|blocked))'):
     _sys.exit(0)
 print(json.dumps({"suppressOutput": True,
                   "hookSpecificOutput": {"hookEventName": "Stop",
