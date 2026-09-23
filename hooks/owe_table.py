@@ -135,9 +135,12 @@ msg = (
     "rendered, say so in one line and stop."
 ) % (n, scope)
 
+# 2026-09-23: the delivered reply is REWORDED before this hook reads it ("Gates fired: 02 ..."
+# arrives as "Gates:\n- **Fired:**\n  - 02 ..."), so the match may span lines. Measured: 104 of 445
+# replies matched the one-line form.
 # 2026-09-22: silent when this turn already carries it -- a nag is shown to him
 # and forces another turn (see _flags.turn_text).
-if getattr(_flags, "already_said", lambda d, p: False)(_DATA, '\\bgates?\\b[^\\n]{0,40}\\b(fired|blocked|n/a)\\b'):
+if getattr(_flags, "already_said", lambda d, p: False)(_DATA, '\\bgates?\\b[\\s\\S]{0,60}?\\b(fired|blocked|n/a|not applicable)\\b'):
     _sys.exit(0)
 print(json.dumps({"suppressOutput": True,
                   "hookSpecificOutput": {"hookEventName": "Stop",
