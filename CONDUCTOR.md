@@ -52,7 +52,7 @@ artifact is its automation, not its authority.
 | 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" — and, as its own lever, before firing a model in a LOOP, price it in CALLS | built |
 | 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one with foreknowledge you could have had. A foreseeable sequence is a MISS, not a pass | built |
 | 04 | no-collision | DESIGN | you are about to touch SHARED substrate a peer may hold. Scratchpad and single-machine private work is N/A | built |
-| 05 | substrate-search | DESIGN | you are proposing anything that SURVIVES THE SESSION — table, module, endpoint, daemon, layer, script | built |
+| 05 | substrate-search | DESIGN | you are proposing anything that SURVIVES THE SESSION — table, module, endpoint, daemon, layer, script — **or REPAIRING one (Molt: before you mend the old coat, ask whether it is time to shed it)** | built |
 | 06 | compile-it | DESIGN | you are deriving something for the SECOND time. Count derivations, not difficulty | built |
 | 07 | think-3x | DESIGN | there is a real fork with a second option worth naming. No second option, no gate | built |
 | 08 | **set-the-prior** | DESIGN | before building: state the user-outcome ONCE and a NUMERIC prior on it. No number, no FIRED | built |

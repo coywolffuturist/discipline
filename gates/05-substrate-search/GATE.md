@@ -62,6 +62,34 @@ No hook beyond the commit-msg guard, no agent, no tool. Whether a gap is real is
 a judgement about the estate, not a pattern; and the commit boundary is the last
 honest moment to demand the answer, because after that the thing exists.
 
+## Molt — the mirror, before a REPAIR
+
+    ruled:  the operator, 2026-09-23: the standing rule "if there is a current best practice that should
+            replace a previous approach, raise it" gets a name and fires as part of this gate. Source rule:
+            past rulings and architectures are inputs, not fences.
+
+The gate above stops a NEW piece when an old one suffices. Molt stops the opposite waste: **mending an old piece
+when current practice would replace it.** A coywolf sheds its coat when a better one has grown in; before you
+mend the old coat, ask whether it is time to shed it.
+
+**Fires when** you are about to repair, harden or extend substrate that already exists — above all when a
+refuter, an audit or a failure hands you a defect in it. A defect is the moment the old approach is under the
+lamp; patching it at the level it arrived is how a keyword tripwire got four fixes in one day (2026-09-23) while
+the real answer — a policy-enforcing signer, a sandbox — was never raised.
+
+**The read, in writing, before the patch:**
+1. **Name the approach** being repaired and when it was chosen (and by whom: his ruling, or an agent's choice).
+2. **Find the current best practice** for that job: the mind first (`mind_grep`, `mind_check`), then a web check.
+3. **If the new approach is better,** stop patching. Bring it to the operator as a departure: old vs new, cost, what it
+   retires, a recommendation — one question per turn. Patch only what is needed to stay safe meanwhile.
+4. **Else** patch, and write one line of why the old approach still wins.
+
+**Record.** A departure raised is recorded where the operator rules on it: an OPEN row (or a ruling) in the spec it
+changes, tagged `Molt`. The weekly gate audit (A4) counts them — no separate log.
+
+**States.** FIRED names the approach and the verdict ("Molt: home-grown spend window -> policy signer, raised
+as OPEN-8"). N/A only when nothing existing is being repaired.
+
 ## Disproof
 
 Refuted if new substrate lands with a `Justified-against:` line and a later
