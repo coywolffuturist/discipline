@@ -6,6 +6,7 @@ language. The failures it must not have: firing on the user's words, on tool
 output, or on an earlier turn's text — any of those trains it into noise.
 """
 import json, os, subprocess, sys, tempfile
+os.environ["STOP_HOOK_MODE"] = "force"   # these baits test what the hooks DETECT; bait_stop_mode.py tests the silence
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOOK = os.path.join(ROOT, "hooks", "hook_completer.py")

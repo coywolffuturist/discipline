@@ -142,6 +142,9 @@ msg = (
 # and forces another turn (see _flags.turn_text).
 if getattr(_flags, "already_said", lambda d, p: False)(_DATA, '\\bgates?\\b[\\s\\S]{0,60}?\\b(fired|blocked|n/a|not applicable)\\b'):
     _sys.exit(0)
-print(json.dumps({"suppressOutput": True,
-                  "hookSpecificOutput": {"hookEventName": "Stop",
-                                         "additionalContext": msg}}))
+_speak = getattr(_flags, "speak", None)   # an old or stubbed _flags has no speak: keep the old output, never crash
+if _speak:
+    _speak("owe_table", msg, _DATA)
+else:
+    print(json.dumps({"suppressOutput": True,
+                      "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": msg}}))

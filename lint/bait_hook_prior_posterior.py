@@ -7,6 +7,7 @@ fires when its flag exists, quiet when it does not, consumes on firing, and
 neither hook's firing touches the other's flag.
 """
 import json, os, shutil, subprocess, sys, tempfile
+os.environ["STOP_HOOK_MODE"] = "force"   # these baits test what the hooks DETECT; bait_stop_mode.py tests the silence
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 HOOKS = {

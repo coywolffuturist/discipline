@@ -6,6 +6,7 @@ nothing, ask once on a turn that did, and ask for the DECLARED suite — with
 the two closers added when a suite leaves them out.
 """
 import json, os, shutil, subprocess, sys, tempfile
+os.environ["STOP_HOOK_MODE"] = "force"   # these baits test what the hooks DETECT; bait_stop_mode.py tests the silence
 
 # COUNT THE DIRECTORIES HERE TOO. These rows asserted the literal "all 19",
 # which was wrong from the day gate 00 shipped and which made this bait the

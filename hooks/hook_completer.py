@@ -14,6 +14,14 @@ It reads the tail of the transcript only. A Stop hook that parses a long session
 on every turn would be a tax on every turn.
 """
 import json, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+try:
+    import _flags
+    def _speak(msg):
+        _flags.speak("hook_completer", msg, None)
+except Exception:          # without the shared switch, keep the old behaviour
+    def _speak(msg):
+        print(json.dumps({"suppressOutput": True, "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": msg}}))
 
 PHRASES = re.compile(
     r"follow[- ]up|next session|separate pass|deferred?\b|later pass|for now|"
@@ -42,15 +50,13 @@ if isinstance(_last, str) and _last.strip():
     found = sorted({m.group(0).lower() for m in PHRASES.finditer(_last)})
     if not found:
         raise SystemExit(0)
-    print(json.dumps({"suppressOutput": True, "hookSpecificOutput": {
-        "hookEventName": "Stop",
-        "additionalContext":
+    _speak(
             "GATE 12 completer: this turn's output used deferral language (%s). "
             "Classify it, do not just repeat it. A GENUINE blocker is data, a "
             "decision or access you lack, or a distinct NEW build — name it AND "
             "what would unblock it. \"It's big\" or \"end of session\" is stopping "
             "short: finish it now. The user outcome is the whole job."
-            % ", ".join(repr(f) for f in found[:4])}}))
+            % ", ".join(repr(f) for f in found[:4]))
     raise SystemExit(0)
 
 path = d.get("transcript_path") or ""
@@ -86,12 +92,10 @@ found = sorted({m.group(0).lower() for m in PHRASES.finditer(texts[-1])})
 if not found:
     raise SystemExit(0)
 
-print(json.dumps({"suppressOutput": True, "hookSpecificOutput": {
-    "hookEventName": "Stop",
-    "additionalContext":
+_speak(
         "GATE 12 completer: this turn's output used deferral language (%s). "
         "Classify it, do not just repeat it. A GENUINE blocker is data, a "
         "decision or access you lack, or a distinct NEW build — name it AND "
         "what would unblock it. \"It's big\" or \"end of session\" is stopping "
         "short: finish it now. The user outcome is the whole job."
-        % ", ".join(repr(f) for f in found[:4])}}))
+        % ", ".join(repr(f) for f in found[:4]))

@@ -148,3 +148,37 @@ def already_said(data, pattern):
         return hit
     except Exception:
         return False
+
+
+STOP_MODE_FILE = os.path.expanduser("~/.claude/stop_hook_mode")
+MISS_LOG = os.path.expanduser("~/.claude/state/stop_hook_misses.jsonl")
+
+
+def stop_mode():
+    """"score" (default) or "force". His ruling 2026-09-24, after the logs showed 150 of my replies in five days were
+    set off by a Stop hook and not by him (63 on 09-21 alone), and three written rules had not stopped it: a Stop hook's
+    additionalContext is SHOWN to him and FORCES another turn, so every miss became an unasked reply. In "score" mode a
+    miss is appended to MISS_LOG and nothing is printed. STOP_HOOK_MODE (env) wins, then ~/.claude/stop_hook_mode."""
+    m = os.environ.get("STOP_HOOK_MODE", "").strip().lower()
+    if not m:
+        try:
+            m = open(STOP_MODE_FILE).read().strip().lower()
+        except Exception:
+            m = ""
+    return "force" if m == "force" else "score"
+
+
+def speak(hook, msg, data=None):
+    """The ONLY way a Stop hook reports a miss."""
+    if stop_mode() == "force":
+        print(json.dumps({"suppressOutput": True,
+                          "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": msg}}))
+        return
+    try:
+        os.makedirs(os.path.dirname(MISS_LOG), exist_ok=True)
+        import time as _t
+        with open(MISS_LOG, "a") as f:
+            f.write(json.dumps({"at": _t.strftime("%Y-%m-%dT%H:%M:%S"), "hook": hook,
+                                "session": ((data or {}).get("session_id") or "")[:36], "miss": msg[:240]}) + "\n")
+    except Exception:
+        pass          # a scorer that throws must never force a turn

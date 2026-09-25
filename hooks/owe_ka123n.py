@@ -84,7 +84,10 @@ MSG = (
 # and forces another turn (see _flags.turn_text).
 if getattr(_flags, "already_said", lambda d, p: False)(_DATA, 'why it.s first'):
     sys.exit(0)
-print(json.dumps({"suppressOutput": True,
-                  "hookSpecificOutput": {"hookEventName": "Stop",
-                                         "additionalContext": MSG}}))
+_speak = getattr(_flags, "speak", None)   # an old or stubbed _flags has no speak: keep the old output, never crash
+if _speak:
+    _speak("owe_ka123n", MSG, _DATA)
+else:
+    print(json.dumps({"suppressOutput": True,
+                      "hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": MSG}}))
 sys.exit(0)
