@@ -38,6 +38,8 @@ cp scripts/skill_share.sh  ~/.claude/scripts/
 # spec_lint: the mechanical half of the spec-driven skill (2026-09-22). Repo-sourced so
 # nomess can see it; baited in lint/bait_spec_lint.py.
 cp scripts/spec_lint.py     ~/.claude/scripts/
+# spec-driven: the skill itself, repo-sourced since 2026-09-27 (it had no source; the deployed copy was the only copy).
+mkdir -p ~/.claude/skills/spec-driven && cp skills/spec-driven/SKILL.md ~/.claude/skills/spec-driven/SKILL.md
 chmod +x ~/.claude/scripts/session_gate.sh ~/.claude/scripts/memory_lint.sh ~/.claude/scripts/link_scan.py ~/.claude/scripts/skill_share.sh ~/.claude/scripts/spec_lint.py
 cp gates/02-retrieval-economy/budget.py ~/.claude/scripts/
 cp gates/19-state-the-posterior/posterior.py ~/.claude/scripts/
