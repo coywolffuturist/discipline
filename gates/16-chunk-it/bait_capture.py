@@ -113,6 +113,22 @@ rc, out = run(None, "chunk", "t", "b", env={"HOME": h})
 bait("BAIT K11 no store at all: refuse with the override named", rc == 1 and "COYWOLF_MEMORY_DIR" in out, out)
 shutil.rmtree(h)
 
+# The ledger NAME from ~/.config/discipline/chunk_ledger (no env var): the
+# maintainer's private name lives there, so this branch must be exercised.
+h = tempfile.mkdtemp(prefix="capture-home-")
+os.makedirs(os.path.join(h, ".config", "discipline"))
+io.open(os.path.join(h, ".config", "discipline", "chunk_ledger"), "w", encoding="utf-8").write("custom_ledger_fixture.md\n")
+m = os.path.join(h, ".claude", "projects", "only", "memory"); os.makedirs(m)
+io.open(os.path.join(m, "custom_ledger_fixture.md"), "w", encoding="utf-8").write("x" + PENDING + "\n")
+e = {k: v for k, v in os.environ.items() if k not in ("DISCIPLINE_CHUNK_LEDGER", "COYWOLF_MEMORY_DIR")}
+e["HOME"] = h
+r = subprocess.run([sys.executable, FORM, "chunk", "Named from config", "b"], capture_output=True, text=True, env=e, timeout=30)
+_led = io.open(os.path.join(m, "custom_ledger_fixture.md"), encoding="utf-8").read()
+bait("BAIT K18 the ledger name is read from ~/.config/discipline/chunk_ledger when no env var is set",
+     r.returncode == 0 and "NAMED FROM CONFIG" in _led and not os.path.exists(os.path.join(m, LEDGER)),
+     "rc=%d %s" % (r.returncode, (r.stdout + r.stderr)[:120]))
+shutil.rmtree(h)
+
 # THE DOCUMENTED CORRUPTION, reproduced: a size limit standing in for a full
 # disk. A reviewer showed on 2026-09-02 that with the atomic write replaced by
 # a plain open("w") every bait above stayed green while the ledger was
