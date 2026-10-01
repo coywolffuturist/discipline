@@ -627,6 +627,12 @@ Before deciding whether a refuter runs, name the door:
   not ship. Deletion, publication, a signed transaction, a message sent, canon
   retired. The assertion floor is higher too — gate 19 reads it per door.
 
+Source: adapted from `bajpainaman/solve`, `frameworks/confidence-speed-quality.md`
+(read at 927282d, 2026-09-07): a 2x2 of confidence x reversibility with four modes,
+SPEED, QUALITY, PROBE and DEFER. This dial keeps only the reversibility axis and its
+two modes. Confidence is not a second axis here: gate 19 sets the floor a claim
+must reach, per door. PROBE and DEFER are not carried over.
+
 The dial is not a mood. It is an input to two other gates, and it is recorded:
 `posterior.py log <p> <door> <claim>` carries it into the calibration ledger, so
 "I called it reversible" becomes a claim that can itself be scored.

@@ -200,11 +200,20 @@ open(os.path.join(_src, "SKILL.md"), "w", encoding="utf-8").write(
     "KEEPME the public rule survives.\n\n"
     "See [[feedback_private_rule_11]] for the reasoning.\n"
     "Sources: reference_a_private_page_that_must_not_ship\n"
-    "Run %s/.coywolf/scripts/private_thing.sh first.\n\n" % os.path.expanduser("~") +
+    # A literal /Users/<someone>/ path, not this machine's $HOME: the bait must pass on
+    # any checkout, including one run under a temporary HOME outside /Users.
+    "Run /Users/someone/.coywolf/scripts/private_thing.sh first.\n\n" +
+    "Ask PRIVHOSTFIXTURE before you render.\n\n" +
     "## This environment\n\n"
     "PRIVATEBLOCK machine-specific command here.\n")
+# The private rules live OUTSIDE the repo (~/.config/discipline/scrub.sed). The
+# bait brings its own fixture, so it passes on a clean checkout and never reads
+# the maintainer's real rules.
+_priv = os.path.join(_sd, "scrub.sed")
+open(_priv, "w", encoding="utf-8").write("s/PRIVHOSTFIXTURE/a second machine/g\n")
+_env = dict(os.environ, DISCIPLINE_PRIVATE_SCRUB=_priv)
 _r = subprocess.run(["bash", SHARE, os.path.join(_sd, "skills"), _out],
-                    capture_output=True, text=True)
+                    capture_output=True, text=True, env=_env)
 # Read the SCRUBBED SKILL only. The emitted CONTRACT.md documents the transform
 # and therefore contains the literal "Sources:" -- scanning it made a row fail
 # against the contract's own description of what it strips.
@@ -230,6 +239,14 @@ bait("BAIT SS5 PINNED: the private path is home-anonymised, NOT stripped",
      and "/Users/" not in _txt, "behaviour changed — re-read the header claim")
 bait("BAIT SS6 the machine-specific block is GONE",
      "PRIVATEBLOCK" not in _txt, "environment block leaked")
+bait("BAIT SS7 a PRIVATE rule (kept outside the repo) fires",
+     "PRIVHOSTFIXTURE" not in _txt and "Ask a second machine" in _txt, "private rule did not apply")
+_out2 = os.path.join(_sd, "out-norules")
+_r2 = subprocess.run(["bash", SHARE, os.path.join(_sd, "skills"), _out2], capture_output=True, text=True,
+                     env=dict(os.environ, DISCIPLINE_PRIVATE_SCRUB=os.path.join(_sd, "absent.sed")))
+bait("BAIT SS8 with NO private rules it REFUSES, says why, and writes nothing",
+     _r2.returncode != 0 and "no private scrub rules" in _r2.stderr and not os.path.exists(os.path.join(_out2, "demo")),
+     "rc=%d %s" % (_r2.returncode, _r2.stderr[:60]))
 shutil.rmtree(_sd, ignore_errors=True)
 
 print()
