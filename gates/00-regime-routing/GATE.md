@@ -10,8 +10,11 @@
             That ruling is the authority for this gate. It is not a rediscovery
             and must not be quietly dropped by a later agent who reads the
             tiering refusal and assumes this is it.
-    source: bajpainaman/solve, Phase 3 Cynefin routing — an outside repo, read
-            2026-09-07. Credit where it is due; the reconciliation below is ours.
+    source: bajpainaman/solve, Step 0.5 "Regime Classification (MANDATORY GATE)"
+            (added in its v0.4.0, read at 927282d on 2026-09-07): a classifier that
+            runs first and gates everything else. Credit where it is due; the
+            reconciliation below is ours. (Corrected 2026-09-30: this line used to
+            cite a "Phase 3 Cynefin routing" that solve never had.)
 
 ---
 

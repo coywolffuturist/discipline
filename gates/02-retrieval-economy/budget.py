@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """budget.py — gate 02's ENFORCEMENT form. Price the loop, then HOLD the price.
 
+Credit: the spend cap is adapted from bajpainaman/solve's budget gating (its Step 0.6
+and bin/budget-track, v0.5.0: caps checked between steps, halt at the cap). The
+one-run-at-a-time lock below is this suite's own; solve has no equivalent.
+
 Anything that spends model calls on the operator's account calls reserve()
 BEFORE it spends. Two refusals, both loud:
 

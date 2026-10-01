@@ -1,6 +1,6 @@
 # Discipline
 
-A gate suite for agents that build things. Nineteen checks, each firing at one
+A gate suite for agents that build things. Twenty checks, each firing at one
 moment and producing one artifact. A build is not done until every gate has a
 row in a completion table, and every row reads FIRED, N/A or BLOCKED.
 
@@ -14,7 +14,7 @@ This one link is the whole thing. Start with the conductor.
 | [skills/ka123n](skills/ka123n) | the outer loop: before any work, rank the next three steps and show them; after any work, re-rank |
 | [skills/grill-me](skills/grill-me) | the design interview: one question per turn, the next chosen from the last answer |
 | [gates/](gates) | one folder per gate, `NN-<name>/GATE.md`: the read, the intent, the forms |
-| [agents/](agents) | the four reviewers: `refuter`, `cold-reader`, `mechanism-auditor`, `vizcheck-reader` (a copy of `skills/agents/`) |
+| [agents/](agents) | the five reviewers: `refuter`, `cold-reader`, `mechanism-auditor`, `vizcheck-reader`, and `continuous-adversary`, which attacks each artifact as it lands rather than the finished claim (a copy of `skills/agents/`) |
 | [skills/](skills) | the deployed skills, written by the maintainer's install script from private masters (see CONTRACT.md); a plugin install ships them as they are; gates 16 and 17 have no skill by ruling, gate 19 ships as `95-percent-rule` |
 | [hooks/](hooks) | the eight hooks that make the table fire unprompted |
 | [lint/](lint) | the suite's own checks; `bash lint/all.sh` |
@@ -51,6 +51,7 @@ in, because they define "complete". With no file, the suite is all nineteen.
 
 | # | gate | phase | fires when |
 |---|---|---|---|
+| 00 | regime-routing | DESIGN | first: the same request could honestly be answered at more than one depth; it sets the depth, never which gates fire |
 | 01 | ste | DESIGN | you write a prompt, page, plan or message |
 | 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or fire a model in a loop |
 | 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one |
@@ -68,7 +69,7 @@ in, because they define "complete". With no file, the suite is all nineteen.
 | 15 | vizcheck | VERIFY | an interface you authored |
 | 16 | chunk-it | VERIFY | a named move was produced, or something went wrong |
 | 17 | write-back | VERIFY | a fact was derived that would cost more than one cheap call to re-derive |
-| 18 | adversarial-pass | VERIFY | money, irreversibility, or anything outward-facing: a refuter runs or it does not ship |
+| 18 | adversarial-pass | VERIFY | money, irreversibility, or anything outward-facing: a refuter runs or it does not ship. Its continuous form, `continuous-adversary`, attacks each artifact during the build |
 | 19 | state-the-posterior | VERIFY | last: any claim of done, ready, verified or sure, one number per criterion |
 
 The full triggers, the forms each gate takes, and where each read lives are in
@@ -119,6 +120,23 @@ trusting any claim of enforcement.
 
 `gates/` is the reviewed source of each gate's read. `skills/` and `agents/` are
 overwritten by the maintainer's install script. See [CONTRACT.md](CONTRACT.md).
+
+## Credits
+
+Five mechanisms here are adapted from [Naman Bajpai](https://github.com/bajpainaman)'s
+[`solve`](https://github.com/bajpainaman/solve) (MIT, Copyright (c) 2026 Naman Bajpai), as it
+stood at commit 927282d (v0.6.0), read on 2026-09-07:
+
+- gate 00, regime routing, from solve's Step 0.5 regime classifier, which runs first and gates everything else;
+- gate 02's daily call cap (`budget.py`), from solve's budget gating (`bin/budget-track`); the one-run-at-a-time lock is this suite's own;
+- gate 18's reversibility door, from solve's reversibility intake (cheap, costly, one-way door) and its confidence-speed-quality framework;
+- gate 18's continuous form, `continuous-adversary`, from solve's adversary;
+- gate 19's calibration ledger (`posterior.py`), from solve's `bin/calibration`.
+
+Where this suite departs from his design, the gate's file says how and why. For
+example, gate 18's adversary is woken per artifact instead of polling a directory,
+and its score is carried onto the claim it attacked, so the ledger can test
+whether the score predicts anything.
 
 ## License
 

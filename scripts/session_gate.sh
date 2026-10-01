@@ -15,8 +15,11 @@ OUT=""
 
 # ── Is the Den safe to load? ─────────────────────────────────────────────────────────
 # Blocking condition, not advice: >90% swap means render work will make things worse.
-if command -v ssh >/dev/null 2>&1; then
-  DEN=$(ssh -o ConnectTimeout=4 -o BatchMode=yes den '~/.local/bin/host-doctor --gate 2>/dev/null' 2>/dev/null)
+# The host name lives outside the repo (DISCIPLINE_DEN_HOST, or ~/.config/discipline/den_host);
+# with neither set there is no second machine to check, and this block stays silent.
+DEN_HOST="${DISCIPLINE_DEN_HOST:-$(cat "$HOME/.config/discipline/den_host" 2>/dev/null)}"
+if [ -n "$DEN_HOST" ] && command -v ssh >/dev/null 2>&1; then
+  DEN=$(ssh -o ConnectTimeout=4 -o BatchMode=yes "$DEN_HOST" '~/.local/bin/host-doctor --gate 2>/dev/null' 2>/dev/null)
   [ -n "$DEN" ] && OUT="${OUT}
 ⛔ HOST CHECK
 ${DEN}

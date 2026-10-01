@@ -26,6 +26,15 @@ OUT="${2:-$HOME/.claude/skills-shareable}"
 # So the gate list is now read from the DEPLOYED conductor, which is the thing
 # that decides what a gate's deployed form is. Add a gate there and it ships
 # here. No estate->repo dependency: the conductor is already an estate path.
+# Private values (the operator's name, host names, private URLs) are scrubbed by
+# rules kept OUT of this repo, in a local file: a public script that lists the
+# names it hides publishes them. Missing file = refuse, never publish unscrubbed.
+PRIVATE_SCRUB="${DISCIPLINE_PRIVATE_SCRUB:-$HOME/.config/discipline/scrub.sed}"
+if [ ! -f "$PRIVATE_SCRUB" ]; then
+  echo "skill_share: no private scrub rules at $PRIVATE_SCRUB — refusing to publish unscrubbed" >&2
+  exit 1
+fi
+
 CONDUCTOR="$SRC/discipline/SKILL.md"
 if [ ! -f "$CONDUCTOR" ]; then
   echo "skill_share: no conductor at $CONDUCTOR — refusing to publish a list I cannot derive" >&2
@@ -72,6 +81,7 @@ scrub() {
       -e 's/mind_check/corpus_check/g' \
       -e 's/mind_consult/corpus_consult/g' \
       -e 's/the den host/a second machine/g' \
+  | sed -E -f "$PRIVATE_SCRUB" \
   | awk '{a[NR]=$0} END{ last=NR; while(last>0 && (a[last]=="" || a[last]=="---")) last--; for(i=1;i<=last;i++) print a[i] }'
 }
 
