@@ -14,10 +14,10 @@
 # leaking commit. All 17 notes preserved, the REFUTED verdict unchanged, still a
 # fast-forward. That was the only LIVE exposure; what remains is static.
 #
-# The entry below is awaiting the operator's ruling (2026-09-21). Removing
-# them requires rewriting history and force-pushing a PUBLIC repo, which also
-# does not reliably purge the blob from GitHub without a support request. That
-# is his call, not this file's.
+# CLOSED 2026-10-01: 9b9ed796 (gates/16-chunk-it/capture.py at 7783bfa, two home-dir
+# path strings). His ruling: rewrite the history, recreate the public repo, then
+# delete every old copy. Verified: the repo was deleted and recreated, the old
+# commit returns 404 to an anonymous visitor, and no object on the laptop, the
+# den or either GitHub repo contains the account name. The list is now empty.
 #
 # blob-sha  what it is
-9b9ed796  gates/16-chunk-it/capture.py at 7783bfa (2026-09-02) — two home-dir path strings
