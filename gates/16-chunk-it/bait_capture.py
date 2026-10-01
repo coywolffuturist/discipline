@@ -30,7 +30,8 @@ def store(anchor=True, index_bytes=200):
 
 
 def run(d, *args, env=None):
-    e = dict(os.environ, COYWOLF_MEMORY_DIR=d) if d else dict(os.environ)
+    # Pin the ledger name: the maintainer's private name (~/.config/discipline) must not leak in.
+    e = dict(os.environ, COYWOLF_MEMORY_DIR=d, DISCIPLINE_CHUNK_LEDGER=LEDGER) if d else dict(os.environ, DISCIPLINE_CHUNK_LEDGER=LEDGER)
     if d is None:
         e.pop("COYWOLF_MEMORY_DIR", None)
     e.update(env or {})
@@ -123,7 +124,8 @@ before = read(d, LEDGER)
 def _cap():
     resource.setrlimit(resource.RLIMIT_FSIZE, (1024, 1024))
 r = subprocess.run([sys.executable, FORM, "chunk", "Big move", "x" * 3000], capture_output=True,
-                   text=True, env=dict(os.environ, COYWOLF_MEMORY_DIR=d), preexec_fn=_cap, timeout=30)
+                   text=True, env=dict(os.environ, COYWOLF_MEMORY_DIR=d, DISCIPLINE_CHUNK_LEDGER=LEDGER),
+                   preexec_fn=_cap, timeout=30)
 bait("BAIT K12 a write that cannot complete REFUSES (rc 1) rather than reporting chunked",
      r.returncode == 1 and "NOTHING was changed" in (r.stdout + r.stderr), r.stdout + r.stderr)
 bait("BAIT K13 ...and the ledger is byte-for-byte intact, not truncated", read(d, LEDGER) == before,

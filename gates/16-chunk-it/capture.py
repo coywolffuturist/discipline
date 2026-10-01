@@ -17,7 +17,19 @@ That judgement is the gate; this is only the hands.
 """
 import argparse, io, os, re, sys, tempfile
 
-LEDGER_NAME = "reference_chunk_ledger.md"
+def _ledger_name():
+    """The ledger's file name. A private name lives outside the repo:
+    DISCIPLINE_CHUNK_LEDGER, or ~/.config/discipline/chunk_ledger; else the default."""
+    n = os.environ.get("DISCIPLINE_CHUNK_LEDGER", "").strip()
+    if not n:
+        try:
+            n = io.open(os.path.expanduser("~/.config/discipline/chunk_ledger"), encoding="utf-8").read().strip()
+        except OSError:
+            n = ""
+    return n or "reference_chunk_ledger.md"
+
+
+LEDGER_NAME = _ledger_name()
 
 # THE STORE IS DISCOVERED, NEVER HARDCODED.
 #

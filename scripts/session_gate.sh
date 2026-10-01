@@ -31,7 +31,8 @@ fi
 # written: this file lives in a repo with a remote, and the operator
 # name belongs on no surface we publish (disclosure doctrine).
 CC_PROJ="-$(printf %s "${HOME#/}" | tr / -)"
-LEDGER="$HOME/.claude/projects/$CC_PROJ/memory/reference_chunk_ledger.md"
+LEDGER_NAME="${DISCIPLINE_CHUNK_LEDGER:-$(cat "$HOME/.config/discipline/chunk_ledger" 2>/dev/null)}"
+LEDGER="$HOME/.claude/projects/$CC_PROJ/memory/${LEDGER_NAME:-reference_chunk_ledger.md}"
 if [ -f "$LEDGER" ]; then
   AGE=$(( ( $(date +%s) - $(stat -f %m "$LEDGER") ) / 86400 ))
   # Two bugs lived on this line. (1) grep -c exits 1 on no match, so `|| echo 0` appended a
