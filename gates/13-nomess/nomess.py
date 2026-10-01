@@ -92,6 +92,116 @@ def _scan_deployed_only(bad, note):
              "(shrink-only, awaiting a ruling on where each belongs)" % len(known))
 
 
+
+def _private_patterns():
+    """What must never be published, read from OUTSIDE the repo (2026-10-01).
+
+    1. ~/.config/discipline/deny_words — one private word per line (names, hosts,
+       private agents and projects). The list itself is the secret, so it lives
+       on the machine, never here. NOMESS_DENY_FILE overrides the path.
+    2. Every real memory-page name under ~/.claude/projects/*/memory, in the three
+       forms a page name leaks in: `<type>_<slug>`, the slug hyphenated, and the
+       slug as a sentence (four words or more). A slug that is also a published
+       gate or skill name (cold-read, 95-percent-rule) is not private.
+    Returns [(kind, compiled regex)]; empty when neither source exists."""
+    import glob, re
+    out = []
+    deny = os.environ.get("NOMESS_DENY_FILE") or os.path.expanduser("~/.config/discipline/deny_words")
+    words = []
+    try:
+        for line in io.open(deny, encoding="utf-8"):
+            w = line.strip()
+            if w and not w.startswith("#"):
+                words.append(w)
+    except OSError:
+        pass
+    if words:
+        out.append(("private word", re.compile(
+            r"(?<![A-Za-z0-9])(" + "|".join(re.escape(w) for w in sorted(words, key=len, reverse=True)) + r")(?![A-Za-z0-9])",
+            re.I)))
+    published = set()
+    for top in ("gates", "skills"):
+        try:
+            for d in os.listdir(os.path.join(REPO, top)):
+                # a GATE folder carries its number (07-think-3x); a skill name may
+                # itself start with digits (95-percent-rule) and is kept whole
+                published.add((re.sub(r"^\d\d-", "", d) if top == "gates" else d).lower())
+        except OSError:
+            pass
+    forms = set()
+    pat = os.environ.get("NOMESS_MEMORY_GLOB") or os.path.expanduser("~/.claude/projects/*/memory/*.md")
+    for f in glob.glob(pat):
+        stem = os.path.basename(f)[:-3]
+        parts = stem.split("_", 1)
+        if parts[0] not in ("feedback", "reference", "decision", "project", "incident", "correction", "user") or len(parts) < 2:
+            continue
+        slug = parts[1]
+        forms.add(stem.lower())
+        if slug.count("_") >= 2 and slug.replace("_", "-") not in published:
+            forms.add(slug.replace("_", "-"))
+        if slug.count("_") >= 3:
+            forms.add(slug.replace("_", " "))
+    if forms:
+        out.append(("memory-page name", re.compile(
+            r"(?<![A-Za-z0-9_-])(" + "|".join(r"[\s#*>]+".join(re.escape(w) for w in x.split(" "))
+                                              for x in sorted(forms, key=len, reverse=True)) + r")(?![A-Za-z0-9_-])",
+            re.I)))
+    return out
+
+
+def _scan_private(bad, note):
+    """Private words and page names in what a push PUBLISHES: every blob reachable
+    from HEAD, every commit message, and the review notes. Never prints the word:
+    a report that quotes the leak republishes it."""
+    import subprocess
+    pats = _private_patterns()
+    if not pats:
+        note("no private word list and no memory pages on this machine: the private-word scan ran on nothing")
+        return
+    def run(*a, inp=None):
+        return subprocess.run(["git", "-C", REPO] + list(a), input=inp, capture_output=True, timeout=300).stdout
+    try:
+        listing = run("rev-list", "--objects", "HEAD").decode("utf-8", "replace")
+        notes = run("rev-list", "--objects", "refs/notes/reviews").decode("utf-8", "replace")
+    except Exception as e:
+        bad("repo", "PRIVATE-WORD SCAN FAILED (%s) — the published history is UNCHECKED" % e)
+        return
+    paths = {}
+    for line in (listing + "\n" + notes).splitlines():
+        part = line.split(" ", 1)
+        if part and part[0]:
+            paths.setdefault(part[0], part[1] if len(part) == 2 else "")
+    data = run("cat-file", "--batch", inp=("\n".join(paths) + "\n").encode())
+    i, seen = 0, 0
+    while i < len(data):
+        nl = data.find(b"\n", i)
+        if nl < 0:
+            break
+        head = data[i:nl].split()
+        try:
+            size = int(head[2])
+        except (IndexError, ValueError):
+            i = nl + 1
+            continue
+        body = data[nl + 1:nl + 1 + size].decode("utf-8", "replace")
+        if head[1] == b"blob":
+            for kind, rx in pats:
+                if rx.search(body):
+                    seen += 1
+                    bad("repo", "PUBLISHES A PRIVATE %s: blob %s (%s)" % (kind.upper(), head[0].decode()[:8],
+                                                                           paths.get(head[0].decode(), "?") or "?"))
+                    break
+        i = nl + 1 + size + 1
+    msgs = run("log", "--format=%H%x00%B%x01", "HEAD").decode("utf-8", "replace")
+    for rec in msgs.split("\x01"):
+        if "\x00" not in rec:
+            continue
+        sha, body = rec.strip("\n").split("\x00", 1)
+        for kind, rx in pats:
+            if rx.search(body):
+                bad("repo", "PUBLISHES A PRIVATE %s: the message of commit %s" % (kind.upper(), sha[:8]))
+                break
+
 def _scan_history(bad, NAMES):
     """Every blob reachable from every ref, including notes. See the caller."""
     import subprocess
@@ -222,6 +332,18 @@ def repo_sweep():
                 "scripts/memory_lint.sh"):
         if os.path.exists(src):
             pairs.append((src, "~/.claude/scripts/" + os.path.basename(src)))
+    # Every canonical skill and reviewer agent (2026-10-01: skills/ became the copy
+    # every machine runs). Derived from the repo: a skill here that was never
+    # installed is NOT DEPLOYED, a copy that differs is DRIFT.
+    if os.path.isdir("skills"):
+        for n in sorted(os.listdir("skills")):
+            src = os.path.join("skills", n, "SKILL.md")
+            if n != "agents" and n != "discipline" and os.path.isfile(src):
+                pairs.append((src, "~/.claude/skills/%s/SKILL.md" % n))
+        if os.path.isdir("skills/agents"):
+            for f in sorted(os.listdir("skills/agents")):
+                if f.endswith(".md"):
+                    pairs.append((os.path.join("skills", "agents", f), "~/.claude/agents/" + f))
     # The deployed skill tree mirrors gates/ file-for-file. Derived from what is
     # DEPLOYED, not from what the repo holds: a file added here but never
     # installed is not drift, while a deployed file that has fallen behind is.
@@ -302,6 +424,7 @@ def repo_sweep():
         NAMES.add(host.lower())
     # HISTORY AND NOTES, not just the tree -- see _scan_history.
     _scan_history(bad, NAMES)
+    _scan_private(bad, lambda m: print("      NOTE  " + m))
     _scan_deployed_only(bad, lambda m: print("      NOTE  " + m))
 
     # ONLY WHAT GIT TRACKS. "Published" means tracked, not present: the first

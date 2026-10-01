@@ -287,6 +287,62 @@ else:
     print("  --  BAIT N15 SKIPPED: host name %r is under the 4-char floor, so nomess "
           "cannot protect it on this machine and the bait cannot run" % HOST)
 
+# ---- the private-word scan (2026-10-01): words and page names read from OUTSIDE the repo
+def _deny(home, words):
+    os.makedirs(os.path.join(home, ".config", "discipline"), exist_ok=True)
+    open(os.path.join(home, ".config", "discipline", "deny_words"), "w").write("\n".join(words) + "\n")
+
+
+def _page(home, stem):
+    m = os.path.join(home, ".claude", "projects", "p", "memory"); os.makedirs(m, exist_ok=True)
+    open(os.path.join(m, stem + ".md"), "w").write("x\n")
+
+
+def deny_word_committed(r, home):
+    _deny(home, ["quillonfixture"])
+    open(os.path.join(r, "doc.md"), "w").write("we met Quillonfixture today\n")
+    git(r, "add", "doc.md"); git(r, "commit", "-q", "-m", "d", "--no-verify")
+
+
+def page_name_committed(r, home):
+    _page(home, "feedback_never_ship_the_fixture_rule")
+    open(os.path.join(r, "doc.md"), "w").write("see feedback_never_ship_the_fixture_rule\n")
+    git(r, "add", "doc.md"); git(r, "commit", "-q", "-m", "d", "--no-verify")
+
+
+def page_slug_in_message(r, home):
+    _page(home, "feedback_never_ship_the_fixture_rule")
+    git(r, "commit", "-q", "--allow-empty", "-m", "doctrine: never-ship-the-fixture-rule", "--no-verify")
+
+
+def page_title_as_sentence(r, home):
+    _page(home, "feedback_never_ship_the_fixture_rule")
+    open(os.path.join(r, "doc.md"), "w").write("Rule: Never ship the fixture rule.\n")
+    git(r, "add", "doc.md"); git(r, "commit", "-q", "-m", "d", "--no-verify")
+
+
+def published_name_is_not_private(r, home):
+    _page(home, "feedback_cold_read_fixture_gate")
+    os.makedirs(os.path.join(r, "skills", "cold-read-fixture-gate"))
+    open(os.path.join(r, "skills", "cold-read-fixture-gate", "SKILL.md"), "w").write("see cold-read-fixture-gate\n")
+    git(r, "add", "-A"); git(r, "commit", "-q", "-m", "d", "--no-verify")
+
+
+bait("BAIT N28 a private word (deny list outside the repo) in history is RED", 1, "PRIVATE PRIVATE WORD", deny_word_committed)
+bait("BAIT N29 a real memory-page name in a file is RED", 1, "PRIVATE MEMORY-PAGE NAME", page_name_committed)
+bait("BAIT N30 a page slug, hyphenated, in a commit MESSAGE is RED", 1, "the message of commit", page_slug_in_message)
+bait("BAIT N31 a page title written as a sentence is RED", 1, "PRIVATE MEMORY-PAGE NAME", page_title_as_sentence)
+total += 1
+_d, _h, _r = repo(); published_name_is_not_private(_r, _h); _rc, _out = run(_h, _r, "--repo"); shutil.rmtree(_d, ignore_errors=True)
+_ok = "MEMORY-PAGE NAME" not in _out
+print("  %s %-62s" % ("ok " if _ok else "XX ", "BAIT N32 a slug that is a PUBLISHED skill name is not flagged"))
+_ok or bad.append("N32")
+total += 1
+_d, _h, _r = repo(); deny_word_committed(_r, _h); _rc, _out = run(_h, _r, "--repo"); shutil.rmtree(_d, ignore_errors=True)
+_ok = _rc == 1 and "quillonfixture" not in _out.lower()
+print("  %s %-62s" % ("ok " if _ok else "XX ", "BAIT N33 the report NEVER prints the private word it found"))
+_ok or bad.append("N33")
+
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
 for l in bad:
     print("   failed: %s" % l)

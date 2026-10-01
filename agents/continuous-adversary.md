@@ -43,7 +43,7 @@ artifact at the moment it was written.
    calibrated, not loud: a high score you cannot justify is noise, and the score
    is itself being scored — see below.
 5. **Record it:**
-   `adversary.py record <run> <artifact> <score> "<attack>" "<attack>" ...`
+   `~/.claude/scripts/adversary.py record <run> <artifact> <score> "<attack>" "<attack>" ...`
    A score of 7 or more prints an INTERRUPT, which the builder must answer before
    continuing.
 

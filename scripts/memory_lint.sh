@@ -17,6 +17,14 @@ set -u
 CC_PROJ="-$(printf %s "${HOME#/}" | tr / -)"
 MEM_DIR="$HOME/.claude/projects/$CC_PROJ/memory"
 INDEX="$MEM_DIR/MEMORY.md"
+# The overflow index (the lookup half of MEMORY.md) and the files this check skips
+# are machine-specific names, kept OUT of the repo: ~/.config/discipline/
+# memory_overflow_index and memory_lint_skip (one name per line). Neutral defaults.
+OVERFLOW="${DISCIPLINE_OVERFLOW_INDEX:-$(cat "$HOME/.config/discipline/memory_overflow_index" 2>/dev/null)}"
+OVERFLOW="${OVERFLOW:-OVERFLOW.md}"
+SKIPS="${DISCIPLINE_MEMORY_SKIP:-$(cat "$HOME/.config/discipline/memory_lint_skip" 2>/dev/null)}"
+SKIPS="${SKIPS:-TOPOLOGY.md}"
+export OVERFLOW SKIPS
 # THE LOADER HAS TWO CAPS, AND EITHER ONE CUTS. Read out of the CLI binary
 # (versions/2.1.278), not inferred:
 #
@@ -68,7 +76,7 @@ bytes=$(wc -c < "$INDEX" | tr -d ' ')
 if [ "$nlines" -gt "$(( LOADER_LINES - 5 ))" ]; then
   warnings+="  • MEMORY.md is ${nlines} lines; the loader takes the first ${LOADER_LINES}.\n"
   warnings+="      Shortening a line does NOT help here — only REMOVING one does. Blank lines\n"
-  warnings+="      cost a slot and carry nothing; reference_/project_ pointers belong in OVERFLOW.md.\n"
+  warnings+="      cost a slot and carry nothing; reference_/project_ pointers belong in $OVERFLOW.\n"
 fi
 u16=$(python3 - "$INDEX" <<'PYU' 2>/dev/null || echo 0
 import io,sys
@@ -114,7 +122,7 @@ PYDZ
     warnings+="      A write-back below the cut is a no-op: correct page, correct index line, never loaded.\n"
     warnings+="      Inserting at the TOP does not fix this — with two writers the top is one contested\n"
     warnings+="      slot and earlier entries migrate back down. REMOVE LINES: blank lines first,\n"
-    warnings+="      then reference_/project_ pointers to OVERFLOW.md. WHICH memories stop firing is a\n"
+    warnings+="      then reference_/project_ pointers to $OVERFLOW. WHICH memories stop firing is a\n"
     warnings+="      decision for the operator.\n"
     warnings+="$(echo "$dz" | tail -n +2)\n"
   fi
@@ -169,7 +177,7 @@ if command -v python3 >/dev/null 2>&1; then
   mal=$(python3 - "$MEM_DIR" <<'PYML'
 import io,os,re,sys
 mem=sys.argv[1]
-for f in ("MEMORY.md","OVERFLOW.md"):
+for f in ("MEMORY.md", os.environ.get("OVERFLOW", "OVERFLOW.md")):
     p=os.path.join(mem,f)
     if not os.path.exists(p): continue
     for i,ln in enumerate(io.open(p,encoding="utf-8",errors="replace"),1):
@@ -187,11 +195,11 @@ fi
 # 4. Orphan topic files: a *.md on disk that nothing in the index links to.
 #    Ignore the index itself, TOPOLOGY.md, and backups.
 orphans=$(cd "$MEM_DIR" && ls -1 *.md 2>/dev/null \
-  | grep -v -e '^MEMORY.md$' -e '^TOPOLOGY.md$' \
-  | while read -r f; do grep -q "($f)" "$INDEX" "$MEM_DIR/OVERFLOW.md" 2>/dev/null || echo "$f"; done)   # OVERFLOW.md is the lookup half (split 2026-09-02); a pointer there is indexed
+  | grep -v -x -F -e MEMORY.md -e "$OVERFLOW" $(printf -- '-e %s ' $SKIPS) \
+  | while read -r f; do grep -q "($f)" "$INDEX" "$MEM_DIR/$OVERFLOW" 2>/dev/null || echo "$f"; done)   # OVERFLOW.md is the lookup half (split 2026-09-02); a pointer there is indexed
 if [ -n "$orphans" ]; then
   n=$(echo "$orphans" | grep -c .)
-  warnings+="  • ${n} topic file(s) on disk are not indexed in MEMORY.md or OVERFLOW.md (add a one-line pointer or delete):\n"
+  warnings+="  • ${n} topic file(s) on disk are not indexed in MEMORY.md or $OVERFLOW (add a one-line pointer or delete):\n"
   while read -r f; do [ -n "$f" ] && warnings+="      - $f\n"; done <<< "$orphans"
 fi
 
@@ -208,7 +216,7 @@ mem = sys.argv[1]
 pat = re.compile(r'candidate.{0,40}skill|could become a skill|should become a skill', re.I)
 for f in sorted(glob.glob(os.path.join(mem, '*.md'))):
     b = os.path.basename(f)
-    if b in ('MEMORY.md', 'TOPOLOGY.md'):
+    if b == 'MEMORY.md' or b in os.environ.get('SKIPS', 'TOPOLOGY.md').split():
         continue
     t = open(f, encoding='utf-8', errors='replace').read()
     parts = t.split('---', 2)

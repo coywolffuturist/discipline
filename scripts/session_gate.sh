@@ -18,8 +18,11 @@ OUT=""
 # The host name lives outside the repo (DISCIPLINE_DEN_HOST, or ~/.config/discipline/den_host);
 # with neither set there is no second machine to check, and this block stays silent.
 DEN_HOST="${DISCIPLINE_DEN_HOST:-$(cat "$HOME/.config/discipline/den_host" 2>/dev/null)}"
-if [ -n "$DEN_HOST" ] && command -v ssh >/dev/null 2>&1; then
-  DEN=$(ssh -o ConnectTimeout=4 -o BatchMode=yes "$DEN_HOST" '~/.local/bin/host-doctor --gate 2>/dev/null' 2>/dev/null)
+# The check COMMAND is machine-specific too (DISCIPLINE_DEN_CHECK, or
+# ~/.config/discipline/den_check); with none set, nothing is checked.
+DEN_CHECK="${DISCIPLINE_DEN_CHECK:-$(cat "$HOME/.config/discipline/den_check" 2>/dev/null)}"
+if [ -n "$DEN_HOST" ] && [ -n "$DEN_CHECK" ] && command -v ssh >/dev/null 2>&1; then
+  DEN=$(ssh -o ConnectTimeout=4 -o BatchMode=yes "$DEN_HOST" "$DEN_CHECK 2>/dev/null" 2>/dev/null)
   [ -n "$DEN" ] && OUT="${OUT}
 ⛔ HOST CHECK
 ${DEN}
