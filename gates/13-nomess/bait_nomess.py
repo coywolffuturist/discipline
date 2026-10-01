@@ -11,7 +11,7 @@ import os, shutil, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 FORM = os.path.join(HERE, "nomess.py")
 GIT_ENV = dict(GIT_AUTHOR_NAME="bait", GIT_AUTHOR_EMAIL="bait@example",
-               GIT_COMMITTER_NAME="bait", GIT_COMMITTER_EMAIL="bait@example")
+               GIT_COMMITTER_NAME="bait", GIT_COMMITTER_EMAIL="bait@example", TZ="UTC")
 
 bad = []
 total = 0
@@ -342,6 +342,19 @@ _d, _h, _r = repo(); deny_word_committed(_r, _h); _rc, _out = run(_h, _r, "--rep
 _ok = _rc == 1 and "quillonfixture" not in _out.lower()
 print("  %s %-62s" % ("ok " if _ok else "XX ", "BAIT N33 the report NEVER prints the private word it found"))
 _ok or bad.append("N33")
+
+def local_time_zone(r, home):
+    subprocess.run(["git", "-C", r, "commit", "-q", "--allow-empty", "-m", "tz", "--no-verify"],
+                   env=dict(os.environ, **GIT_ENV, GIT_AUTHOR_DATE="2026-01-01T10:00:00-0500",
+                            GIT_COMMITTER_DATE="2026-01-01T10:00:00-0500"), check=True, capture_output=True)
+
+
+def session_link(r, home):
+    git(r, "commit", "-q", "--allow-empty", "-m", "x\n\nClaude-Session: https://claude.ai/code/session_0abc", "--no-verify")
+
+
+bait("BAIT N34 a commit dated in a local time zone is RED", 1, "PUBLISHES A TIME ZONE", local_time_zone)
+bait("BAIT N35 a Claude session link in a commit message is RED", 1, "PUBLISHES A SESSION LINK", session_link)
 
 print("\n%s  %d/%d" % ("BAIT: PASS" if not bad else "BAIT: FAIL", total - len(bad), total))
 for l in bad:

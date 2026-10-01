@@ -154,12 +154,23 @@ def _scan_private(bad, note):
     from HEAD, every commit message, and the review notes. Never prints the word:
     a report that quotes the leak republishes it."""
     import subprocess
+    def run(*a, inp=None):
+        return subprocess.run(["git", "-C", REPO] + list(a), input=inp, capture_output=True, timeout=300).stdout
+    # Metadata leaks too (his order 2026-10-01): a commit's time zone tells where its
+    # author sits, and a Claude session link points into his account. Published
+    # commits carry +0000 and no session links; commit with TZ=UTC.
+    for line in run("log", "--format=%H %ad %cd", "--date=format:%z", "HEAD").decode().splitlines():
+        sha, az, cz = (line.split() + ["", "", ""])[:3]
+        if az != "+0000" or cz != "+0000":
+            bad("repo", "PUBLISHES A TIME ZONE: commit %s is dated %s/%s, not +0000 (commit with TZ=UTC)" % (sha[:8], az, cz))
+    msgs = run("log", "--format=%H%x00%B%x01", "HEAD").decode("utf-8", "replace")
+    for rec in msgs.split("\x01"):
+        if "claude.ai/code/session_" in rec or "\nClaude-Session:" in rec:
+            bad("repo", "PUBLISHES A SESSION LINK: the message of commit %s" % rec.strip("\n")[:8])
     pats = _private_patterns()
     if not pats:
         note("no private word list and no memory pages on this machine: the private-word scan ran on nothing")
         return
-    def run(*a, inp=None):
-        return subprocess.run(["git", "-C", REPO] + list(a), input=inp, capture_output=True, timeout=300).stdout
     try:
         listing = run("rev-list", "--objects", "HEAD").decode("utf-8", "replace")
         notes = run("rev-list", "--objects", "refs/notes/reviews").decode("utf-8", "replace")
