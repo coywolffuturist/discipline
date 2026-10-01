@@ -353,6 +353,21 @@ def session_link(r, home):
     git(r, "commit", "-q", "--allow-empty", "-m", "x\n\nClaude-Session: https://claude.ai/code/session_0abc", "--no-verify")
 
 
+def page_title_with_punctuation(r, home):
+    _page(home, "feedback_the_95_fixture_rule_is_a_gate")
+    open(os.path.join(r, "doc.md"), "w").write("**The .95 fixture-rule is a gate.**\n")
+    git(r, "add", "doc.md"); git(r, "commit", "-q", "-m", "d", "--no-verify")
+
+
+def page_in_a_subfolder(r, home):
+    m = os.path.join(home, ".claude", "projects", "p", "memory", "sub"); os.makedirs(m, exist_ok=True)
+    open(os.path.join(m, "feedback_deep_fixture_page_name.md"), "w").write("x\n")
+    open(os.path.join(r, "doc.md"), "w").write("see feedback_deep_fixture_page_name\n")
+    git(r, "add", "doc.md"); git(r, "commit", "-q", "-m", "d", "--no-verify")
+
+
+bait("BAIT N36 a page title split by punctuation (.95, hyphen) is RED", 1, "PRIVATE MEMORY-PAGE NAME", page_title_with_punctuation)
+bait("BAIT N37 a page in a memory SUBFOLDER is still private", 1, "PRIVATE MEMORY-PAGE NAME", page_in_a_subfolder)
 bait("BAIT N34 a commit dated in a local time zone is RED", 1, "PUBLISHES A TIME ZONE", local_time_zone)
 bait("BAIT N35 a Claude session link in a commit message is RED", 1, "PUBLISHES A SESSION LINK", session_link)
 

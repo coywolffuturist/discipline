@@ -129,8 +129,10 @@ def _private_patterns():
         except OSError:
             pass
     forms = set()
-    pat = os.environ.get("NOMESS_MEMORY_GLOB") or os.path.expanduser("~/.claude/projects/*/memory/*.md")
-    for f in glob.glob(pat):
+    # Any depth: a page in a memory subfolder is as private as one at the top
+    # (a refuter's recursive search found pages a one-level glob missed).
+    pat = os.environ.get("NOMESS_MEMORY_GLOB") or os.path.expanduser("~/.claude/projects/**/memory/**/*.md")
+    for f in glob.glob(pat, recursive=True):
         stem = os.path.basename(f)[:-3]
         parts = stem.split("_", 1)
         if parts[0] not in ("feedback", "reference", "decision", "project", "incident", "correction", "user") or len(parts) < 2:
@@ -139,11 +141,11 @@ def _private_patterns():
         forms.add(stem.lower())
         if slug.count("_") >= 2 and slug.replace("_", "-") not in published:
             forms.add(slug.replace("_", "-"))
-        if slug.count("_") >= 3:
-            forms.add(slug.replace("_", " "))
+        if slug.count("_") >= 3 and slug.replace("_", "-") not in published:
+            forms.add(" ".join(w for w in re.split(r"[^a-z0-9]+", slug.lower()) if w))
     if forms:
         out.append(("memory-page name", re.compile(
-            r"(?<![A-Za-z0-9_-])(" + "|".join(r"[\s#*>]+".join(re.escape(w) for w in x.split(" "))
+            r"(?<![A-Za-z0-9_-])(" + "|".join(r"[^A-Za-z0-9]+".join(re.escape(w) for w in x.split(" "))
                                               for x in sorted(forms, key=len, reverse=True)) + r")(?![A-Za-z0-9_-])",
             re.I)))
     return out
