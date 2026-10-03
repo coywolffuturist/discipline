@@ -155,3 +155,54 @@ advisory form would then be theatre, and must become blocking or be deleted.
 **Baseline, measured on the day of writing:** roughly 4 cheap-door calls
 against 40 hand-reads in one session. That number is bad, it is honest, and it
 is what the next measurement is compared against.
+
+---
+
+## Lever: checkpoint and pause — clip in before the hard moves (2026-10-03)
+
+**The operator's teaching, from the man who created LAPD SWAT and trained a Navy SEAL
+sniper team: slow is fast and fast is slow.** A job that rushes at its budget line
+breaks something, and the repair costs more than the rush saved. His picture for this
+lever: a climber who clips in and hammers protection, so a slip ends at the last anchor,
+not at the bottom.
+
+**Why it exists.** On 2026-10-02 parallel jobs ran the operator's weekly limit to 99%
+with no warning. The next morning a 70-run check loop was launched with no stated
+price. The first fix proposed, "switch to a cheaper model near the cap", was rejected:
+a weaker model writes work a stronger one must redo. **There is no downgrade.**
+
+**The protocol — `anchor.py`, called BY the job:**
+
+1. **Price before starting.** `anchor.py price <job> <est % of the week>`. Above the ask
+   line (2%, his figure) the job does not start until he has seen the price and the plan
+   and said yes (`--approved`). A job that would cut into the conversation reserve asks too.
+2. **Anchor after every finished unit.** `anchor.py checkpoint <job> <done> <next>`.
+3. **Check between units.** `anchor.py check <job>` reads the provider's own rate-limit
+   headers. Exit 2 = pause at this anchor: the job spent its budget, or the week reached
+   the reserve (the last 15% is kept so he can always talk to his agent). An unreadable
+   meter also pauses: a job that cannot see the meter cannot know it is safe.
+4. **Resume on the same model.** `anchor.py resume <job>` prints the last anchor.
+
+**Laundering is closed.** Re-pricing ADDS to a job's budget and never moves its baseline;
+today's unapproved budgets across ALL jobs are capped at twice the ask line ("many small
+jobs are one big job"). Every failure pauses: an unreadable meter, a NaN or out-of-range
+reading, a meter command that exits non-zero, a corrupt or partial job record.
+
+**Second refutation, same day:** a baseline that never moved let a job run free across the
+provider's weekly reset, and the daily cap could be beaten by pricing jobs in parallel. Now
+a negative spend (the week reset) pauses and a re-price starts a fresh period; pricing and
+checkpoints hold a file lock; a stale corrupt record ages out of the cap; a NaN setting refuses.
+
+**Third refutation, same day:** inferring a reset from the meter falling missed a reset for a
+job priced at 0%, and the pause did not stay on. Now the reset is READ: the meter returns the
+provider's own week id (its weekly reset time), a job is tied to the week it was priced in, a
+different week pauses until it is priced again, and a meter that falls inside one week pauses
+as untrusted (a rolling figure can never launder a budget).
+
+**Bait:** `lint/bait_anchor.py`, 59 cases (was 49). The first version (14 cases) was refuted the
+same day: a refuter planted six breaks it passed (the reserve pause deleted, the meter
+failing open, the CLI exiting 0 on a dead meter, the path guard removed, a NaN estimate,
+re-pricing that laundered a budget). Each of those now turns it red.
+**Known limit:** the meter reports whole percents. A budget pauses at the first whole
+percent at or above it, minus one where that still leaves 1% (2.5% pauses at 2%, 1% at 1%,
+0.5% at 1%); under 1% cannot be enforced finer than the meter's own step.

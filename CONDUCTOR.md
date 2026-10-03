@@ -49,7 +49,7 @@ artifact is its automation, not its authority.
 |---|---|---|---|---|
 | 00 | **regime-routing** | DESIGN | **FIRST.** the same request could honestly be answered at more than one depth. It sets the DEPTH of the work, never which gates fire | built |
 | 01 | ste | DESIGN | you write a prompt, canon page, plan, note or agent message. NOT conversation with the operator — unless the operator asks for a concept, and then explain it fully | built |
-| 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" — and, as its own lever, before firing a model in a LOOP, price it in CALLS | built |
+| 02 | retrieval-economy | DESIGN | you are about to read a corpus, grep a repo, brief a subagent, or answer "what exists" — and, as its own lever, before firing a model in a LOOP, price it in CALLS; and any job over 2% of the week: price it, anchor each unit, pause at the line, resume on the SAME model (slow is fast) | built |
 | 03 | collapse-round-trips | DESIGN | a sequence of calls could have been one with foreknowledge you could have had. A foreseeable sequence is a MISS, not a pass | built |
 | 04 | no-collision | DESIGN | you are about to touch SHARED substrate a peer may hold. Scratchpad and single-machine private work is N/A | built |
 | 05 | substrate-search | DESIGN | you are proposing anything that SURVIVES THE SESSION — table, module, endpoint, daemon, layer, script — **or REPAIRING one (Molt: before you mend the old coat, ask whether it is time to shed it)** | built |
@@ -170,7 +170,7 @@ so no gate is unreachable — an unreachable gate is a gate that will be skipped
 |---|---|---|
 | 00 | regime-routing | `gates/00-regime-routing/GATE.md` |
 | 01 | ste | `gates/01-ste/GATE.md` · deployed `skills/ste` |
-| 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy`. Also carries the price-the-loop lever, folded in 2026-09-01 · **code `gates/02-retrieval-economy/budget.py`** (the lever's enforcement, 2026-09-07) |
+| 02 | retrieval-economy | `gates/02-retrieval-economy/GATE.md` · deployed `skills/retrieval-economy`. Also carries the price-the-loop lever, folded in 2026-09-01 · **code `gates/02-retrieval-economy/budget.py`** (the lever's enforcement, 2026-09-07) · **code `gates/02-retrieval-economy/anchor.py`** (checkpoint and pause, 2026-10-03) |
 | 03 | collapse-round-trips | `gates/03-collapse-round-trips/GATE.md` · deployed `skills/collapse-round-trips` · hook + code `gates/06-compile-it/repeats.py` (shared with gate 06) |
 | 04 | no-collision | `gates/04-no-collision/GATE.md` · deployed `skills/no-collision` · tool ADOPTED `gui-browser-lock` (SECOND MACHINE) · hook `hooks/warn_shared_path.py` |
 | 05 | substrate-search | `gates/05-substrate-search/GATE.md` · deployed `skills/substrate-search` · code ADOPTED: the estate `commit-msg` guard (shared with gate 11) |
